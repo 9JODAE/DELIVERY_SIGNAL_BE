@@ -1,11 +1,11 @@
 # 🌟 Pull Request
 
-## 📒 Issue Number
+## 🌐 Issue Number
 <!-- 작업한 이슈 번호를 명시해주세요 -->
 closed #[issue-number]
 
 
-## 📒 Description
+## 💬 Description
 <!-- 작업 내용에 대한 설명을 적어주세요 -->
 -
 
