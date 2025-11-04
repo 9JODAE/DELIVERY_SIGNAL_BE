@@ -7,6 +7,7 @@ import com.delivery_signal.eureka.client.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 //@Tag(name="user-controller", description = "MASTER의 생성/수정/삭제 + 모든 사용자의 권한별 조회 API")
-@RequestMapping("/users")
+@RequestMapping("/v1/users")
 public class UserController {
 
     private final UserService userService;
@@ -25,7 +26,7 @@ public class UserController {
     @PostMapping()
 //    @PreAuthorize("hasRole('MASTER')")
 //    @Operation(summary="MASTER의 사용자 생성", description="새로운 사용자를 등록합니다")
-    public UserResponseDto registerUser(UserCreateRequestDto requestDto) {
+    public UserResponseDto registerUser(@RequestBody UserCreateRequestDto requestDto) {
         UserResponseDto responseDto = userService.createUser(requestDto);
 
         return responseDto;

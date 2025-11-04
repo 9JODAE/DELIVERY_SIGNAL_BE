@@ -25,17 +25,17 @@ public abstract class BaseEntity {
     private String createdBy;
 
     @LastModifiedDate
-    @Column(nullable = false)
+    @Column
     private LocalDateTime updatedAt;
 
     @LastModifiedBy
-    @Column(nullable = false, length = 100)
+    @Column(length = 100)
     private String updatedBy;
 
-    @Column(nullable = false)
+    @Column
     private LocalDateTime deletedAt;
 
-    @Column(nullable = false, length = 100)
+    @Column(length = 100)
     private String deletedBy;
 
     public void softDelete(String userName) {
