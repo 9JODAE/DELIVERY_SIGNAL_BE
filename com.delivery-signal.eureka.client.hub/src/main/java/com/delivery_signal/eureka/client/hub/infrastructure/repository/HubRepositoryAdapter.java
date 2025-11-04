@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class HubRepositoryImpl implements HubRepository {
+public class HubRepositoryAdapter implements HubRepository {
 
 	private final JpaHubRepository jpaHubRepository;
 
