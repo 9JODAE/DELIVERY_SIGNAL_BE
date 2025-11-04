@@ -1,0 +1,19 @@
+package com.delivery_signal.eureka.client.user.dto.response;
+
+import com.delivery_signal.eureka.client.user.entity.ApprovalStatus;
+import com.delivery_signal.eureka.client.user.entity.UserRole;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@AllArgsConstructor
+public class UserResponseDto {
+
+    private Long userId;
+    private String username;
+    private String slackId;
+    private String organization;
+    private UserRole role;
+    private ApprovalStatus approvalStatus;
+}
