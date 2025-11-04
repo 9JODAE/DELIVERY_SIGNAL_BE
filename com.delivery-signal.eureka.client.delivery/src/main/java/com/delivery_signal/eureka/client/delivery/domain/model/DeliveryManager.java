@@ -45,7 +45,7 @@ public class DeliveryManager extends BaseEntity {
     @Column(name = "manager_type", nullable = false)
     private DeliveryManagerType managerType;
 
-    // 배송 순번
+    // 배송 순번 (배송 담당자 추가/삭제될 때에만 변경)
     @Column(name = "sequence", nullable = false)
     private Integer deliverySequence;
 
@@ -55,5 +55,11 @@ public class DeliveryManager extends BaseEntity {
         this.slackId = slackId;
         this.managerType = managerType;
         this.deliverySequence = deliverySequence;
+    }
+
+    public void update(UUID hubId, String slackId, DeliveryManagerType managerType) {
+        this.hubId = hubId;
+        this.slackId = slackId;
+        this.managerType = managerType;
     }
 }

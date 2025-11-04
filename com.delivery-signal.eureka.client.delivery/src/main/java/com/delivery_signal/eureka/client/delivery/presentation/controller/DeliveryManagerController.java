@@ -6,6 +6,10 @@ import com.delivery_signal.eureka.client.delivery.presentation.dto.response.Deli
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -40,5 +44,31 @@ public class DeliveryManagerController {
         DeliveryManagerResponse response = deliveryManagerService.registerManager(currUserId,
             request, role);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * 배송 담당자 정보 조회 (단, 배송 담당자는 본인의 정보만 조회 가능)
+     */
+    @GetMapping("/{user-id}")
+    public ResponseEntity<DeliveryManagerResponse> getDeliveryManager(
+        @PathVariable("user-id") Long managerId,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        DeliveryManagerResponse response = deliveryManagerService.getDeliveryManagerInfo(managerId,
+            currUserId, role);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PatchMapping("/{user-id}")
+    public ResponseEntity<DeliveryManagerResponse> updateManager(
+        @PathVariable("user-id") Long managerId,
+        @Valid @RequestBody DeliveryManagerRegisterRequest request,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        DeliveryManagerResponse response = deliveryManagerService.updateManager(managerId, request,
+            currUserId, role);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
