@@ -27,7 +27,7 @@ public class OrderDomainService {
  * 해당 로직은 application 계층(Service)에서 처리하는 것이 적절합니다.
  */
 
-    public Order createOrder(SupplierCompanyInfo supplier, ReceiverCompanyInfo receiver, String requestNote, List<OrderProduct> orderProducts, UUID deliveryId) {
+    public Order createOrder(UUID supplier, UUID receiver, String requestNote, List<OrderProduct> orderProducts, UUID deliveryId) {
 
 
         BigDecimal totalPrice = orderProducts.stream()
@@ -35,8 +35,8 @@ public class OrderDomainService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return Order.builder()
-                .supplierCompanyId(supplier.getId())
-                .receiverCompanyId(receiver.getId())
+                .supplierCompanyId(supplier)
+                .receiverCompanyId(receiver)
                 .requestNote(requestNote)
                 .totalPrice(totalPrice)
                 .deliveryId(deliveryId)

@@ -12,8 +12,8 @@ import java.util.UUID;
 public interface CompanyClient {
 
     @GetMapping("/companies/suppliers/{id}")
-    SupplierCompanyInfo getSupplierCompany(@PathVariable UUID id);
+    UUID getSupplierCompany(@PathVariable UUID id);
 
     @GetMapping("/companies/receivers/{id}")
-    ReceiverCompanyInfo getReceiverCompany(@PathVariable UUID id);
+    UUID getReceiverCompany(@PathVariable UUID id);
 }

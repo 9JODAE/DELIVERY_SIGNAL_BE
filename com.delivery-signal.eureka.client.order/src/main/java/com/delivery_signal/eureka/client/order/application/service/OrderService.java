@@ -64,8 +64,10 @@ public class OrderService {
                         .build())
                 .toList();
 
-        SupplierCompanyInfo supplier = companyClient.getSupplierCompany(command.getSupplierCompanyId());
-        ReceiverCompanyInfo receiver = companyClient.getReceiverCompany(command.getReceiverCompanyId());
+//        SupplierCompanyInfo supplier = companyClient.getSupplierCompany(command.getSupplierCompanyId());
+//        ReceiverCompanyInfo receiver = companyClient.getReceiverCompany(command.getReceiverCompanyId());
+        UUID supplier = companyClient.getSupplierCompany(command.getSupplierCompanyId());
+        UUID receiver = companyClient.getReceiverCompany(command.getReceiverCompanyId());
 
         UUID deliveryId = UUID.randomUUID(); // 주문 시점에 미리 배송 UUID 생성
         Order order = orderDomainService.createOrder(
