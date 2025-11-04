@@ -62,4 +62,8 @@ public class DeliveryManager extends BaseEntity {
         this.slackId = slackId;
         this.managerType = managerType;
     }
+
+    public void softDelete(Long userId) {
+        super.markDeleted(userId);
+    }
 }

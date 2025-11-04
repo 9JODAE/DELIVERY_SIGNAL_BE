@@ -58,6 +58,17 @@ public class DeliveryManagerService {
         return DeliveryManagerResponse.from(manager);
     }
 
+    @Transactional
+    public void softDeleteManager(Long managerId, Long deletedByUserId) {
+        DeliveryManager manager = getDeliveryManagerByManagerId(managerId);
+
+        if (manager.isDeleted()) {
+            throw new RuntimeException("이미 삭제된 배송 담당자입니다.");
+        }
+        // 논리적 삭제 처리
+        manager.softDelete(deletedByUserId);
+    }
+
     private DeliveryManager getDeliveryManagerByManagerId(Long managerId) {
         return deliveryManagerRepository.findByManagerIdAndDeletedAtIsNull(managerId)
             .orElseThrow(() -> new NoSuchElementException("배송 담당자 정보를 찾을 수 없습니다"));

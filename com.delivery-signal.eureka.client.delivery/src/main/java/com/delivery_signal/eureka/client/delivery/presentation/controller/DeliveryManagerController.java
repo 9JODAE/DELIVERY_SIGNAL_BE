@@ -71,4 +71,15 @@ public class DeliveryManagerController {
             currUserId, role);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+
+    @DeleteMapping("/{user-id}")
+    public ResponseEntity<Void> deleteManager(
+        @PathVariable("user-id") Long managerId,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        deliveryManagerService.softDeleteManager(managerId, currUserId);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }
