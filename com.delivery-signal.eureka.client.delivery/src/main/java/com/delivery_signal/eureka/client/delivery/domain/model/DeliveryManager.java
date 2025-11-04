@@ -37,7 +37,7 @@ public class DeliveryManager extends BaseEntity {
     @Column(name = "hub_id")
     private UUID hubId;
 
-    @Column(name = "slack_id")
+    @Column(name = "slack_id", nullable = false)
     private String slackId;
 
     // 배송 담당자 타입
