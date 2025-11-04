@@ -3,11 +3,11 @@ version: "3.8"
 services:
   db:
     image: postgres:17.6
-    container_name: postgres-delivery-signal
+    container_name: postgres-docker-delivery-signal
     environment:
-      POSTGRES_DB: delivery-signal
-      POSTGRES_USER: f1
-      POSTGRES_PASSWORD: qwer1234
+      POSTGRES_DB: delivery-signal-user-db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: user1234
     ports:
       - "5432:5432"
     volumes:

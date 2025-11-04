@@ -23,7 +23,6 @@ public class UserMapper {
                 .slackId(requestDto.getSlackId())
                 .organization(requestDto.getOrganization())
                 .role(requestDto.getRole())
-                .created
                 .build();
     }
 }

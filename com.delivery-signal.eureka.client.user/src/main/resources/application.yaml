@@ -1,9 +1,0 @@
-spring:
-  application:
-    name: user
-
-  web:
-    mvc:
-      pathmatch:
-        matched-path-prefix: /v1
-
