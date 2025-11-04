@@ -1,13 +1,24 @@
 package com.delivery_signal.eureka.client.order.domain.service;
 
+import com.delivery_signal.eureka.client.order.application.event.OrderCreatedEvent;
+import com.delivery_signal.eureka.client.order.domain.entity.Order;
+import com.delivery_signal.eureka.client.order.domain.entity.OrderProduct;
+import com.delivery_signal.eureka.client.order.domain.vo.ProductInfo;
+import com.delivery_signal.eureka.client.order.domain.vo.ReceiverCompanyInfo;
+import com.delivery_signal.eureka.client.order.domain.vo.SupplierCompanyInfo;
 import lombok.RequiredArgsConstructor;
+import org.apache.hc.core5.reactor.Command;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class OrderDomainService {
 /**
- * Todo 도메인 서비스가 나뉘는 이유
+ * Todo 서비스가 나뉘는 이유
  * 도메인 내부의 순수 비즈니스 로직을 담당하는 서비스입니다.
  * 여러 Aggregate나 Entity 간의 복잡한 연산이 필요하지만,
  * 외부 시스템 호출이 없는 경우에만 사용합니다.
@@ -16,4 +27,20 @@ public class OrderDomainService {
  * 해당 로직은 application 계층(Service)에서 처리하는 것이 적절합니다.
  */
 
+    public Order createOrder(SupplierCompanyInfo supplier, ReceiverCompanyInfo receiver, String requestNote, List<OrderProduct> orderProducts, UUID deliveryId) {
+
+
+        BigDecimal totalPrice = orderProducts.stream()
+                .map(p -> p.getProductPriceAtOrder().multiply(BigDecimal.valueOf(p.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return Order.builder()
+                .supplierCompanyId(supplier.getId())
+                .receiverCompanyId(receiver.getId())
+                .requestNote(requestNote)
+                .totalPrice(totalPrice)
+                .deliveryId(deliveryId)
+                .orderProducts(orderProducts)
+                .build();
+    }
 }

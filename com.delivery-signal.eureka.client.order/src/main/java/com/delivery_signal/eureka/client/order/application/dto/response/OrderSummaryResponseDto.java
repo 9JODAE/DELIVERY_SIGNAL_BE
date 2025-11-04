@@ -9,7 +9,7 @@ import java.util.UUID;
 @Getter
 public class OrderSummaryResponseDto {
 
-    private String productId; //외부에서 주입받을 예정, UUID.toString() 일 가능성 높음.
+    private UUID productId;
     private UUID orderId;
     private String productName;
     private BigDecimal productPriceAtOrder;
@@ -19,7 +19,7 @@ public class OrderSummaryResponseDto {
         // Jackson 역직렬화용
     }
 
-    public OrderSummaryResponseDto(String productId, UUID orderId, String productName,BigDecimal productPrice ,int quantity) {
+    public OrderSummaryResponseDto(UUID productId, UUID orderId, String productName,BigDecimal productPrice ,int quantity) {
         this.productId = productId;
         this.orderId = orderId;
         this.productPriceAtOrder = productPrice;

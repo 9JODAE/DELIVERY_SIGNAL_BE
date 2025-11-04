@@ -15,6 +15,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "p_order_products")
 @Getter
+@Builder
 @EntityListeners(AuditingEntityListener.class) //생성, 수정 자동
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor

@@ -1,6 +1,7 @@
 package com.delivery_signal.eureka.client.order.domain.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedBy;
@@ -68,17 +69,23 @@ public class Order {
     private LocalDateTime deletedAt;
     private UUID deletedBy;
 
-    public Order(UUID supplierCompanyId, UUID receiverCompanyId, String requestNote) {
-        this.supplierCompanyId = supplierCompanyId;
-        this.receiverCompanyId = receiverCompanyId;
+    public Order(String requestNote) {
         this.requestNote = requestNote;
     }
 
-    // 도메인 메서드
-    public void addOrderProducts(List<OrderProduct> products) {
-        for (OrderProduct p : products) {
-            this.addOrderProduct(p);
-        }
+    @Builder
+    public Order(UUID supplierCompanyId,
+                 UUID receiverCompanyId,
+                 String requestNote,
+                 BigDecimal totalPrice,
+                 List<OrderProduct> orderProducts,
+                 UUID deliveryId) {
+        this.supplierCompanyId = supplierCompanyId;
+        this.receiverCompanyId = receiverCompanyId;
+        this.requestNote = requestNote;
+        this.totalPrice = totalPrice;
+        this.orderProducts = orderProducts;
+        this.deliveryId = deliveryId;
     }
 
     public void addOrderProduct(OrderProduct product) {

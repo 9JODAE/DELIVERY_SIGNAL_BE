@@ -1,5 +1,6 @@
 package com.delivery_signal.eureka.client.order.presentation;
 
+import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
 import com.delivery_signal.eureka.client.order.application.service.OrderService;
 import com.delivery_signal.eureka.client.order.presentation.dto.request.CreateOrderRequestDto;
 import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderCreateResponseDto;
@@ -20,8 +21,11 @@ public class OrderController {
 
     @Operation(summary = "주문 생성", description = "새로운 주문을 등록합니다.")
     @PostMapping
-    public ResponseEntity<OrderCreateResponseDto> createOrder(@RequestBody CreateOrderRequestDto dto) {
-        OrderCreateResponseDto response = orderService.createOrder(dto);
+    public ResponseEntity<OrderCreateResponseDto> createOrder(@RequestBody CreateOrderRequestDto requestDto) {
+
+        CreateOrderCommand command = OrderMapper.toCommand(requestDto);
+
+        OrderCreateResponseDto response = orderService.createOrderAndSendDelivery(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

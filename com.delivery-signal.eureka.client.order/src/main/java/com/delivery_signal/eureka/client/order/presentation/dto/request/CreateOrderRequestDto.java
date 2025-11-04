@@ -6,30 +6,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-
+import java.util.UUID;
 
 @Getter
 @NoArgsConstructor
 public class CreateOrderRequestDto {
 
-    @Schema(
-            description = "공급업체 회사 UUID",
-            example = "550e8400-e29b-41d4-a716-446655440000"
-    )
-    private String supplierCompanyId;
+    @Schema(description = "공급업체", example = "d8b2f5a0-0ac3-4f72-8c43-bb9149a1c9a2")
+    private UUID supplierCompanyId;
 
-    @Schema(
-            description = "수신업체 회사 UUID",
-            example = "a4c59a2c-efb2-4a5a-8b91-38d8d2e4e8e7"
-    )
-    private String receiverCompanyId;
+    @Schema(description = "수령업체", example = "3e7b1b40-6c29-4f55-9210-1e9380b23db4")
+    private UUID receiverCompanyId;
 
     @Schema(description = "요청 메모", example = "빠른 배송 부탁드립니다.")
     private String requestNote;
     private List<OrderSummaryResponseDto> orderProducts;
 
-    public CreateOrderRequestDto(String supplierCompanyId, String receiverCompanyId, String requestNote, List<OrderSummaryResponseDto> orderProducts) {
-        this.supplierCompanyId = supplierCompanyId;
+    public CreateOrderRequestDto(UUID receiverCompanyId, String requestNote, List<OrderSummaryResponseDto> orderProducts) {
         this.receiverCompanyId = receiverCompanyId;
         this.requestNote = requestNote;
         this.orderProducts = orderProducts;

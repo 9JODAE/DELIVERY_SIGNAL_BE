@@ -8,10 +8,12 @@ public class OrderCreateResponseDto {
     UUID orderId;
     UUID createBy;
     LocalDateTime createAt;
+    String message;
 
-    public OrderCreateResponseDto(UUID orderId, UUID createBy, LocalDateTime createAt) {
+    public OrderCreateResponseDto(UUID orderId, UUID createBy, LocalDateTime createAt, String message) {
         this.orderId = orderId;
         this.createBy = createBy;
         this.createAt = createAt;
+        this.message = message;
     }
 }

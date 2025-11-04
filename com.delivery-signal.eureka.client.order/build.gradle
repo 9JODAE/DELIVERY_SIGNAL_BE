@@ -40,6 +40,9 @@ dependencies {
     //mySQL
     runtimeOnly 'com.mysql:mysql-connector-j'
 
+    //외부 통신용
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
     compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

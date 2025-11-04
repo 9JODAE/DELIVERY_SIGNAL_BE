@@ -1,58 +1,86 @@
 package com.delivery_signal.eureka.client.order.application.service;
 
+import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
+import com.delivery_signal.eureka.client.order.application.command.OrderProductCommand;
+import com.delivery_signal.eureka.client.order.application.event.OrderCreatedEvent;
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
 import com.delivery_signal.eureka.client.order.domain.entity.OrderProduct;
 import com.delivery_signal.eureka.client.order.domain.repository.OrderRepository;
-import com.delivery_signal.eureka.client.order.presentation.dto.request.CreateOrderRequestDto;
+import com.delivery_signal.eureka.client.order.domain.service.OrderDomainService;
+import com.delivery_signal.eureka.client.order.domain.vo.*;
+import com.delivery_signal.eureka.client.order.infrastructure.external.company.CompanyClient;
+import com.delivery_signal.eureka.client.order.infrastructure.external.hub.HubClient;
+import com.delivery_signal.eureka.client.order.infrastructure.external.product.ProductClient;
 import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderCreateResponseDto;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Service
 public class OrderService {
-    /**
-     * 외부 호출인 존재할 때 비즈니스 로직
-     */
 
+    private final ProductClient productClient;
+    private final HubClient hubClient;
+    private final CompanyClient companyClient;
+    private final OrderDomainService orderDomainService;
     private final OrderRepository orderRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(ProductClient productClient, HubClient hubClient, CompanyClient companyClient, OrderDomainService orderDomainService, OrderRepository orderRepository, ApplicationEventPublisher eventPublisher) {
+        this.productClient = productClient;
+        this.hubClient = hubClient;
+        this.companyClient = companyClient;
+        this.orderDomainService = orderDomainService;
         this.orderRepository = orderRepository;
+        this.eventPublisher = eventPublisher;
     }
 
-    public OrderCreateResponseDto createOrder(CreateOrderRequestDto request) {
+    public OrderCreateResponseDto createOrderAndSendDelivery(CreateOrderCommand command) {
 
-        /**
-         * 원래는 외부호출이 되어야 하는 값이므로 UUID 유효성을 보장하지 못합니다.
-         * 따라서 String으로 저장하고 필요할 때에 UUID로 변환해서 씁니다.
-         * 그러나 현재 생성에서는 외부 의존 값을 모두 비워둘 수 없기 때문에 임시로 두 값을 임의로 입력하게 했습니다.
-         * TODO 나중에는 상품명만 입력하면 공급, 수령업체 정보랑 연계되도록 해야하지 않을까요?
-         */
-        Order order = new Order(
-                UUID.fromString(request.getSupplierCompanyId()),
-                UUID.fromString(request.getReceiverCompanyId()),
-                request.getRequestNote()
-        );
-
-        // OrderProduct 리스트 생성 후 order에 세팅
-        List<OrderProduct> orderProducts = request.getOrderProducts().stream()
-                .map(p -> OrderProduct.create(
-                        order,
-                        UUID.fromString(p.getProductId()),
-                        p.getProductName(),
-                        p.getProductPriceAtOrder(),
-                        p.getQuantity()
-                ))
+        //  Command에서 UUID 리스트 추출
+        List<UUID> productIds = command.getProducts().stream()
+                .map(OrderProductCommand::getProductId)
                 .toList();
 
-        order.addOrderProducts(orderProducts); // 도메인 메서드로 추가
+        // 외부 서비스 호출 (Application layer 책임)
+        List<ProductInfo> productInfos = productClient.getProducts(productIds);
 
-        //저장
+        // 수량 매핑
+        Map<UUID, Integer> quantityMap = command.getProducts().stream()
+                .collect(Collectors.toMap(OrderProductCommand::getProductId, OrderProductCommand::getQuantity));
+
+        //ProductInfo + Quantity → OrderProduct 도메인 변환
+        List<OrderProduct> orderProducts = productInfos.stream()
+                .map(info -> OrderProduct.builder()
+                        .productId(info.getProductId())
+                        .productName(info.getProductName())
+                        .productPriceAtOrder(info.getPrice())
+                        .quantity(quantityMap.get(info.getProductId()))
+                        .build())
+                .toList();
+
+        SupplierCompanyInfo supplier = companyClient.getSupplierCompany(command.getSupplierCompanyId());
+        ReceiverCompanyInfo receiver = companyClient.getReceiverCompany(command.getReceiverCompanyId());
+
+        UUID deliveryId = UUID.randomUUID(); // 주문 시점에 미리 배송 UUID 생성
+        Order order = orderDomainService.createOrder(
+                supplier, receiver, command.getRequestNote(), orderProducts, deliveryId);
+
         orderRepository.save(order);
 
-        return new OrderCreateResponseDto(order.getId(), order.getCreatedBy(), order.getCreatedAt());
+        eventPublisher.publishEvent(new OrderCreatedEvent(
+                order.getId(),
+                order.getSupplierCompanyId(),
+                order.getReceiverCompanyId(),
+                order.getOrderProducts(),
+                order.getDeliveryId()
+        ));
+
+        return new OrderCreateResponseDto(order.getId(),order.getCreatedBy(), order.getCreatedAt(), "성공");
     }
 }

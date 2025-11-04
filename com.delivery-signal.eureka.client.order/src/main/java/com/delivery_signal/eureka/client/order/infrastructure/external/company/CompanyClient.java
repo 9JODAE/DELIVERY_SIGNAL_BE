@@ -1,0 +1,19 @@
+package com.delivery_signal.eureka.client.order.infrastructure.external.company;
+
+import com.delivery_signal.eureka.client.order.domain.vo.ReceiverCompanyInfo;
+import com.delivery_signal.eureka.client.order.domain.vo.SupplierCompanyInfo;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.UUID;
+
+@FeignClient(name = "company-service", url = "${external.company.url}")
+public interface CompanyClient {
+
+    @GetMapping("/companies/suppliers/{id}")
+    SupplierCompanyInfo getSupplierCompany(@PathVariable UUID id);
+
+    @GetMapping("/companies/receivers/{id}")
+    ReceiverCompanyInfo getReceiverCompany(@PathVariable UUID id);
+}
