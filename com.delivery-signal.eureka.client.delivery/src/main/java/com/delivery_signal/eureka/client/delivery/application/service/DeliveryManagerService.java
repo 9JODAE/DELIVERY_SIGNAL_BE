@@ -1,5 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.application.service;
 
+import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryManagerCommand;
 import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManager;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryManagerRepository;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryManagerRegisterRequest;
@@ -21,7 +22,7 @@ public class DeliveryManagerService {
     }
 
     @Transactional
-    public DeliveryManagerResponse registerManager(Long userId, DeliveryManagerRegisterRequest request,
+    public DeliveryManagerResponse registerManager(Long userId, CreateDeliveryManagerCommand command,
         String role) {
         // TODO: USER, HUB MSA 연동 & 유효성 검사 추가 예정
 
@@ -29,9 +30,9 @@ public class DeliveryManagerService {
 
         DeliveryManager manager = DeliveryManager.builder()
             .managerId(userId) // User ID를 Primary Key로 사용
-            .hubId(request.hubId())
-            .slackId(request.slackId())
-            .managerType(request.type())
+            .hubId(command.hubId())
+            .slackId(command.slackId())
+            .managerType(command.type())
             .deliverySequence(0) // TODO: DUMMY 수정
             .build();
 

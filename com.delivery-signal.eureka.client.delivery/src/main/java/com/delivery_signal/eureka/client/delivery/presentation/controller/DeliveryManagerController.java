@@ -1,6 +1,8 @@
 package com.delivery_signal.eureka.client.delivery.presentation.controller;
 
+import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryManagerCommand;
 import com.delivery_signal.eureka.client.delivery.application.service.DeliveryManagerService;
+import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryManagerRegisterRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.response.DeliveryManagerResponse;
 import jakarta.validation.Valid;
@@ -33,7 +35,7 @@ public class DeliveryManagerController {
     }
 
     @PostMapping
-    public ResponseEntity<DeliveryManagerResponse> registerManager(
+    public ResponseEntity<ApiResponse<DeliveryManagerResponse>> registerManager(
         @Valid @RequestBody DeliveryManagerRegisterRequest request,
         @RequestHeader(USER_ID_HEADER) Long currUserId,
         @RequestHeader(USER_ROLE_HEADER) String role
@@ -41,9 +43,10 @@ public class DeliveryManagerController {
         // TODO: Role 추후에 ENUM으로 수정
         // TODO: 권한 체크 -> 마스터 관리자 또는 허브 관리자 (담당 허브) 로직 추가 필요
 
+        CreateDeliveryManagerCommand command = CreateDeliveryManagerCommand.from(request);
         DeliveryManagerResponse response = deliveryManagerService.registerManager(currUserId,
-            request, role);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            command, role);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 
     /**
