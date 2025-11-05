@@ -24,7 +24,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     public Optional<Order> findByOrderId(UUID orderId) {
         return Optional.ofNullable(queryFactory
                 .selectFrom(order)
-                .leftJoin(order.orderProducts, orderProduct).fetchJoin()
+                .innerJoin(order.orderProducts, orderProduct).fetchJoin()
                 .where(order.id.eq(orderId))
                 .fetchOne());
     }
