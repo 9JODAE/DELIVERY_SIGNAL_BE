@@ -1,6 +1,7 @@
 package com.delivery_signal.eureka.client.delivery.presentation.controller;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryManagerCommand;
+import com.delivery_signal.eureka.client.delivery.application.dto.ManagerQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.service.DeliveryManagerService;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryManagerRegisterRequest;
@@ -43,10 +44,12 @@ public class DeliveryManagerController {
         // TODO: Role 추후에 ENUM으로 수정
         // TODO: 권한 체크 -> 마스터 관리자 또는 허브 관리자 (담당 허브) 로직 추가 필요
 
+        // Presentation DTO를 Application 커맨드 변환
         CreateDeliveryManagerCommand command = CreateDeliveryManagerCommand.from(request);
-        DeliveryManagerResponse response = deliveryManagerService.registerManager(currUserId,
+        // Service 호출 및 Application 쿼리 리스폰스 반환
+        ManagerQueryResponse response = deliveryManagerService.registerManager(currUserId,
             command, role);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(DeliveryManagerResponse.from(response)));
     }
 
     /**

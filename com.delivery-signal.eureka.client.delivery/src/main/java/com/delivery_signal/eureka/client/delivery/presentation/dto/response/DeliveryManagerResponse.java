@@ -1,11 +1,15 @@
 package com.delivery_signal.eureka.client.delivery.presentation.dto.response;
 
+import com.delivery_signal.eureka.client.delivery.application.dto.ManagerQueryResponse;
 import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManager;
 import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManagerType;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Builder;
 
+/**
+ * 최종적으로 클라이언트에게 반환되는 응답 DTO (Presentation Layer)
+ */
 @Builder
 public record DeliveryManagerResponse(
     Long managerId,
@@ -16,14 +20,14 @@ public record DeliveryManagerResponse(
     LocalDateTime createdAt
 ) {
 
-    public static DeliveryManagerResponse from(DeliveryManager manager) {
+    public static DeliveryManagerResponse from(ManagerQueryResponse queryResponse) {
         return DeliveryManagerResponse.builder()
-            .managerId(manager.getManagerId())
-            .hubId(manager.getHubId())
-            .slackId(manager.getSlackId())
-            .managerType(manager.getManagerType())
-            .deliverySequence(manager.getDeliverySequence())
-            .createdAt(manager.getCreatedAt())
+            .managerId(queryResponse.deliveryManagerId())
+            .hubId(queryResponse.hubId() != null ? queryResponse.hubId() : null)
+            .slackId(queryResponse.slackId())
+            .managerType(queryResponse.managerType())
+            .deliverySequence(queryResponse.deliverySequence())
+            .createdAt(queryResponse.createdAt())
             .build();
     }
 }
