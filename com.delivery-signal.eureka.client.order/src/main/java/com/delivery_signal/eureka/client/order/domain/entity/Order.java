@@ -47,7 +47,7 @@ public class Order {
     private String requestNote;
 
     @Column(nullable = false)
-    private BigDecimal totalPrice;
+    private BigDecimal totalPriceAtOrder;
 
     // 연관관계 설정
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -83,7 +83,7 @@ public class Order {
         this.supplierCompanyId = supplierCompanyId;
         this.receiverCompanyId = receiverCompanyId;
         this.requestNote = requestNote;
-        this.totalPrice = totalPrice;
+        this.totalPriceAtOrder = totalPrice;
         this.orderProducts = orderProducts;
         this.deliveryId = deliveryId;
     }

@@ -31,7 +31,7 @@ public class OrderDomainService {
 
 
         BigDecimal totalPrice = orderProducts.stream()
-                .map(p -> p.getProductPriceAtOrder().multiply(BigDecimal.valueOf(p.getQuantity())))
+                .map(p -> p.getProductPriceAtOrder().multiply(BigDecimal.valueOf(p.getTransferQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return Order.builder()

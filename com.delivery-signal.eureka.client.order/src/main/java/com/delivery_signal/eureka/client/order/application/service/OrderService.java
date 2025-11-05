@@ -12,6 +12,7 @@ import com.delivery_signal.eureka.client.order.infrastructure.external.company.C
 import com.delivery_signal.eureka.client.order.infrastructure.external.hub.HubClient;
 import com.delivery_signal.eureka.client.order.infrastructure.external.product.ProductClient;
 import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderCreateResponseDto;
+import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderDetailResponseDto;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,7 +61,7 @@ public class OrderService {
                         .productId(info.getProductId())
                         .productName(info.getProductName())
                         .productPriceAtOrder(info.getPrice())
-                        .quantity(quantityMap.get(info.getProductId()))
+                        .transferQuantity(quantityMap.get(info.getProductId()))
                         .build())
                 .toList();
 
@@ -78,5 +79,9 @@ public class OrderService {
         //배송 던져줄 이벤트 필요, 레디스 등.
 
         return new OrderCreateResponseDto(order.getId(),order.getCreatedBy(), order.getCreatedAt(), "성공");
+    }
+
+    public OrderDetailResponseDto getOrderById(UUID orderId) {
+        return null;
     }
 }

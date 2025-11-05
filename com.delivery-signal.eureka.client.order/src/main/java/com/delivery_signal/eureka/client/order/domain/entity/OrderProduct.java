@@ -41,7 +41,7 @@ public class OrderProduct{
     private BigDecimal productPriceAtOrder;
 
     @Column(nullable = false)
-    private Integer quantity;
+    private Integer transferQuantity;
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -71,7 +71,7 @@ public class OrderProduct{
         p.productId = productId;
         p.productName = name;
         p.productPriceAtOrder = price;
-        p.quantity = qty;
+        p.transferQuantity = qty;
         return p;
     }
 
