@@ -9,8 +9,10 @@ import org.springframework.http.ResponseEntity;
 
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,8 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.delivery_signal.eureka.client.hub.application.HubService;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
+import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
 import com.delivery_signal.eureka.client.hub.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRequest;
+import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateHubRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubCreateResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubDetailResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubResponse;
@@ -68,9 +72,27 @@ public class HubController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
 	}
 
+	/**
+	 * 허브 상세 조회
+	 * GET /v1/hubs/{hubId}
+	 */
 	@GetMapping("/{hubId}")
 	public ResponseEntity<ApiResponse<HubDetailResponse>> getHub(@PathVariable UUID hubId) {
 		HubDetailResponse response = HubDetailResponse.from(hubService.getHub(hubId));
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+	}
+
+	/**
+	 * 허브 수정
+	 * PUT /v1/hubs/{hubId}
+	 */
+	@PutMapping("/{hubId}")
+	public ResponseEntity<ApiResponse<HubDetailResponse>> updateHub(
+		@PathVariable UUID hubId,
+		@Valid @RequestBody UpdateHubRequest request
+	) {
+		UpdateHubCommand command = UpdateHubCommand.of(hubId, request);
+		HubDetailResponse response = HubDetailResponse.from(hubService.updateHub(command));
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
 	}
 }

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
+import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.dto.HubResult;
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubQueryRepository;
@@ -43,5 +44,10 @@ public class HubService {
 		return HubResult.from(hub);
 	}
 
-
+	public HubResult updateHub(UpdateHubCommand command) {
+	    Hub hub = hubRepository.findById(command.hubId())
+	        .orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + command.hubId()));
+	    hub.update(command.name(), command.address(), command.latitude(), command.longitude());
+		return HubResult.from(hub);
+	}
 }
