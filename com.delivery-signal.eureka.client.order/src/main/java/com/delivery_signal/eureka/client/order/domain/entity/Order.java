@@ -1,5 +1,7 @@
 package com.delivery_signal.eureka.client.order.domain.entity;
 
+import com.delivery_signal.eureka.client.order.domain.exception.InvalidOrderStateException;
+import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderUpdateResponseDto;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -88,7 +90,15 @@ public class Order {
         this.deliveryId = deliveryId;
     }
 
-    public void addOrderProduct(OrderProduct product) {
-        orderProducts.add(product);
+
+    /**
+     * 주문 요청사항 수정
+     * @param requestNote 수정할 요청사항
+     */
+    public void updateRequestNote(String requestNote) {
+        if (requestNote != null && requestNote.length() > 200) {
+            throw new InvalidOrderStateException("요청사항은 200자를 초과할 수 없습니다.");
+        }
+        this.requestNote = requestNote;
     }
 }

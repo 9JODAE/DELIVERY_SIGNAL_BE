@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.order.presentation;
+package com.delivery_signal.eureka.client.order.presentation.mapper;
 
 import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
 import com.delivery_signal.eureka.client.order.application.command.OrderProductCommand;
@@ -6,7 +6,7 @@ import com.delivery_signal.eureka.client.order.presentation.dto.request.CreateOr
 
 import java.util.List;
 
-public class OrderMapper {
+public class CreateOrderMapper {
     public static CreateOrderCommand toCommand(CreateOrderRequestDto dto) {
         List<OrderProductCommand> products = dto.getOrderProducts().stream()
                 .map(p -> OrderProductCommand.builder()

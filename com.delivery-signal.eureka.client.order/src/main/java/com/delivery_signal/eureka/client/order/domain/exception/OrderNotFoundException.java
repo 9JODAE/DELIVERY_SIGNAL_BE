@@ -6,6 +6,6 @@ import java.util.UUID;
 
 public class OrderNotFoundException extends NotFoundException {
     public OrderNotFoundException(UUID id) {
-        super("주문이 존재하지 않습니다.", id);
+        super("[Order] 잘못된 요청입니다. :",id);
     }
 }

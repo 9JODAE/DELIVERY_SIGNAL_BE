@@ -75,5 +75,11 @@ public class OrderProduct{
         return p;
     }
 
+    public void updateQuantity(Integer transferQuantity) {
+        if (transferQuantity <= 0) {
+            throw new IllegalArgumentException("수량은 0보다 커야 합니다.");
+        }
+        this.transferQuantity = transferQuantity;
+    }
 }
 

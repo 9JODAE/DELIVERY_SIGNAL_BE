@@ -22,9 +22,4 @@ public class CreateOrderRequestDto {
     private String requestNote;
     private List<OrderSummaryResponseDto> orderProducts;
 
-    public CreateOrderRequestDto(UUID receiverCompanyId, String requestNote, List<OrderSummaryResponseDto> orderProducts) {
-        this.receiverCompanyId = receiverCompanyId;
-        this.requestNote = requestNote;
-        this.orderProducts = orderProducts;
-    }
 }

@@ -5,6 +5,7 @@ import com.delivery_signal.eureka.client.order.domain.repository.OrderRepository
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,5 +28,13 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
                 .innerJoin(order.orderProducts, orderProduct).fetchJoin()
                 .where(order.id.eq(orderId))
                 .fetchOne());
+    }
+
+    @Override
+    public List<Order> findAllWithOrderProducts() {
+        return queryFactory
+                .selectFrom(order)
+                .leftJoin(order.orderProducts, orderProduct).fetchJoin()
+                .fetch();
     }
 }

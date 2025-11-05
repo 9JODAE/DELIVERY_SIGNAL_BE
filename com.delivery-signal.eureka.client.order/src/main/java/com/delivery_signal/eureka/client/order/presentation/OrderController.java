@@ -1,10 +1,16 @@
 package com.delivery_signal.eureka.client.order.presentation;
 
 import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
+import com.delivery_signal.eureka.client.order.application.command.UpdateOrderCommand;
 import com.delivery_signal.eureka.client.order.application.service.OrderService;
 import com.delivery_signal.eureka.client.order.presentation.dto.request.CreateOrderRequestDto;
+import com.delivery_signal.eureka.client.order.presentation.dto.request.UpdateOrderRequestDto;
 import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderCreateResponseDto;
 import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderDetailResponseDto;
+import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderListResponseDto;
+import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderUpdateResponseDto;
+import com.delivery_signal.eureka.client.order.presentation.mapper.CreateOrderMapper;
+import com.delivery_signal.eureka.client.order.presentation.mapper.UpdateOrderMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -26,10 +33,10 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<OrderCreateResponseDto> createOrder(@RequestBody CreateOrderRequestDto requestDto) {
 
-        CreateOrderCommand command = OrderMapper.toCommand(requestDto);
+        CreateOrderCommand command = CreateOrderMapper.toCommand(requestDto);
 
-        OrderCreateResponseDto response = orderService.createOrderAndSendDelivery(command);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        OrderCreateResponseDto responseDto = orderService.createOrderAndSendDelivery(command);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     // 단건 조회 (Read one)
@@ -39,20 +46,23 @@ public class OrderController {
         OrderDetailResponseDto responseDto = orderService.getOrderById(orderId);
         return ResponseEntity.ok(responseDto);
     }
-//
-//    // 전체 조회 (Read all)
-//    @GetMapping
-//    public ResponseEntity<List<OrderResponseDto>> getAllOrders() {
-//        List<OrderResponseDto> responses = orderService.getAllOrders();
-//        return ResponseEntity.ok(responses);
-//    }
-//
-//    // 수정 (Update)
-//    @PutMapping("/{id}")
-//    public ResponseEntity<OrderResponseDto> updateOrder(@PathVariable Long id, @RequestBody CreateOrderRequestDto dto) {
-//        OrderResponseDto response = orderService.updateOrder(id, dto);
-//        return ResponseEntity.ok(response);
-//    }
+
+    // 전체 조회 (Read all)
+    @GetMapping
+    public ResponseEntity<List<OrderListResponseDto>> getAllOrders() {
+        List<OrderListResponseDto> responseDto = orderService.getAllOrders();
+        return ResponseEntity.ok(responseDto);
+    }
+
+
+    // 수정 (Update)
+    @PutMapping("/{orderId}")
+    public ResponseEntity<OrderUpdateResponseDto> updateOrder(@PathVariable UUID orderId, @RequestBody UpdateOrderRequestDto requestDto) {
+        UpdateOrderCommand command = UpdateOrderMapper.toCommand(orderId, requestDto);
+
+        OrderUpdateResponseDto responseDto = orderService.updateOrder(orderId, command);
+        return ResponseEntity.ok(responseDto);
+    }
 //
 //    // 삭제 (Delete)
 //    @DeleteMapping("/{id}")
