@@ -101,4 +101,8 @@ public class Order {
         }
         this.requestNote = requestNote;
     }
+
+    public void markAsDeleted(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
+    }
 }

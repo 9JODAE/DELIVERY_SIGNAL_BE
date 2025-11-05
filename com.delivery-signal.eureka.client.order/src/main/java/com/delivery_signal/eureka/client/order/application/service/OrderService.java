@@ -2,25 +2,25 @@ package com.delivery_signal.eureka.client.order.application.service;
 
 
 import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
+import com.delivery_signal.eureka.client.order.application.command.DeleteOrderCommand;
 import com.delivery_signal.eureka.client.order.application.command.OrderProductCommand;
 import com.delivery_signal.eureka.client.order.application.command.UpdateOrderCommand;
 import com.delivery_signal.eureka.client.order.application.mapper.OrderQueryMapper;
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
 import com.delivery_signal.eureka.client.order.domain.entity.OrderProduct;
 import com.delivery_signal.eureka.client.order.domain.exception.OrderNotFoundException;
+import com.delivery_signal.eureka.client.order.domain.repository.OrderProductRepository;
 import com.delivery_signal.eureka.client.order.domain.repository.OrderRepository;
 import com.delivery_signal.eureka.client.order.domain.service.OrderDomainService;
 import com.delivery_signal.eureka.client.order.domain.vo.ProductInfo;
 import com.delivery_signal.eureka.client.order.infrastructure.external.company.CompanyClient;
 import com.delivery_signal.eureka.client.order.infrastructure.external.hub.HubClient;
 import com.delivery_signal.eureka.client.order.infrastructure.external.product.ProductClient;
-import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderCreateResponseDto;
-import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderDetailResponseDto;
-import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderListResponseDto;
-import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderUpdateResponseDto;
+import com.delivery_signal.eureka.client.order.presentation.dto.response.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -31,22 +31,24 @@ import java.util.stream.Collectors;
 @Transactional
 public class OrderService {
 
-    private final ProductClient productClient;
     private final HubClient hubClient;
+    private final ProductClient productClient;
     private final CompanyClient companyClient;
-    private final OrderDomainService orderDomainService;
-    private final OrderRepository orderRepository;
-    private final OrderQueryMapper orderQueryMapper;
 
-    public OrderService(ProductClient productClient, HubClient hubClient, CompanyClient companyClient, OrderDomainService orderDomainService, OrderRepository orderRepository, OrderQueryMapper orderQueryMapper) {
+    private final OrderDomainService orderDomainService;
+    private final OrderQueryMapper orderQueryMapper;
+    private final OrderRepository orderRepository;
+    private final OrderProductRepository orderProductRepository;
+
+    public OrderService(ProductClient productClient, HubClient hubClient, CompanyClient companyClient, OrderDomainService orderDomainService, OrderRepository orderRepository, OrderQueryMapper orderQueryMapper, OrderProductRepository orderProductRepository) {
         this.productClient = productClient;
         this.hubClient = hubClient;
         this.companyClient = companyClient;
         this.orderDomainService = orderDomainService;
         this.orderRepository = orderRepository;
         this.orderQueryMapper = orderQueryMapper;
+        this.orderProductRepository = orderProductRepository;
     }
-
 
     public OrderCreateResponseDto createOrderAndSendDelivery(CreateOrderCommand command) {
 
@@ -85,7 +87,7 @@ public class OrderService {
 
         //배송 던져줄 이벤트 필요, 레디스 등.
 
-        return new OrderCreateResponseDto(order.getId(),order.getCreatedBy(), order.getCreatedAt(), "성공");
+        return new OrderCreateResponseDto(order.getId(), order.getCreatedBy(), order.getCreatedAt(), "성공");
     }
 
     @Transactional(readOnly = true)
@@ -107,7 +109,7 @@ public class OrderService {
 
     public OrderUpdateResponseDto updateOrder(UUID orderId, UpdateOrderCommand command) {
         Order order = orderRepository.findByOrderId(orderId)
-                .orElseThrow(()-> new OrderNotFoundException(orderId));
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         //요청사항 수정
         order.updateRequestNote(command.getRequestNote());
@@ -118,7 +120,7 @@ public class OrderService {
 //        }
 
         //수량 수정
-         order.getOrderProducts().stream()
+        order.getOrderProducts().stream()
                 .filter(op -> op.getProductId().equals(command.getProductId()))
                 .findFirst()
                 .orElseThrow(() -> new OrderNotFoundException(command.getProductId()))
@@ -128,4 +130,24 @@ public class OrderService {
 
     }
 
+    public OrderDeleteResponseDto deleteOrder(DeleteOrderCommand command) {
+        Order order = orderRepository.findByOrderId(command.getOrderId())
+                .orElseThrow(() -> new OrderNotFoundException(command.getOrderId()));
+
+        // 관련된 주문 상품 모두 가져오기
+        List<OrderProduct> orderProducts = orderProductRepository.findAllByOrderId(order.getId());
+
+        // 상품들 삭제시간 세팅
+        LocalDateTime now = LocalDateTime.now();
+        orderProducts.forEach(p -> p.markAsDeleted(now));
+
+        // 주문 본문 삭제시간 세팅
+        order.markAsDeleted(now);
+
+        // 저장
+        orderRepository.save(order);
+        orderProductRepository.saveAll(orderProducts);
+
+        return OrderDeleteResponseDto.toResponse(order.getId(), order.getDeletedBy(), now);
+    }
 }

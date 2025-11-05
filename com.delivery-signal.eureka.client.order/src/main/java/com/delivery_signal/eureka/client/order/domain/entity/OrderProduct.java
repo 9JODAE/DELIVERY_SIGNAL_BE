@@ -81,5 +81,9 @@ public class OrderProduct{
         }
         this.transferQuantity = transferQuantity;
     }
+
+    public void markAsDeleted(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
+    }
 }
 
