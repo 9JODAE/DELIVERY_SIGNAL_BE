@@ -1,5 +1,7 @@
 package com.delivery_signal.eureka.client.hub.presentation.controller;
 
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -7,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +22,7 @@ import com.delivery_signal.eureka.client.hub.application.command.SearchHubComman
 import com.delivery_signal.eureka.client.hub.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubCreateResponse;
+import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubDetailResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubResponse;
 
 import jakarta.validation.Valid;
@@ -61,6 +65,12 @@ public class HubController {
 		SearchHubCommand command = SearchHubCommand.of(name, address, page, size, sortBy, direction);
 		Page<HubResponse> response = hubService.searchHubs(command)
 			.map(HubResponse::from);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+	}
+
+	@GetMapping("/{hubId}")
+	public ResponseEntity<ApiResponse<HubDetailResponse>> getHub(@PathVariable UUID hubId) {
+		HubDetailResponse response = HubDetailResponse.from(hubService.getHub(hubId));
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
 	}
 }

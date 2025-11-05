@@ -1,5 +1,8 @@
 package com.delivery_signal.eureka.client.hub.domain.repository;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
 
 public interface HubRepository {
@@ -10,4 +13,6 @@ public interface HubRepository {
 	 * @return 저장된 허브
 	 */
 	Hub save(Hub hub);
+
+	Optional<Hub> findById(UUID hubId);
 }

@@ -35,4 +35,13 @@ public class HubService {
 		return hubQueryRepository.searchHubs(command)
 			.map(HubResult::from);
 	}
+
+	@Transactional(readOnly = true)
+	public HubResult getHub(UUID hubId) {
+		Hub hub = hubRepository.findById(hubId)
+			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
+		return HubResult.from(hub);
+	}
+
+
 }
