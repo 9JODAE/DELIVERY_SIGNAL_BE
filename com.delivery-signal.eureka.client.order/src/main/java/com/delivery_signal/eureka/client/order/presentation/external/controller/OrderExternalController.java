@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/external/orders")
+@RequestMapping("/v1/orders/external")
 @Tag(name = "외부 통신용 API", description = "외부 통신용 API")
 @RequiredArgsConstructor
 public class OrderExternalController {

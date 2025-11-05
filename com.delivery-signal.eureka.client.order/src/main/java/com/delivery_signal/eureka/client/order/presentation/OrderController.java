@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/v1/orders")
 @Tag(name = "Order API", description = "주문 관련 API")
 @RequiredArgsConstructor
 public class OrderController {
