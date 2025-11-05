@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.delivery-signal.eureka.client'
 version = '0.0.1-SNAPSHOT'
-description = 'Demo project for Spring Boot'
+description = 'delivery-service'
 
 java {
 	toolchain {

@@ -12,9 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
+    private final OrderServiceClient orderServiceClient;
 
-    public DeliveryService(DeliveryRepository deliveryRepository) {
+    public DeliveryService(DeliveryRepository deliveryRepository, OrderServiceClient orderServiceClient) {
         this.deliveryRepository = deliveryRepository;
+        this.orderServiceClient = orderServiceClient;
     }
 
     /**

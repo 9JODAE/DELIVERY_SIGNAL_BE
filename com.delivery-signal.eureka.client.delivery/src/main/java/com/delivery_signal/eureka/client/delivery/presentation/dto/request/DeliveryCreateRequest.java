@@ -18,3 +18,4 @@ public record DeliveryCreateRequest(
         Integer sequence, Long departureHubId, Long arrivalHubId,
         Double expectedDistance, Long expectedDuration) {}
 }
+
