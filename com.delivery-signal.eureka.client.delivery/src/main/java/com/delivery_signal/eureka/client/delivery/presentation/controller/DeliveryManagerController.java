@@ -56,14 +56,14 @@ public class DeliveryManagerController {
      * 배송 담당자 정보 조회 (단, 배송 담당자는 본인의 정보만 조회 가능)
      */
     @GetMapping("/{user-id}")
-    public ResponseEntity<DeliveryManagerResponse> getDeliveryManager(
+    public ResponseEntity<ApiResponse<DeliveryManagerResponse>> getDeliveryManager(
         @PathVariable("user-id") Long managerId,
         @RequestHeader(USER_ID_HEADER) Long currUserId,
         @RequestHeader(USER_ROLE_HEADER) String role
     ) {
-        DeliveryManagerResponse response = deliveryManagerService.getDeliveryManagerInfo(managerId,
+        ManagerQueryResponse response = deliveryManagerService.getDeliveryManagerInfo(managerId,
             currUserId, role);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(DeliveryManagerResponse.from(response)));
     }
 
     @PatchMapping("/{user-id}")

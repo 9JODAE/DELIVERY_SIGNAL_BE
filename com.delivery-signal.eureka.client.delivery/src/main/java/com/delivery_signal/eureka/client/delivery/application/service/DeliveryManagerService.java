@@ -43,11 +43,11 @@ public class DeliveryManagerService {
 
 
     @Transactional(readOnly = true)
-    public DeliveryManagerResponse getDeliveryManagerInfo(Long managerId, Long currUserId, String role) {
+    public ManagerQueryResponse getDeliveryManagerInfo(Long managerId, Long currUserId, String role) {
         // TODO: 권한 체크 -> 마스터 관리자가 아닌 경우, 본인의 ID와 요청 ID 비교
         // TODO: 배송 담당자는 본인의 정보만 조회 가능
         DeliveryManager manager = getDeliveryManagerByManagerId(managerId);
-        return DeliveryManagerResponse.from(manager);
+        return ManagerQueryResponse.from(manager);
     }
 
     @Transactional
@@ -72,7 +72,7 @@ public class DeliveryManagerService {
     }
 
     private DeliveryManager getDeliveryManagerByManagerId(Long managerId) {
-        return deliveryManagerRepository.findByManagerIdAndDeletedAtIsNull(managerId)
+        return deliveryManagerRepository.findActiveById(managerId)
             .orElseThrow(() -> new NoSuchElementException("배송 담당자 정보를 찾을 수 없습니다"));
     }
 }
