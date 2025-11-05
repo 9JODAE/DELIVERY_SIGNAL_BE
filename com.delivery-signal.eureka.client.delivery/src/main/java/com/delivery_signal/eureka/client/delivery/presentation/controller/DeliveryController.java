@@ -1,12 +1,9 @@
 package com.delivery_signal.eureka.client.delivery.presentation.controller;
 
 import com.delivery_signal.eureka.client.delivery.application.service.DeliveryService;
-import com.delivery_signal.eureka.client.delivery.domain.model.Delivery;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
-import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryManagerRegisterRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.response.DeliveryCreateResponse;
 import jakarta.validation.Valid;
-import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
