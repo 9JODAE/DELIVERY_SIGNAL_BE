@@ -4,7 +4,13 @@ import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
 
+import com.delivery_signal.eureka.client.hub.domain.vo.Address;
+import com.delivery_signal.eureka.client.hub.domain.vo.Coordinate;
+
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -16,7 +22,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "p_hubs")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Hub extends BaseEntity {
+public class Hub extends AggregateRootEntity<Hub> {
 
 	@Id
 	@UuidGenerator
@@ -25,29 +31,31 @@ public class Hub extends BaseEntity {
 	@Column(nullable = false)
 	private String name;
 
-	@Column(nullable = false)
-	private String address;
+	@Embedded
+	@AttributeOverrides({
+		@AttributeOverride(name = "value", column = @Column(name = "address"))
+	})
+	private Address address;
 
-	@Column(nullable = false)
-	private double latitude;
+	@Embedded
+	@AttributeOverrides({
+		@AttributeOverride(name = "latitude", column = @Column(name = "latitude")),
+		@AttributeOverride(name = "longitude", column = @Column(name = "longitude"))
+	})
+	private Coordinate coordinate;
 
-	@Column(nullable = false)
-	private double longitude;
-
-	public static Hub create(String name, String address, double latitude, double longitude) {
+	public static Hub create(String name, Address address, Coordinate coordinate) {
 		Hub hub = new Hub();
 		hub.name = name;
 		hub.address = address;
-		hub.latitude = latitude;
-		hub.longitude = longitude;
+		hub.coordinate = coordinate;
 		return hub;
 	}
 
-	public void update(String name, String address, double latitude, double longitude) {
+	public void update(String name,Address address, Coordinate coordinate) {
 		this.name = name;
 		this.address = address;
-		this.latitude = latitude;
-		this.longitude = longitude;
+		this.coordinate = coordinate;
 	}
 
 }
