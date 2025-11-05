@@ -1,11 +1,16 @@
 package com.delivery_signal.eureka.client.order.presentation.external.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+
 import java.time.Instant;
 
-// 응답 DTO
-public record OrderPongResponseDto(
-        String toOrder,
-        String status,
-        Instant timestamp
-) {
+@Getter
+@Builder
+@AllArgsConstructor
+public class OrderPongResponseDto {
+    String toOrder;
+    String status;
+    Instant timestamp;
 }
