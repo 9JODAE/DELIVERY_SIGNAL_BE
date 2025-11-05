@@ -34,7 +34,7 @@ public class OrderController {
 
     // 단건 조회 (Read one)
     @Operation(summary = "주문 조회", description = "주문 조회(개별)")
-    @GetMapping("/{id}")
+    @GetMapping("/{orderId}")
     public ResponseEntity<OrderDetailResponseDto> getOrderById(@PathVariable UUID orderId) {
         OrderDetailResponseDto responseDto = orderService.getOrderById(orderId);
         return ResponseEntity.ok(responseDto);

@@ -25,7 +25,7 @@ public class OrderExternalController {
     public ResponseEntity<OrderPongResponseDto> ping(
             @RequestParam(required = false) String from // optional
     ) {
-        log.info("Ping received from: {}", from != null ? from : "unknown");
+        log.info("Ping received : {}", from != null ? from : "unknown");
 
         OrderPongResponseDto response = new OrderPongResponseDto(
                 "order-service 통신이 제대로 되고 있습니다!",

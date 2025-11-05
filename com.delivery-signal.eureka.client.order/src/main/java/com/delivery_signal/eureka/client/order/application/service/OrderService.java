@@ -2,9 +2,9 @@ package com.delivery_signal.eureka.client.order.application.service;
 
 import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
 import com.delivery_signal.eureka.client.order.application.command.OrderProductCommand;
-import com.delivery_signal.eureka.client.order.application.event.OrderCreatedEvent;
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
 import com.delivery_signal.eureka.client.order.domain.entity.OrderProduct;
+import com.delivery_signal.eureka.client.order.domain.exception.OrderNotFoundException;
 import com.delivery_signal.eureka.client.order.domain.repository.OrderRepository;
 import com.delivery_signal.eureka.client.order.domain.service.OrderDomainService;
 import com.delivery_signal.eureka.client.order.domain.vo.*;
@@ -13,9 +13,9 @@ import com.delivery_signal.eureka.client.order.infrastructure.external.hub.HubCl
 import com.delivery_signal.eureka.client.order.infrastructure.external.product.ProductClient;
 import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderCreateResponseDto;
 import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderDetailResponseDto;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 import java.util.Map;
@@ -81,7 +81,12 @@ public class OrderService {
         return new OrderCreateResponseDto(order.getId(),order.getCreatedBy(), order.getCreatedAt(), "성공");
     }
 
+    @Transactional(readOnly = true)
     public OrderDetailResponseDto getOrderById(UUID orderId) {
-        return null;
+
+        Order order = orderRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        return OrderDetailResponseDto.from(order);
     }
 }
