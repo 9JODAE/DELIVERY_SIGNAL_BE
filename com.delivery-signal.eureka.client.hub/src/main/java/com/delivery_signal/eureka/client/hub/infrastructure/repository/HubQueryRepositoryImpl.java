@@ -95,7 +95,7 @@ public class HubQueryRepositoryImpl implements HubQueryRepository {
 
     private void addAddressCondition(BooleanBuilder builder, String address) {
         if (StringUtils.hasText(address)) {
-            builder.and(HUB.address.contains(address));
+            builder.and(HUB.address.value.contains(address));
         }
     }
 

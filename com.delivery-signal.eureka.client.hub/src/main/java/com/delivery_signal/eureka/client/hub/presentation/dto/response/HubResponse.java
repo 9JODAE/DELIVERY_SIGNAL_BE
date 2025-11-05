@@ -4,6 +4,9 @@ import java.util.UUID;
 
 import com.delivery_signal.eureka.client.hub.application.dto.HubResult;
 
+/**
+ * 허브 응답 DTO
+ */
 public record HubResponse(
 	UUID hubId,
 	String name,

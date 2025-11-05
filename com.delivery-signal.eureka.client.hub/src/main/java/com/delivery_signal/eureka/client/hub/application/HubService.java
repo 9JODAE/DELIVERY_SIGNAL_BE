@@ -13,7 +13,8 @@ import com.delivery_signal.eureka.client.hub.application.dto.HubResult;
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubQueryRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRepository;
-import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubCreateResponse;
+import com.delivery_signal.eureka.client.hub.domain.vo.Address;
+import com.delivery_signal.eureka.client.hub.domain.vo.Coordinate;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,8 +27,10 @@ public class HubService {
 	private final HubQueryRepository hubQueryRepository;
 
 	public UUID createHub(CreateHubCommand command) {
+		Address address = Address.of(command.address());
+		Coordinate coordinate = Coordinate.of(command.latitude(), command.longitude());
 		Hub savedHub = hubRepository.save(
-			Hub.create(command.name(), command.address(), command.latitude(), command.longitude()));
+			Hub.create(command.name(), address, coordinate));
 		return savedHub.getHubId();
 	}
 
@@ -39,21 +42,25 @@ public class HubService {
 
 	@Transactional(readOnly = true)
 	public HubResult getHub(UUID hubId) {
-		Hub hub = hubRepository.findById(hubId)
-			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
+		Hub hub = getHubOrThrow(hubId);
 		return HubResult.from(hub);
 	}
 
 	public HubResult updateHub(UpdateHubCommand command) {
-	    Hub hub = hubRepository.findById(command.hubId())
-	        .orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + command.hubId()));
-	    hub.update(command.name(), command.address(), command.latitude(), command.longitude());
+	    Hub hub = getHubOrThrow(command.hubId());
+		Address address = Address.of(command.address());
+		Coordinate coordinate = Coordinate.of(command.latitude(), command.longitude());
+	    hub.update(command.name(), address, coordinate);
 		return HubResult.from(hub);
 	}
 
 	public void deleteHub(UUID hubId) {
-		Hub hub = hubRepository.findById(hubId)
-			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
+		Hub hub = getHubOrThrow(hubId);
 		hub.softDelete(1L); // TODO 유저 서비스 개발 완료 시 변경
+	}
+
+	private Hub getHubOrThrow(UUID hubId) {
+		return hubRepository.findById(hubId)
+			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
 	}
 }

@@ -8,16 +8,16 @@ public record HubResult(
     UUID hubId,
     String name,
     String address,
-    Double latitude,
-    Double longitude
+    double latitude,
+    double longitude
 ) {
     public static HubResult from(Hub hub) {
         return new HubResult(
             hub.getHubId(),
             hub.getName(),
-            hub.getAddress(),
-            hub.getLatitude(),
-            hub.getLongitude()
+            hub.getAddress().getValue(),
+            hub.getCoordinate().getLatitude(),
+            hub.getCoordinate().getLongitude()
         );
     }
 }
