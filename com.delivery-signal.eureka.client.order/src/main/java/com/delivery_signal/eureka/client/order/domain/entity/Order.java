@@ -60,16 +60,16 @@ public class Order {
     private LocalDateTime createdAt;
 
     @CreatedBy
-    private UUID createdBy;
+    private Long createdBy;
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
     @LastModifiedBy
-    private UUID updatedBy;
+    private Long updatedBy;
 
     private LocalDateTime deletedAt;
-    private UUID deletedBy;
+    private Long deletedBy;
 
     public Order(String requestNote) {
         this.requestNote = requestNote;

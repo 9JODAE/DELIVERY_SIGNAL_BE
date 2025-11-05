@@ -24,7 +24,7 @@ public class OrderDetailResponseDto {
     BigDecimal totalPrice;
     String requestNote;
     LocalDateTime createdAt;
-    UUID createdBy;
+    Long createdBy;
     LocalDateTime updatedAt;
-    UUID updatedBy;
+    Long updatedBy;
 }

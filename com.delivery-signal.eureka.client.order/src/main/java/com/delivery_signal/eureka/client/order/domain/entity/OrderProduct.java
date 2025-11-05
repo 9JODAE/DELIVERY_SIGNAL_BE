@@ -47,16 +47,16 @@ public class OrderProduct{
     private LocalDateTime createdAt;
 
     @CreatedBy
-    private UUID createdBy;
+    private Long createdBy;
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
     @LastModifiedBy
-    private UUID updatedBy;
+    private Long updatedBy;
 
     private LocalDateTime deletedAt;
-    private UUID deletedBy;
+    private Long deletedBy;
 
     public static OrderProduct create(Order order, UUID productId, String name, BigDecimal price, Integer qty) {
         /**

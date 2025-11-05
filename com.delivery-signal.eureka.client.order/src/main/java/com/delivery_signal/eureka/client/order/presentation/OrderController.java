@@ -48,6 +48,7 @@ public class OrderController {
     }
 
     // 전체 조회 (Read all)
+    @Operation(summary = "주문 전체 조회", description = "관리자용")
     @GetMapping
     public ResponseEntity<List<OrderListResponseDto>> getAllOrders() {
         List<OrderListResponseDto> responseDto = orderService.getAllOrders();
@@ -56,6 +57,7 @@ public class OrderController {
 
 
     // 수정 (Update)
+    @Operation(summary = "주문 수정", description = "주문 수정")
     @PutMapping("/{orderId}")
     public ResponseEntity<OrderUpdateResponseDto> updateOrder(@PathVariable UUID orderId, @RequestBody UpdateOrderRequestDto requestDto) {
         UpdateOrderCommand command = UpdateOrderMapper.toCommand(orderId, requestDto);

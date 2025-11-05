@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.order.presentation.external.dto;
+package com.delivery_signal.eureka.client.order.presentation.external.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

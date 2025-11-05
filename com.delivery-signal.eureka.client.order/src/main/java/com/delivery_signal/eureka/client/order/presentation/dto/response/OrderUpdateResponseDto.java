@@ -13,11 +13,11 @@ import java.util.UUID;
 public class OrderUpdateResponseDto {
 
     private UUID productId;
-    private UUID updatedBy;
+    private Long updatedBy;
     private LocalDateTime updatedAt;
     private String message;
 
-    public static OrderUpdateResponseDto toResponse(UUID productId, UUID updatedBy) {
+    public static OrderUpdateResponseDto toResponse(UUID productId, Long updatedBy) {
         return OrderUpdateResponseDto.builder()
                 .productId(productId)
                 .updatedBy(updatedBy)

@@ -12,7 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class OrderCreateResponseDto {
     UUID orderId;
-    UUID createBy;
+    Long createBy;
     LocalDateTime createAt;
     String message;
 }

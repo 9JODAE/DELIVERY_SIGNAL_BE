@@ -22,9 +22,9 @@ public class OrderListResponseDto {
     BigDecimal totalPrice;
     String requestNote;
     LocalDateTime createdAt;
-    UUID createdBy;
+    Long createdBy;
     LocalDateTime updatedAt;
-    UUID updatedBy;
+    Long updatedBy;
     LocalDateTime deletedAt;
-    UUID deletedBy;
+    Long deletedBy;
 }
