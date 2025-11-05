@@ -5,6 +5,7 @@ import com.delivery_signal.eureka.client.order.application.service.OrderService;
 import com.delivery_signal.eureka.client.order.presentation.dto.request.CreateOrderRequestDto;
 import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderCreateResponseDto;
 import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderDetailResponseDto;
+import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderListResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -39,13 +41,13 @@ public class OrderController {
         OrderDetailResponseDto responseDto = orderService.getOrderById(orderId);
         return ResponseEntity.ok(responseDto);
     }
-//
-//    // 전체 조회 (Read all)
-//    @GetMapping
-//    public ResponseEntity<List<OrderResponseDto>> getAllOrders() {
-//        List<OrderResponseDto> responses = orderService.getAllOrders();
-//        return ResponseEntity.ok(responses);
-//    }
+
+    // 전체 조회 (Read all)
+    @GetMapping
+    public ResponseEntity<List<OrderListResponseDto>> getAllOrders() {
+        List<OrderListResponseDto> responses = orderService.getAllOrders();
+        return ResponseEntity.ok(responses);
+    }
 //
 //    // 수정 (Update)
 //    @PutMapping("/{id}")

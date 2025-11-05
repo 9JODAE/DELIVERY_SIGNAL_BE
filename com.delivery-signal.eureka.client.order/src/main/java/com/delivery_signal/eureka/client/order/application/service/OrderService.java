@@ -2,6 +2,7 @@ package com.delivery_signal.eureka.client.order.application.service;
 
 import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
 import com.delivery_signal.eureka.client.order.application.command.OrderProductCommand;
+import com.delivery_signal.eureka.client.order.application.mapper.OrderQueryMapper;
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
 import com.delivery_signal.eureka.client.order.domain.entity.OrderProduct;
 import com.delivery_signal.eureka.client.order.domain.exception.OrderNotFoundException;
@@ -13,6 +14,7 @@ import com.delivery_signal.eureka.client.order.infrastructure.external.hub.HubCl
 import com.delivery_signal.eureka.client.order.infrastructure.external.product.ProductClient;
 import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderCreateResponseDto;
 import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderDetailResponseDto;
+import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderListResponseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,13 +34,15 @@ public class OrderService {
     private final CompanyClient companyClient;
     private final OrderDomainService orderDomainService;
     private final OrderRepository orderRepository;
+    private final OrderQueryMapper orderQueryMapper;
 
-    public OrderService(ProductClient productClient, HubClient hubClient, CompanyClient companyClient, OrderDomainService orderDomainService, OrderRepository orderRepository) {
+    public OrderService(ProductClient productClient, HubClient hubClient, CompanyClient companyClient, OrderDomainService orderDomainService, OrderRepository orderRepository, OrderQueryMapper orderQueryMapper) {
         this.productClient = productClient;
         this.hubClient = hubClient;
         this.companyClient = companyClient;
         this.orderDomainService = orderDomainService;
         this.orderRepository = orderRepository;
+        this.orderQueryMapper = orderQueryMapper;
     }
 
     public OrderCreateResponseDto createOrderAndSendDelivery(CreateOrderCommand command) {
@@ -87,6 +91,13 @@ public class OrderService {
         Order order = orderRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
-        return OrderDetailResponseDto.from(order);
+        return orderQueryMapper.toDetailDto(order);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderListResponseDto> getAllOrders() {
+
+        List<Order> orders = orderRepository.findAllWithOrderProducts();
+        return orderQueryMapper.toListDtos(orders);
     }
 }
