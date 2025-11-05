@@ -5,7 +5,6 @@ import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryStatus;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRepository;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.response.DeliveryCreateResponse;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

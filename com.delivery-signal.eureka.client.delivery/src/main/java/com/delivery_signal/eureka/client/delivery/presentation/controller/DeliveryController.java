@@ -40,3 +40,25 @@ public class DeliveryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
+
+//FeignClient 인터페이스 정의: OrderService, HubRouteService 등 다른 서비스의 API를 호출하기 위한 FeignClient를 정의합니다.
+
+//
+
+//DTO 정의: 주문 생성 요청을 받아 배송 엔티티를 생성하고, 다른 서비스에 데이터를 요청할 때 사용할 DTO를 정의합니다.
+
+//
+
+//서비스 로직 구현:
+
+//
+
+//트랜잭션 관리: @Transactional을 사용하여 주문 생성, 배송 엔티티 생성, 재고 감소 등이 하나의 논리적 단위로 묶이도록 합니다. 실패 시 롤백.
+
+//
+
+//서비스 간 통신: FeignClient를 사용하여 주문 정보, 허브 경로 정보를 가져옵니다.
+
+//
+
+//배송 경로 생성: 주문 정보와 허브 경로 정보를 바탕으로 전체 배송 경로 (DeliveryRouteLog)를 최초에 모두 생성합니다. (경로 모델 선택에 따라 로직 복잡도 달라짐. 여기서는 P2P를 가정)
