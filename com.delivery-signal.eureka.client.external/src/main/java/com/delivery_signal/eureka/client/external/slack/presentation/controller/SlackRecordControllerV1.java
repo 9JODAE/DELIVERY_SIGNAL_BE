@@ -4,7 +4,9 @@ import com.delivery_signal.eureka.client.external.global.response.CommonApiRespo
 import com.delivery_signal.eureka.client.external.slack.application.service.SlackRecordServiceV1;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.CreateSlackRecordResponse;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.SlackRecordResponse;
+import com.delivery_signal.eureka.client.external.slack.presentation.dto.UpdateSlackRecordResponse;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.request.CreateSlackRecordRequest;
+import com.delivery_signal.eureka.client.external.slack.presentation.dto.request.UpdateSlackRecordRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +34,21 @@ public class SlackRecordControllerV1 {
     public ResponseEntity<CommonApiResponse<SlackRecordResponse>> getSlackRecord(
             @PathVariable UUID id
             ){
-        return null;
+        SlackRecordResponse response = SlackRecordResponse.from(
+                serviceV1.getSlackRecord(id)
+        );
+        return CommonApiResponse.ok(response);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<CommonApiResponse<UpdateSlackRecordResponse>> updateSlackRecord(
+            @PathVariable UUID id,
+            @RequestBody UpdateSlackRecordRequest request
+            ){
+        UpdateSlackRecordResponse response = UpdateSlackRecordResponse.from(
+                serviceV1.updateSlackRecord(id,request.toDto())
+        );
+        return CommonApiResponse.ok(response);
     }
 
 }

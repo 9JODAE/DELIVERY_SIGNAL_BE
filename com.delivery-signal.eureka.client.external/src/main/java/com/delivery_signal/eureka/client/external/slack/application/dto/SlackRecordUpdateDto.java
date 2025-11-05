@@ -9,23 +9,23 @@ import java.util.UUID;
 
 @Getter
 @Builder
-public class SlackRecordCreationDto {
+public class SlackRecordUpdateDto {
 
     private final UUID slackRecordId;
     private final String recipientId;
     private final String message;
-    private final LocalDateTime createdAt;
-    private final Long createdBy;
+    private final LocalDateTime updateAt;
+    private final Long updatedBy;
 
-    public static SlackRecordCreationDto from(
+    public static SlackRecordUpdateDto from(
             SlackRecord slackRecord
     ){
-        return SlackRecordCreationDto.builder()
+        return SlackRecordUpdateDto.builder()
                 .slackRecordId(slackRecord.getId())
                 .recipientId(slackRecord.getRecipientId())
                 .message(slackRecord.getMessage())
-                .createdAt(slackRecord.getCreatedAt())
-                .createdBy(slackRecord.getCreatedBy())
+                .updateAt(slackRecord.getUpdatedAt())
+                .updatedBy(slackRecord.getUpdatedBy())
                 .build();
     }
 }

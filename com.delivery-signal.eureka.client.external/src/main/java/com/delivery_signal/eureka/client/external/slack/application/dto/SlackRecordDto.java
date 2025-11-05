@@ -23,7 +23,7 @@ public class SlackRecordDto {
         return SlackRecordDto.builder()
                 .slackRecordId(slackRecord.getId())
                 .recipientId(slackRecord.getRecipientId())
-                .message(slackRecord.getMessages())
+                .message(slackRecord.getMessage())
                 .createdAt(slackRecord.getCreatedAt())
                 .createdBy(slackRecord.getCreatedBy())
                 .build();

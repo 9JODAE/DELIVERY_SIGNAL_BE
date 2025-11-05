@@ -23,14 +23,19 @@ public class SlackRecord extends BaseEntity {
     private String recipientId;
 
     @Column(nullable = false)
-    private String messages;
+    private String message;
 
 
     public static SlackRecord create(CreateSlackRecordRequestDto request){
         return SlackRecord.builder()
                 .recipientId(request.getRecipientId())
-                .messages(request.getMessage())
+                .message(request.getMessage())
                 .build();
+    }
+
+    public void update(String recipientId, String message){
+        this.recipientId = recipientId;
+        this.message = message;
     }
 
 }
