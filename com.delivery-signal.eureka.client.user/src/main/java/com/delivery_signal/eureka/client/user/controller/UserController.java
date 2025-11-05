@@ -1,10 +1,10 @@
-package com.delivery_signal.eureka.client.user.domain.controller;
+package com.delivery_signal.eureka.client.user.controller;
 
-import com.delivery_signal.eureka.client.user.domain.dto.request.UserCreateRequestDto;
-import com.delivery_signal.eureka.client.user.domain.dto.response.UserResponseDto;
-import com.delivery_signal.eureka.client.user.domain.entity.ApprovalStatus;
-import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
-import com.delivery_signal.eureka.client.user.domain.service.UserService;
+import com.delivery_signal.eureka.client.user.dto.request.UserCreateRequestDto;
+import com.delivery_signal.eureka.client.user.dto.response.UserResponseDto;
+import com.delivery_signal.eureka.client.user.entity.ApprovalStatus;
+import com.delivery_signal.eureka.client.user.entity.UserRole;
+import com.delivery_signal.eureka.client.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

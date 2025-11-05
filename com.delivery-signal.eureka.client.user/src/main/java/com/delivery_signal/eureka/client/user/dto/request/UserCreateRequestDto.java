@@ -1,6 +1,6 @@
-package com.delivery_signal.eureka.client.user.domain.dto.request;
+package com.delivery_signal.eureka.client.user.dto.request;
 
-import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
+import com.delivery_signal.eureka.client.user.entity.UserRole;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
