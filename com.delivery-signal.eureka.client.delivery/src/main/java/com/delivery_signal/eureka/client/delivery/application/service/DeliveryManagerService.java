@@ -1,12 +1,14 @@
 package com.delivery_signal.eureka.client.delivery.application.service;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryManagerCommand;
+import com.delivery_signal.eureka.client.delivery.application.command.UpdateManagerCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.ManagerQueryResponse;
 import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManager;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryManagerRepository;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryManagerRegisterRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.response.DeliveryManagerResponse;
 import java.util.NoSuchElementException;
+import org.apache.catalina.Manager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,13 +53,13 @@ public class DeliveryManagerService {
     }
 
     @Transactional
-    public DeliveryManagerResponse updateManager(Long managerId, DeliveryManagerRegisterRequest request, Long currUserId, String role) {
+    public ManagerQueryResponse updateManager(Long managerId, UpdateManagerCommand command, Long currUserId, String role) {
         DeliveryManager manager = getDeliveryManagerByManagerId(managerId);
         // TODO: 허브 유효성 검사 추가
 
         // 순번은 여기서 변경하지 않음. 순번 재배열은 별도 로직
-        manager.update(request.hubId(), request.slackId(), request.type());
-        return DeliveryManagerResponse.from(manager);
+        manager.update(command.hubId(), command.slackId(), command.type());
+        return ManagerQueryResponse.from(manager);
     }
 
     @Transactional

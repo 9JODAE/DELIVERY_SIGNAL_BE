@@ -1,6 +1,7 @@
 package com.delivery_signal.eureka.client.delivery.presentation.controller;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryManagerCommand;
+import com.delivery_signal.eureka.client.delivery.application.command.UpdateManagerCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.ManagerQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.service.DeliveryManagerService;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
@@ -35,6 +36,10 @@ public class DeliveryManagerController {
         this.deliveryManagerService = deliveryManagerService;
     }
 
+    /**
+     * 배송 생성
+     * order-service에서 통신하여 자동 생성
+     */
     @PostMapping
     public ResponseEntity<ApiResponse<DeliveryManagerResponse>> registerManager(
         @Valid @RequestBody DeliveryManagerRegisterRequest request,
@@ -66,16 +71,20 @@ public class DeliveryManagerController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(DeliveryManagerResponse.from(response)));
     }
 
+    /**
+     * 배송 담당자 수정
+     */
     @PatchMapping("/{user-id}")
-    public ResponseEntity<DeliveryManagerResponse> updateManager(
+    public ResponseEntity<ApiResponse<DeliveryManagerResponse>> updateManager(
         @PathVariable("user-id") Long managerId,
         @Valid @RequestBody DeliveryManagerRegisterRequest request,
         @RequestHeader(USER_ID_HEADER) Long currUserId,
         @RequestHeader(USER_ROLE_HEADER) String role
     ) {
-        DeliveryManagerResponse response = deliveryManagerService.updateManager(managerId, request,
+        UpdateManagerCommand command = UpdateManagerCommand.from(request);
+        ManagerQueryResponse response = deliveryManagerService.updateManager(managerId, command,
             currUserId, role);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(DeliveryManagerResponse.from(response)));
     }
 
 
