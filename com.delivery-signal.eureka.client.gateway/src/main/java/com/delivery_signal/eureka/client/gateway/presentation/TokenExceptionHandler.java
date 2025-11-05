@@ -10,6 +10,7 @@ import com.delivery_signal.eureka.client.gateway.domain.exception.ExpiredExcepti
 import com.delivery_signal.eureka.client.gateway.domain.exception.InvalidSignatureException;
 import com.delivery_signal.eureka.client.gateway.domain.exception.MalFormedException;
 import com.delivery_signal.eureka.client.gateway.domain.exception.UnsupportedException;
+import com.delivery_signal.eureka.client.gateway.presentation.dto.ApiResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TokenExceptionHandler {
 
 	@ExceptionHandler(EmptyClaimsException.class)
-	public ResponseEntity<ErrorResponse> handleEmptyClaimsException(EmptyClaimsException e) {
+	public ResponseEntity<ApiResponse<ErrorResponse>> handleEmptyClaimsException(EmptyClaimsException e) {
 		log.warn("토큰 클레임 오류 - 메시지: {}", e.getMessage());
 
 		ErrorResponse errorResponse = new ErrorResponse(
@@ -27,11 +28,11 @@ public class TokenExceptionHandler {
 			e.getErrorCode().getStatus()
 		);
 
-		return ResponseEntity.status(errorResponse.status()).body(errorResponse);
+		return ResponseEntity.status(errorResponse.status()).body(ApiResponse.error(errorResponse));
 	}
 
 	@ExceptionHandler(ExpiredException.class)
-	public ResponseEntity<ErrorResponse> handleExpiredException(ExpiredException e) {
+	public ResponseEntity<ApiResponse<ErrorResponse>> handleExpiredException(ExpiredException e) {
 		log.warn("토큰 만료 - 메시지: {}", e.getMessage());
 
 		ErrorResponse errorResponse = new ErrorResponse(
@@ -40,11 +41,11 @@ public class TokenExceptionHandler {
 			e.getErrorCode().getStatus()
 		);
 
-		return ResponseEntity.status(errorResponse.status()).body(errorResponse);
+		return ResponseEntity.status(errorResponse.status()).body(ApiResponse.error(errorResponse));
 	}
 
 	@ExceptionHandler(InvalidSignatureException.class)
-	public ResponseEntity<ErrorResponse> handleInvalidSignatureException(InvalidSignatureException e) {
+	public ResponseEntity<ApiResponse<ErrorResponse>> handleInvalidSignatureException(InvalidSignatureException e) {
 		log.warn("토큰 서명 오류 - 메시지: {}", e.getMessage());
 
 		ErrorResponse errorResponse = new ErrorResponse(
@@ -52,11 +53,11 @@ public class TokenExceptionHandler {
 			e.getErrorCode().getMessage(),
 			e.getErrorCode().getStatus()
 		);
-		return ResponseEntity.status(errorResponse.status()).body(errorResponse);
+		return ResponseEntity.status(errorResponse.status()).body(ApiResponse.error(errorResponse));
 	}
 
 	@ExceptionHandler(MalFormedException.class)
-	public ResponseEntity<ErrorResponse> handleMalFormedException(MalFormedException e) {
+	public ResponseEntity<ApiResponse<ErrorResponse>> handleMalFormedException(MalFormedException e) {
 		log.warn("토큰 형식 오류 - 메시지: {}", e.getMessage());
 
 		ErrorResponse errorResponse = new ErrorResponse(
@@ -64,11 +65,11 @@ public class TokenExceptionHandler {
 			e.getErrorCode().getMessage(),
 			e.getErrorCode().getStatus()
 		);
-		return ResponseEntity.status(errorResponse.status()).body(errorResponse);
+		return ResponseEntity.status(errorResponse.status()).body(ApiResponse.error(errorResponse));
 	}
 
 	@ExceptionHandler(UnsupportedException.class)
-	public ResponseEntity<ErrorResponse> handleUnsupportedException(UnsupportedException e) {
+	public ResponseEntity<ApiResponse<ErrorResponse>> handleUnsupportedException(UnsupportedException e) {
 		log.warn("지원하지 않는 토큰 - 메시지: {}", e.getMessage());
 
 		ErrorResponse errorResponse = new ErrorResponse(
@@ -76,7 +77,7 @@ public class TokenExceptionHandler {
 			e.getErrorCode().getMessage(),
 			e.getErrorCode().getStatus()
 		);
-		return ResponseEntity.status(errorResponse.status()).body(errorResponse);
+		return ResponseEntity.status(errorResponse.status()).body(ApiResponse.error(errorResponse));
 	}
 
 
