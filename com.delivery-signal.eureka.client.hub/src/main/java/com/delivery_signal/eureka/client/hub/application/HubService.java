@@ -50,4 +50,10 @@ public class HubService {
 	    hub.update(command.name(), command.address(), command.latitude(), command.longitude());
 		return HubResult.from(hub);
 	}
+
+	public void deleteHub(UUID hubId) {
+		Hub hub = hubRepository.findById(hubId)
+			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
+		hub.softDelete(1L); // TODO 유저 서비스 개발 완료 시 변경
+	}
 }

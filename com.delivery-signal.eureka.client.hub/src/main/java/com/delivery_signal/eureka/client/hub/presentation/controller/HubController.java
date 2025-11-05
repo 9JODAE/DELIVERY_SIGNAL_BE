@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -94,5 +95,15 @@ public class HubController {
 		UpdateHubCommand command = UpdateHubCommand.of(hubId, request);
 		HubDetailResponse response = HubDetailResponse.from(hubService.updateHub(command));
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+	}
+
+	/**
+	 * 허브 삭제
+	 * DELETE /v1/hubs/{hubId}
+	 */
+	@DeleteMapping("/{hubId}")
+	public ResponseEntity<ApiResponse<Void>> deleteHub(@PathVariable UUID hubId) {
+		hubService.deleteHub(hubId);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.success("허브가 삭제되었습니다."));
 	}
 }
