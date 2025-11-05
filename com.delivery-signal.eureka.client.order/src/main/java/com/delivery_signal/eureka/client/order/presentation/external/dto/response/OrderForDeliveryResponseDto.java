@@ -9,7 +9,7 @@ import java.util.UUID;
 @Getter
 @Builder
 @AllArgsConstructor
-public class OrderForDeliveryResponse {
+public class OrderForDeliveryResponseDto {
     UUID orderId;
     UUID supplierCompanyId;
     UUID receiverCompanyId;

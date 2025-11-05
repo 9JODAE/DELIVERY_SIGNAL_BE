@@ -3,7 +3,7 @@ package com.delivery_signal.eureka.client.order.presentation.external.controller
 
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
 import com.delivery_signal.eureka.client.order.domain.repository.OrderRepository;
-import com.delivery_signal.eureka.client.order.presentation.external.dto.response.OrderForDeliveryResponse;
+import com.delivery_signal.eureka.client.order.presentation.external.dto.response.OrderForDeliveryResponseDto;
 import com.delivery_signal.eureka.client.order.presentation.external.dto.response.OrderPongResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +19,10 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping("/v1/orders/external")
-@Tag(name = "외부 통신용 API", description = "외부 통신용 API")
+@Tag(name = "외부 통신용 API", description = """
+        게이트웨이 기준 호출 경로 예시:
+        - 주문 조회 (배송 서비스용): **GET /api/v1/orders/external/{order-id}**
+        """)
 @RequiredArgsConstructor
 public class OrderExternalController {
 
@@ -47,15 +50,22 @@ public class OrderExternalController {
         return ResponseEntity.status(HttpStatus.OK).body("Delivery Service 통신 성공");
     }
 
-    @Operation(summary = "배송 서비스용 주문 조회", description = "배송 서비스가 주문 정보를 가져갈 때 사용하는 API")
+    @Operation(
+            summary = "배송 서비스용 주문 조회",
+            description = """
+                    배송 서비스가 주문 정보를 가져갈 때 사용하는 API입니다.
+                    게이트웨이를 통해 접근할 경우 URL은 다음과 같습니다:
+                    
+                    **GET /api/v1/orders/external/{order-id}**
+                    """)
     @GetMapping("/{order-id}")
-    public ResponseEntity<OrderForDeliveryResponse> getOrderForDelivery(@PathVariable("order-id") UUID orderId) {
+    public ResponseEntity<OrderForDeliveryResponseDto> getOrderForDelivery(@PathVariable("order-id") UUID orderId) {
         log.info("배송 서비스에서 주문 조회 요청: {}", orderId);
 
         Order order = orderRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderId));
 
-        OrderForDeliveryResponse response = new OrderForDeliveryResponse(
+        OrderForDeliveryResponseDto response = new OrderForDeliveryResponseDto(
                 order.getId(),
                 order.getSupplierCompanyId(),
                 order.getReceiverCompanyId(),
