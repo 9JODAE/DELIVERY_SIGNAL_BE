@@ -31,7 +31,7 @@ public class SlackRecordServiceV1 {
      * @return {@link SlackRecordCreationDto}
      */
     public SlackRecordCreationDto createSlackRecord(CreateSlackRecordRequestDto requestDto) {
-        SlackRecord slackRecord = SlackRecord.create(requestDto);
+        SlackRecord slackRecord = SlackRecord.create(requestDto.getRecipientId(), requestDto.getMessage());
         repository.save(slackRecord);
         return SlackRecordCreationDto.from(slackRecord);
     }

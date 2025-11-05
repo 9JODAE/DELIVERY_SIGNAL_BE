@@ -1,7 +1,6 @@
 package com.delivery_signal.eureka.client.external.slack.domain.model;
 
 
-import com.delivery_signal.eureka.client.external.slack.application.dto.request.CreateSlackRecordRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
@@ -30,10 +29,10 @@ public class SlackRecord extends BaseEntity {
     private String message;
 
 
-    public static SlackRecord create(CreateSlackRecordRequestDto request){
+    public static SlackRecord create(String recipientId, String message){
         return SlackRecord.builder()
-                .recipientId(request.getRecipientId())
-                .message(request.getMessage())
+                .recipientId(recipientId)
+                .message(message)
                 .build();
     }
 
