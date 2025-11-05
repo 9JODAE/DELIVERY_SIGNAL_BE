@@ -3,6 +3,7 @@ package com.delivery_signal.eureka.client.external.slack.presentation.controller
 import com.delivery_signal.eureka.client.external.global.response.CommonApiResponse;
 import com.delivery_signal.eureka.client.external.slack.application.service.SlackRecordServiceV1;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.CreateSlackRecordResponse;
+import com.delivery_signal.eureka.client.external.slack.presentation.dto.DeleteSlackRecordResponse;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.SlackRecordResponse;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.UpdateSlackRecordResponse;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.request.CreateSlackRecordRequest;
@@ -50,5 +51,17 @@ public class SlackRecordControllerV1 {
         );
         return CommonApiResponse.ok(response);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<CommonApiResponse<DeleteSlackRecordResponse>> softDeleteSlackRecord(
+            @PathVariable UUID id
+            ){
+        DeleteSlackRecordResponse response = DeleteSlackRecordResponse.from(
+                serviceV1.softDeleteSlackRecord(id)
+        );
+        return CommonApiResponse.ok(response);
+    }
+
+
 
 }

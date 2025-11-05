@@ -4,6 +4,8 @@ package com.delivery_signal.eureka.client.external.slack.domain.model;
 import com.delivery_signal.eureka.client.external.slack.application.dto.request.CreateSlackRecordRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.UUID;
 
@@ -12,7 +14,9 @@ import java.util.UUID;
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 @AllArgsConstructor
+@SQLRestriction("deleted_at IS NULL")
 public class SlackRecord extends BaseEntity {
 
     @Id
@@ -36,6 +40,13 @@ public class SlackRecord extends BaseEntity {
     public void update(String recipientId, String message){
         this.recipientId = recipientId;
         this.message = message;
+    }
+
+    public void softDelete(){
+        if (this.isDeleted()) {
+            return;
+        }
+        this.delete();
     }
 
 }
