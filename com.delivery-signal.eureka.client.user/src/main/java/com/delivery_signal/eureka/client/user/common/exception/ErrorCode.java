@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.common.exception;
+package com.delivery_signal.eureka.client.user.common.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

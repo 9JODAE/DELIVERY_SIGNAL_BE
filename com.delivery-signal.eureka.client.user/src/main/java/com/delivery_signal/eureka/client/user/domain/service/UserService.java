@@ -1,12 +1,13 @@
-package com.delivery_signal.eureka.client.user.service;
+package com.delivery_signal.eureka.client.user.domain.service;
 
-import com.delivery_signal.eureka.client.common.exception.ErrorCode;
-import com.delivery_signal.eureka.client.common.exception.ServiceException;
-import com.delivery_signal.eureka.client.user.dto.request.UserCreateRequestDto;
-import com.delivery_signal.eureka.client.user.dto.response.UserResponseDto;
-import com.delivery_signal.eureka.client.user.entity.User;
-import com.delivery_signal.eureka.client.user.mapper.UserMapper;
-import com.delivery_signal.eureka.client.user.repository.UserRepository;
+import com.delivery_signal.eureka.client.user.OrderFeignClient;
+import com.delivery_signal.eureka.client.user.common.exception.ErrorCode;
+import com.delivery_signal.eureka.client.user.common.exception.ServiceException;
+import com.delivery_signal.eureka.client.user.domain.dto.request.UserCreateRequestDto;
+import com.delivery_signal.eureka.client.user.domain.dto.response.UserResponseDto;
+import com.delivery_signal.eureka.client.user.domain.entity.User;
+import com.delivery_signal.eureka.client.user.domain.mapper.UserMapper;
+import com.delivery_signal.eureka.client.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,18 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final OrderFeignClient orderFeignClient;
+
+    public String getOrderInfo() {
+        return orderFeignClient.getOrder();
+    }
+
+    public String callOrder() {
+
+        return "User -> Order 호출 성공!" + getOrderInfo();
+    }
+
+
 
     public UserResponseDto createUser(UserCreateRequestDto requestDto) {
         User user = userMapper.toEntity(requestDto);

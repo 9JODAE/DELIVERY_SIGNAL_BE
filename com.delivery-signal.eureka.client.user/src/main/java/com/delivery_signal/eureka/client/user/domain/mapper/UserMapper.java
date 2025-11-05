@@ -1,8 +1,8 @@
-package com.delivery_signal.eureka.client.user.mapper;
+package com.delivery_signal.eureka.client.user.domain.mapper;
 
-import com.delivery_signal.eureka.client.user.dto.request.UserCreateRequestDto;
-import com.delivery_signal.eureka.client.user.dto.response.UserResponseDto;
-import com.delivery_signal.eureka.client.user.entity.User;
+import com.delivery_signal.eureka.client.user.domain.dto.request.UserCreateRequestDto;
+import com.delivery_signal.eureka.client.user.domain.dto.response.UserResponseDto;
+import com.delivery_signal.eureka.client.user.domain.entity.User;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -1,12 +1,8 @@
-package com.delivery_signal.eureka.client.user.entity;
-import com.delivery_signal.eureka.client.common.entity.BaseEntity;
+package com.delivery_signal.eureka.client.user.domain.entity;
+import com.delivery_signal.eureka.client.user.common.entity.BaseEntity;
 import jakarta.persistence.*;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
 @AllArgsConstructor

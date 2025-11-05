@@ -5,8 +5,8 @@ services:
     image: postgres:17.6
     container_name: postgres-docker-delivery-signal
     environment:
-      POSTGRES_DB: delivery-signal-user-db
-      POSTGRES_USER: user
+      POSTGRES_DB: delivery-signal-domain-db
+      POSTGRES_USER: domain
       POSTGRES_PASSWORD: user1234
     ports:
       - "5432:5432"

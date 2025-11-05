@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.common.exception;
+package com.delivery_signal.eureka.client.user.common.exception;
 
 public class ServiceException extends RuntimeException {
 
