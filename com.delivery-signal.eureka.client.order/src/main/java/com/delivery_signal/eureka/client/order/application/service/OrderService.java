@@ -14,6 +14,7 @@ import com.delivery_signal.eureka.client.order.infrastructure.external.product.P
 import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderCreateResponseDto;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 
 @Service
+@Transactional
 public class OrderService {
 
     private final ProductClient productClient;
@@ -29,15 +31,13 @@ public class OrderService {
     private final CompanyClient companyClient;
     private final OrderDomainService orderDomainService;
     private final OrderRepository orderRepository;
-    private final ApplicationEventPublisher eventPublisher;
 
-    public OrderService(ProductClient productClient, HubClient hubClient, CompanyClient companyClient, OrderDomainService orderDomainService, OrderRepository orderRepository, ApplicationEventPublisher eventPublisher) {
+    public OrderService(ProductClient productClient, HubClient hubClient, CompanyClient companyClient, OrderDomainService orderDomainService, OrderRepository orderRepository) {
         this.productClient = productClient;
         this.hubClient = hubClient;
         this.companyClient = companyClient;
         this.orderDomainService = orderDomainService;
         this.orderRepository = orderRepository;
-        this.eventPublisher = eventPublisher;
     }
 
     public OrderCreateResponseDto createOrderAndSendDelivery(CreateOrderCommand command) {
@@ -75,13 +75,7 @@ public class OrderService {
 
         orderRepository.save(order);
 
-        eventPublisher.publishEvent(new OrderCreatedEvent(
-                order.getId(),
-                order.getSupplierCompanyId(),
-                order.getReceiverCompanyId(),
-                order.getOrderProducts(),
-                order.getDeliveryId()
-        ));
+        //배송 던져줄 이벤트 필요, 레디스 등.
 
         return new OrderCreateResponseDto(order.getId(),order.getCreatedBy(), order.getCreatedAt(), "성공");
     }
