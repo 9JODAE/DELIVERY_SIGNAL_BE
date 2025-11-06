@@ -11,9 +11,14 @@ import com.delivery_signal.eureka.client.external.slack.domain.repository.SlackR
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -42,10 +47,15 @@ public class SlackRecordServiceV1 {
      * @return {@link SlackRecordDto}
      */
     public SlackRecordDto getSlackRecord(UUID slackRecordId) {
-        SlackRecord slackRecord = repository.findById(slackRecordId).orElseThrow(
-                () -> new NoSuchElementException("Slack Record not found with ID: " + slackRecordId)
-        );
+        SlackRecord slackRecord = getRecord(slackRecordId);
         return SlackRecordDto.from(slackRecord);
+    }
+
+
+    public Page<SlackRecordDto> getSlackRecordList(int page, int size, String sortBy, boolean isAsc){
+        Pageable pageable = createPageable(page, size, sortBy, isAsc);
+        Page<SlackRecord> slackRecordPage = repository.findAll(pageable);
+        return slackRecordPage.map(SlackRecordDto::from);
     }
 
     /**
@@ -56,9 +66,7 @@ public class SlackRecordServiceV1 {
      */
     @Transactional
     public SlackRecordUpdateDto updateSlackRecord(UUID slackRecordId, UpdateSlackRecordRequestDto recordRequestDto) {
-        SlackRecord slackRecord = repository.findById(slackRecordId).orElseThrow(
-                () -> new NoSuchElementException("Slack Record not found with ID: " + slackRecordId)
-        );
+        SlackRecord slackRecord = getRecord(slackRecordId);
         slackRecord.update(recordRequestDto.getRecipientId(), recordRequestDto.getMessage());
         em.flush();
         em.refresh(slackRecord);
@@ -72,10 +80,22 @@ public class SlackRecordServiceV1 {
      */
     @Transactional
     public SlackRecordDeleteDto softDeleteSlackRecord(UUID slackRecordId) {
-        SlackRecord slackRecord = repository.findById(slackRecordId).orElseThrow(
-                () -> new NoSuchElementException("Slack Record not found with ID: " + slackRecordId)
-        );
+        SlackRecord slackRecord = getRecord(slackRecordId);
         slackRecord.softDelete();
         return SlackRecordDeleteDto.from(slackRecord);
+    }
+
+
+    private SlackRecord getRecord(UUID slackRecordId) {
+        return repository.findById(slackRecordId).orElseThrow(
+                () -> new NoSuchElementException("Slack Record not found with ID: " + slackRecordId)
+        );
+    }
+
+    private Pageable createPageable(int page, int size, String sortBy, boolean isAsc) {
+
+        int validatedSize = List.of(10, 30, 50).contains(size) ? size : 10;
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        return PageRequest.of(page - 1, validatedSize, Sort.by(direction, sortBy));
     }
 }
