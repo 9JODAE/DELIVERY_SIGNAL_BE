@@ -41,7 +41,6 @@ public class UserService {
 
     @Transactional
     public String callOrder() {
-
         return "User -> Order 호출 성공!" + getOrderInfo();
     }
 
@@ -59,6 +58,11 @@ public class UserService {
     @Transactional
     public UserResponseDto getUser(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+
+        if (user.isDeleted()) {
+            return null;
+        }
+
         return userMapper.from(user);
     }
 
@@ -99,6 +103,11 @@ public class UserService {
     public UserResponseDto updateApprovalStatus(Long userId, UserUpdateApprovalStatusRequestDto requestDto) {
 
         User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+
+        if (user.isDeleted()) {
+            return null;
+        }
+
         ApprovalStatus status = requestDto.approvalStatus();
         user.updateApprovalStatus(status);
 
@@ -109,6 +118,10 @@ public class UserService {
     @Transactional
     public UserResponseDto updateUser(Long userId, UserUpdateRequestDto requestDto) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+
+        if (user.isDeleted()) {
+            return null;
+        }
 
         if (requestDto.username() != null && !requestDto.username().isBlank()) {
             user.updateUsername(requestDto.username());
@@ -159,10 +172,12 @@ public class UserService {
     
     private void addIfNotPresented(User user,Set<Long> presented, List<UserResponseDto> responseDtos) {
 
-        if (presented.add(user.getUserId())) {  // 중복 여부 체크
-            responseDtos.add(userMapper.from(user));  // 중복 없을 때만 DTO 변환
+        if (!user.isDeleted()) {
+            if (presented.add(user.getUserId())) {
+                responseDtos.add(userMapper.from(user));
+            }
         }
-    }
 
+    }
 
 }

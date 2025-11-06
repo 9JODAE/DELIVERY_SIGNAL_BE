@@ -1,0 +1,19 @@
+spring:
+  #  web:
+  #    mvc:
+  #      pathmatch:
+  #        matched-path-prefix: /v1
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/delivery_signal
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true

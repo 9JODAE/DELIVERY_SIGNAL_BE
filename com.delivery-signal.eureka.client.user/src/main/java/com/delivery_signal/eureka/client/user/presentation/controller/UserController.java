@@ -51,7 +51,12 @@ public class UserController {
         /*
         UserResponseDto responseDto = userService.getUser(userId);
 
+        if (responseDto == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.notFound("사용자가 이미 삭제되었습니다"));
+        }
+
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
+
 
         */
 
@@ -154,7 +159,12 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponseDto>> permitUser(@RequestBody UserUpdateApprovalStatusRequestDto requestDto, @PathVariable("userId") Long userId) {
         UserResponseDto responseDto = userService.updateApprovalStatus(userId, requestDto);
 
+        if (responseDto == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.notFound("사용자가 이미 삭제되었습니다"));
+        }
+
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
+
     }
 
 
@@ -163,6 +173,10 @@ public class UserController {
     @Operation(summary="MASTER의 사용자 정보 수정", description="사용자의 정보를 수정합니다")
     public ResponseEntity<ApiResponse<UserResponseDto>> modifyUserInfo (@RequestBody UserUpdateRequestDto requestDto, @PathVariable("userId") Long userId) {
         UserResponseDto responseDto = userService.updateUser(userId, requestDto);
+
+        if (responseDto == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.notFound("사용자가 이미 삭제되었습니다"));
+        }
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
     }
@@ -173,10 +187,10 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponseDto>> deleteUser (@PathVariable("userId") Long userId) {
         Boolean deleted = userService.softDeleteUser(userId);
 
-        if (deleted) {
-            return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success());
+        if (!deleted) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.notFound("사용자가 이미 삭제되었습니다"));
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.notFound("사용자가 이미 삭제되었습니다"));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success());
     }
 
 
