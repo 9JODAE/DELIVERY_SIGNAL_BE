@@ -1,13 +1,8 @@
 package com.delivery_signal.eureka.client.order.domain.service;
 
-import com.delivery_signal.eureka.client.order.application.event.OrderCreatedEvent;
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
 import com.delivery_signal.eureka.client.order.domain.entity.OrderProduct;
-import com.delivery_signal.eureka.client.order.domain.vo.ProductInfo;
-import com.delivery_signal.eureka.client.order.domain.vo.ReceiverCompanyInfo;
-import com.delivery_signal.eureka.client.order.domain.vo.SupplierCompanyInfo;
 import lombok.RequiredArgsConstructor;
-import org.apache.hc.core5.reactor.Command;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

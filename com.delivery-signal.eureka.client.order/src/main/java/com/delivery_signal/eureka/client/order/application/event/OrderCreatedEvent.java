@@ -1,6 +1,5 @@
 package com.delivery_signal.eureka.client.order.application.event;
 
-
 import com.delivery_signal.eureka.client.order.domain.entity.OrderProduct;
 import lombok.Getter;
 

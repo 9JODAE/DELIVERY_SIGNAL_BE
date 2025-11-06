@@ -1,7 +1,6 @@
 package com.delivery_signal.eureka.client.order.domain.exception;
 
 import com.delivery_signal.eureka.client.order.common.NotFoundException;
-
 import java.util.UUID;
 
 public class OrderNotFoundException extends NotFoundException {

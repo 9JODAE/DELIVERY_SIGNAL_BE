@@ -1,6 +1,5 @@
-package com.delivery_signal.eureka.client.order.presentation.dto.response;
+package com.delivery_signal.eureka.client.order.application.dto.response;
 
-import com.delivery_signal.eureka.client.order.application.dto.response.OrderQueryResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

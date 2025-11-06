@@ -1,70 +1,60 @@
 package com.delivery_signal.eureka.client.order.application.service;
 
-
-import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
-import com.delivery_signal.eureka.client.order.application.command.DeleteOrderCommand;
-import com.delivery_signal.eureka.client.order.application.command.OrderProductCommand;
-import com.delivery_signal.eureka.client.order.application.command.UpdateOrderCommand;
+import com.delivery_signal.eureka.client.order.application.command.*;
+import com.delivery_signal.eureka.client.order.application.dto.response.*;
 import com.delivery_signal.eureka.client.order.application.mapper.OrderQueryMapper;
-import com.delivery_signal.eureka.client.order.domain.entity.Order;
-import com.delivery_signal.eureka.client.order.domain.entity.OrderProduct;
+import com.delivery_signal.eureka.client.order.application.service.external.*;
+import com.delivery_signal.eureka.client.order.domain.entity.*;
 import com.delivery_signal.eureka.client.order.domain.exception.OrderNotFoundException;
-import com.delivery_signal.eureka.client.order.domain.repository.OrderProductRepository;
-import com.delivery_signal.eureka.client.order.domain.repository.OrderRepository;
+import com.delivery_signal.eureka.client.order.domain.repository.*;
 import com.delivery_signal.eureka.client.order.domain.service.OrderDomainService;
 import com.delivery_signal.eureka.client.order.domain.vo.ProductInfo;
-import com.delivery_signal.eureka.client.order.infrastructure.external.company.CompanyClient;
-import com.delivery_signal.eureka.client.order.infrastructure.external.hub.HubClient;
-import com.delivery_signal.eureka.client.order.infrastructure.external.product.ProductClient;
-import com.delivery_signal.eureka.client.order.presentation.dto.response.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
-
 
 @Service
 @Transactional
 public class OrderService {
 
-    private final HubClient hubClient;
-    private final ProductClient productClient;
-    private final CompanyClient companyClient;
+    private final ProductService productService;
+    private final CompanyService companyService;
+    private final HubService hubService;
 
     private final OrderDomainService orderDomainService;
     private final OrderQueryMapper orderQueryMapper;
     private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
 
-    public OrderService(ProductClient productClient, HubClient hubClient, CompanyClient companyClient, OrderDomainService orderDomainService, OrderRepository orderRepository, OrderQueryMapper orderQueryMapper, OrderProductRepository orderProductRepository) {
-        this.productClient = productClient;
-        this.hubClient = hubClient;
-        this.companyClient = companyClient;
+    public OrderService(ProductService productService,
+                        CompanyService companyService,
+                        HubService hubService,
+                        OrderDomainService orderDomainService,
+                        OrderQueryMapper orderQueryMapper,
+                        OrderRepository orderRepository,
+                        OrderProductRepository orderProductRepository) {
+        this.productService = productService;
+        this.companyService = companyService;
+        this.hubService = hubService;
         this.orderDomainService = orderDomainService;
-        this.orderRepository = orderRepository;
         this.orderQueryMapper = orderQueryMapper;
+        this.orderRepository = orderRepository;
         this.orderProductRepository = orderProductRepository;
     }
 
     public OrderCreateResponseDto createOrderAndSendDelivery(CreateOrderCommand command) {
-
-        //  Command에서 UUID 리스트 추출
         List<UUID> productIds = command.getProducts().stream()
                 .map(OrderProductCommand::getProductId)
                 .toList();
 
-        // 외부 서비스 호출 (Application layer 책임)
-        List<ProductInfo> productInfos = productClient.getProducts(productIds);
+        List<ProductInfo> productInfos = productService.getProducts(productIds);
 
-        // 수량 매핑
         Map<UUID, Integer> quantityMap = command.getProducts().stream()
                 .collect(Collectors.toMap(OrderProductCommand::getProductId, OrderProductCommand::getQuantity));
 
-        //ProductInfo + Quantity → OrderProduct 도메인 변환
         List<OrderProduct> orderProducts = productInfos.stream()
                 .map(info -> OrderProduct.builder()
                         .productId(info.getProductId())
@@ -74,52 +64,37 @@ public class OrderService {
                         .build())
                 .toList();
 
-//        SupplierCompanyInfo supplier = companyClient.getSupplierCompany(command.getSupplierCompanyId());
-//        ReceiverCompanyInfo receiver = companyClient.getReceiverCompany(command.getReceiverCompanyId());
-        UUID supplier = companyClient.getSupplierCompany(command.getSupplierCompanyId());
-        UUID receiver = companyClient.getReceiverCompany(command.getReceiverCompanyId());
+        UUID supplier = companyService.getSupplierCompany(command.getSupplierCompanyId());
+        UUID receiver = companyService.getReceiverCompany(command.getReceiverCompanyId());
 
-        UUID deliveryId = UUID.randomUUID(); // 주문 시점에 미리 배송 UUID 생성
+        UUID deliveryId = UUID.randomUUID();
         Order order = orderDomainService.createOrder(
                 supplier, receiver, command.getRequestNote(), orderProducts, deliveryId);
 
         orderRepository.save(order);
-
-        //배송 던져줄 이벤트 필요, 레디스 등.
 
         return new OrderCreateResponseDto(order.getId(), order.getCreatedBy(), order.getCreatedAt(), "성공");
     }
 
     @Transactional(readOnly = true)
     public OrderDetailResponseDto getOrderById(UUID orderId) {
-
         Order order = orderRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
-
-        return orderQueryMapper.toDetailDto(order);
+        return orderQueryMapper.toDetailDto(order); // Application Layer 내 Mapper 사용
     }
 
     @Transactional(readOnly = true)
     public List<OrderListResponseDto> getAllOrders() {
-
         List<Order> orders = orderRepository.findAllWithOrderProducts();
         return orderQueryMapper.toListDtos(orders);
     }
-
 
     public OrderUpdateResponseDto updateOrder(UUID orderId, UpdateOrderCommand command) {
         Order order = orderRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
-        //요청사항 수정
         order.updateRequestNote(command.getRequestNote());
 
-//        boolean available = hubClient.checkStockAvailability(order.getProductId(), command.getTransferQuantity());
-//        if (!available) {
-//            throw new InvalidOrderStateException("재고를 수정할 수 없습니다.(재고부족)");
-//        }
-
-        //수량 수정
         order.getOrderProducts().stream()
                 .filter(op -> op.getProductId().equals(command.getProductId()))
                 .findFirst()
@@ -127,24 +102,18 @@ public class OrderService {
                 .updateQuantity(command.getTransferQuantity());
 
         return OrderUpdateResponseDto.toResponse(order.getId(), order.getUpdatedBy());
-
     }
 
     public OrderDeleteResponseDto deleteOrder(DeleteOrderCommand command) {
         Order order = orderRepository.findByOrderId(command.getOrderId())
                 .orElseThrow(() -> new OrderNotFoundException(command.getOrderId()));
 
-        // 관련된 주문 상품 모두 가져오기
         List<OrderProduct> orderProducts = orderProductRepository.findAllByOrderId(order.getId());
-
-        // 상품들 삭제시간 세팅
         LocalDateTime now = LocalDateTime.now();
-        orderProducts.forEach(p -> p.markAsDeleted(now));
 
-        // 주문 본문 삭제시간 세팅
+        orderProducts.forEach(p -> p.markAsDeleted(now));
         order.markAsDeleted(now);
 
-        // 저장
         orderRepository.save(order);
         orderProductRepository.saveAll(orderProducts);
 

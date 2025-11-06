@@ -1,7 +1,6 @@
 package com.delivery_signal.eureka.client.order.domain.entity;
 
 import com.delivery_signal.eureka.client.order.domain.exception.InvalidOrderStateException;
-import com.delivery_signal.eureka.client.order.presentation.dto.response.OrderUpdateResponseDto;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;

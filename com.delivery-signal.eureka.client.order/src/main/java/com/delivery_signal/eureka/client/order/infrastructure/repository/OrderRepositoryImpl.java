@@ -4,11 +4,9 @@ import com.delivery_signal.eureka.client.order.domain.entity.Order;
 import com.delivery_signal.eureka.client.order.domain.repository.OrderRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import static com.delivery_signal.eureka.client.order.domain.entity.QOrder.order;
 import static com.delivery_signal.eureka.client.order.domain.entity.QOrderProduct.orderProduct;
 

@@ -1,10 +1,8 @@
 package com.delivery_signal.eureka.client.order.presentation.external.controller;
 
-
-import com.delivery_signal.eureka.client.order.domain.entity.Order;
-import com.delivery_signal.eureka.client.order.domain.repository.OrderRepository;
 import com.delivery_signal.eureka.client.order.presentation.external.dto.response.OrderForDeliveryResponseDto;
 import com.delivery_signal.eureka.client.order.presentation.external.dto.response.OrderPongResponseDto;
+import com.delivery_signal.eureka.client.order.presentation.external.service.ExternalOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderExternalController {
 
-    private final OrderRepository orderRepository;
+    private final ExternalOrderService externalOrderService;
 
     @Operation(summary = "헬스체크", description = "통신 체크")
     @GetMapping("/ping")
@@ -53,25 +51,16 @@ public class OrderExternalController {
     @Operation(
             summary = "배송 서비스용 주문 조회",
             description = """
-                    배송 서비스가 주문 정보를 가져갈 때 사용하는 API입니다.
-                    게이트웨이를 통해 접근할 경우 URL은 다음과 같습니다:
-                    
-                    **GET /api/v1/orders/external/{order-id}**
-                    """)
+                배송 서비스가 주문 정보를 가져갈 때 사용하는 API입니다.
+                게이트웨이를 통해 접근할 경우 URL은 다음과 같습니다:
+
+                **GET /api/v1/orders/external/{order-id}**
+                """)
     @GetMapping("/{order-id}")
     public ResponseEntity<OrderForDeliveryResponseDto> getOrderForDelivery(@PathVariable("order-id") UUID orderId) {
         log.info("배송 서비스에서 주문 조회 요청: {}", orderId);
 
-        Order order = orderRepository.findByOrderId(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderId));
-
-        OrderForDeliveryResponseDto response = new OrderForDeliveryResponseDto(
-                order.getId(),
-                order.getSupplierCompanyId(),
-                order.getReceiverCompanyId(),
-                order.getDeliveryId(),
-                order.getRequestNote()
-        );
+        OrderForDeliveryResponseDto response = externalOrderService.getOrderForDelivery(orderId); // Application Layer 호출
 
         return ResponseEntity.ok(response);
     }
