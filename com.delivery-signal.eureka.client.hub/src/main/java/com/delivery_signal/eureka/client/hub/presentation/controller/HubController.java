@@ -18,12 +18,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.delivery_signal.eureka.client.hub.application.HubService;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubCommand;
+import com.delivery_signal.eureka.client.hub.application.command.CreateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
 import com.delivery_signal.eureka.client.hub.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRequest;
+import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRouteRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateHubRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHubResponse;
+import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHubRouteResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubDetailResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubResponse;
 
@@ -112,5 +115,24 @@ public class HubController {
 	public ResponseEntity<ApiResponse<Void>> deleteHub(@PathVariable UUID hubId) {
 		hubService.deleteHub(hubId);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.success("허브가 삭제되었습니다."));
+	}
+
+	/**
+	 * 허브 경로 생성
+	 * POST /v1/hubs/{hubId}/routes
+	 */
+	@PostMapping("/{hubId}/routes")
+	public ResponseEntity<ApiResponse<CreateHubRouteResponse>> createHubRoute(
+		@PathVariable UUID hubId,
+		@Valid @RequestBody CreateHubRouteRequest request
+	) {
+		CreateHubRouteCommand command = CreateHubRouteCommand.of(
+			hubId,
+			request.arrivalHubId(),
+			request.distance(),
+			request.transitTime()
+		);
+		CreateHubRouteResponse response = CreateHubRouteResponse.of(hubService.createHubRoute(command));
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
 	}
 }

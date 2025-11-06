@@ -66,4 +66,7 @@ public class Hub extends AggregateRootEntity<Hub> {
 		this.coordinate = coordinate;
 	}
 
+	public void addHubRoute(HubRoute route) {
+		this.hubRoutes.add(route);
+	}
 }
