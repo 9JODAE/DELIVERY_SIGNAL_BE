@@ -37,7 +37,15 @@ public class DeliveryService {
             .deliveryManagerId(request.deliveryManagerId())
             .build();
 
-        Delivery saved = deliveryRepository.save(delivery);
-        return DeliveryCreateResponse.from(saved);
+        Delivery newDelivery = deliveryRepository.save(delivery);
+        return DeliveryCreateResponse.builder()
+            .deliveryId(newDelivery.getDeliveryId())
+            .orderId(newDelivery.getOrderId())
+            .status(newDelivery.getCurrStatus().getDescription())
+            .address(newDelivery.getDeliveryAddress())
+            .recipient(newDelivery.getRecipient())
+            .recipientSlackId(newDelivery.getRecipientSlackId())
+            .deliveryManagerId(newDelivery.getDeliveryManagerId())
+            .build();
     }
 }

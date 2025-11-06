@@ -81,7 +81,13 @@ public class DeliveryManagerController {
         @RequestHeader(USER_ID_HEADER) Long currUserId,
         @RequestHeader(USER_ROLE_HEADER) String role
     ) {
-        UpdateManagerCommand command = UpdateManagerCommand.from(request);
+        UpdateManagerCommand command = UpdateManagerCommand.builder()
+            .managerId(request.managerId())
+            .slackId(request.slackId())
+            .type(request.type())
+            .hubId(request.hubId())
+            .build();
+
         ManagerQueryResponse response = deliveryManagerService.updateManager(managerId, command,
             currUserId, role);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(DeliveryManagerResponse.from(response)));

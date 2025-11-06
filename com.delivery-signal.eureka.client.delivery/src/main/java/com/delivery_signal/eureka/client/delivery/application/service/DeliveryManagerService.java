@@ -5,10 +5,7 @@ import com.delivery_signal.eureka.client.delivery.application.command.UpdateMana
 import com.delivery_signal.eureka.client.delivery.application.dto.ManagerQueryResponse;
 import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManager;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryManagerRepository;
-import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryManagerRegisterRequest;
-import com.delivery_signal.eureka.client.delivery.presentation.dto.response.DeliveryManagerResponse;
 import java.util.NoSuchElementException;
-import org.apache.catalina.Manager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
