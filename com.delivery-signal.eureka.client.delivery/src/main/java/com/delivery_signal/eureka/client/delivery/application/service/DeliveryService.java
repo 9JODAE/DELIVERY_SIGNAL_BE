@@ -1,10 +1,9 @@
 package com.delivery_signal.eureka.client.delivery.application.service;
 
+import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
+import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
 import com.delivery_signal.eureka.client.delivery.domain.model.Delivery;
-import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryStatus;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRepository;
-import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
-import com.delivery_signal.eureka.client.delivery.presentation.dto.response.DeliveryCreateResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,29 +25,12 @@ public class DeliveryService {
      * 새로운 주문에 대한 배송 및 전체 경로 기록 생성
      */
     @Transactional
-    public DeliveryCreateResponse createDelivery(Long currUserId, DeliveryCreateRequest request, String role) {
+    public DeliveryQueryResponse createDelivery(CreateDeliveryCommand command) {
+        // TODO: 허브 유효성 검사 (Hub 존재 여부 등) - CLIENT 통신 필요
         // TODO: 배송 경로 기록은 추후에 추가 예정
-        Delivery delivery = Delivery.builder()
-            .orderId(request.orderId())
-            .currStatus(DeliveryStatus.valueOf(request.status()))
-            .departureHubId(request.departureHubId())
-            .destinationHubId(request.destinationHubId())
-            .deliveryAddress(request.address())
-            .recipient(request.recipient())
-            .recipientSlackId(request.recipientSlackId())
-            .deliveryManagerId(request.deliveryManagerId())
-            .build();
-
-        Delivery newDelivery = deliveryRepository.save(delivery);
-        return DeliveryCreateResponse.builder()
-            .deliveryId(newDelivery.getDeliveryId())
-            .orderId(newDelivery.getOrderId())
-            .status(newDelivery.getCurrStatus().getDescription())
-            .address(newDelivery.getDeliveryAddress())
-            .recipient(newDelivery.getRecipient())
-            .recipientSlackId(newDelivery.getRecipientSlackId())
-            .deliveryManagerId(newDelivery.getDeliveryManagerId())
-            .build();
+        Delivery delivery = Delivery.create(command);
+        Delivery savedDelivery = deliveryRepository.save(delivery);
+        return getDeliveryResponse(savedDelivery);
     }
 
     // TODO: 테스트용, 추후 삭제 예정
@@ -68,4 +50,16 @@ public class DeliveryService {
 //            );
 //        }
 //    }
+
+    private DeliveryQueryResponse getDeliveryResponse(Delivery delivery) {
+        return DeliveryQueryResponse.builder()
+            .deliveryId(delivery.getDeliveryId())
+            .orderId(delivery.getOrderId())
+            .status(delivery.getCurrStatus().getDescription())
+            .address(delivery.getDeliveryAddress())
+            .recipient(delivery.getRecipient())
+            .recipientSlackId(delivery.getRecipientSlackId())
+            .deliveryManagerId(delivery.getDeliveryManagerId())
+            .build();
+    }
 }

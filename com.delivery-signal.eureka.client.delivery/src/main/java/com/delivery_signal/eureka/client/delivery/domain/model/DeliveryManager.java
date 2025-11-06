@@ -30,7 +30,7 @@ public class DeliveryManager extends BaseEntity {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "manager_id")
+    @Column(name = "manager_id", nullable = false, updatable = false)
     private Long managerId;
 
     // 소속 허브 ID (업체 배송 담당자일 경우 필수, 허브 배송 담당자는 NULL 허용)

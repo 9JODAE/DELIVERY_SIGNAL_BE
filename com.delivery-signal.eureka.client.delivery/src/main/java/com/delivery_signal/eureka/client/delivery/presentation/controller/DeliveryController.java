@@ -1,8 +1,10 @@
 package com.delivery_signal.eureka.client.delivery.presentation.controller;
 
+import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
+import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.service.DeliveryService;
+import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
-import com.delivery_signal.eureka.client.delivery.presentation.dto.response.DeliveryCreateResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,13 +44,25 @@ public class DeliveryController {
         return ResponseEntity.status(HttpStatus.OK).body("Delivery Service 통신 성공");
     }
 
-    @PostMapping
-    public ResponseEntity<DeliveryCreateResponse> createDelivery(
+    @PostMapping("/internal")
+    public ResponseEntity<ApiResponse<DeliveryQueryResponse>> createDelivery(
         @Valid @RequestBody DeliveryCreateRequest request,
         @RequestHeader(USER_ID_HEADER) Long currUserId,
         @RequestHeader(USER_ROLE_HEADER) String role
     ) {
-        DeliveryCreateResponse response = deliveryService.createDelivery(currUserId, request, role);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        // 권한 확인 불필요 (내부 시스템에서 호출되므로)
+        CreateDeliveryCommand command = CreateDeliveryCommand.builder()
+            .orderId(request.orderId())
+            .status(request.status())
+            .departureHubId(request.departureHubId())
+            .destinationHubId(request.destinationHubId())
+            .address(request.address())
+            .recipient(request.recipient())
+            .recipientSlackId(request.recipientSlackId())
+            .deliveryManagerId(request.deliveryManagerId())
+            .build();
+
+        DeliveryQueryResponse response = deliveryService.createDelivery(command);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 }

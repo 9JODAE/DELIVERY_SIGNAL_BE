@@ -37,7 +37,7 @@ public class DeliveryManagerService {
             .build();
 
         DeliveryManager savedManager = deliveryManagerRepository.save(manager);
-        return getManagerResponse(manager);
+        return getManagerResponse(savedManager);
     }
 
 

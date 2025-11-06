@@ -4,17 +4,13 @@ import com.delivery_signal.eureka.client.delivery.domain.model.Delivery;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
-public interface DeliveryRepository extends JpaRepository<Delivery, UUID> {
-    // deletedAt이 null인 데이터만 조회
-    Optional<Delivery> findByDeliveryIdAndDeletedAtIsNull(UUID deliveryId);
+// DDD 원칙: 순수한 도메인 개념만 표현
+public interface DeliveryRepository {
+    Delivery save(Delivery delivery);
 
-    // deletedAt이 null인(삭제되지 않은) 데이터만 조회하도록 기본 메서드를 오버라이드
-//    @Override
-//    @Query("select d from Delivery d where d.deletedAt is null")
-//    List<Delivery> findAll();
+    // 삭제되지 않은 특정 배송 정보 조회
+    Optional<Delivery> findActiveById(UUID id);
 
-
+    List<Delivery> findAllActive();
 }

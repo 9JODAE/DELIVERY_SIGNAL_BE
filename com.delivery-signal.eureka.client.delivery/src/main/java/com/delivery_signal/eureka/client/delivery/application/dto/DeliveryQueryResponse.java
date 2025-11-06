@@ -1,13 +1,14 @@
-package com.delivery_signal.eureka.client.delivery.presentation.dto.response;
+package com.delivery_signal.eureka.client.delivery.application.dto;
 
-import com.delivery_signal.eureka.client.delivery.domain.model.Delivery;
 import java.util.UUID;
 import lombok.Builder;
 
 @Builder
-public record DeliveryCreateResponse(
+public record DeliveryQueryResponse(
     UUID deliveryId,
     UUID orderId,
+    UUID departureHubId,
+    UUID destinationHubId,
     String status,
     String address,
     String recipient,

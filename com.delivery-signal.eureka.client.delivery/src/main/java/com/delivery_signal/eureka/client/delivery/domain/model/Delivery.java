@@ -1,5 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.domain.model;
 
+import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,7 +27,7 @@ public class Delivery extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "delivery_id")
+    @Column(name = "delivery_id", nullable = false, updatable = false)
     private UUID deliveryId;
 
     // 주문 ID (Order Service와 연동)
@@ -61,6 +62,34 @@ public class Delivery extends BaseEntity {
     // 업체 배송담당자 ID
     @Column(name = "delivery_manager_id", nullable = false)
     private Long deliveryManagerId;
+
+    public Delivery(UUID deliveryId, UUID orderId, DeliveryStatus currStatus, UUID departureHubId,
+        UUID destinationHubId, String deliveryAddress, String recipient,
+        String recipientSlackId, Long deliveryManagerId) {
+
+        this.deliveryId = deliveryId;
+        this.orderId = orderId;
+        this.currStatus = currStatus;
+        this.departureHubId = departureHubId;
+        this.destinationHubId = destinationHubId;
+        this.deliveryAddress = deliveryAddress;
+        this.recipient = recipient;
+        this.recipientSlackId = recipientSlackId;
+        this.deliveryManagerId = deliveryManagerId;
+    }
+
+    public static Delivery create(CreateDeliveryCommand command) {
+        return Delivery.builder()
+            .orderId(command.orderId())
+            .currStatus(DeliveryStatus.valueOf(command.status()))
+            .departureHubId(command.departureHubId())
+            .destinationHubId(command.destinationHubId())
+            .deliveryAddress(command.address())
+            .recipient(command.recipient())
+            .recipientSlackId(command.recipientSlackId())
+            .deliveryManagerId(command.deliveryManagerId())
+            .build();
+    }
 }
 
 
