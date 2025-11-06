@@ -1,0 +1,115 @@
+package com.delivery_signal.eureka.client.delivery.presentation.controller;
+
+import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryManagerCommand;
+import com.delivery_signal.eureka.client.delivery.application.command.UpdateManagerCommand;
+import com.delivery_signal.eureka.client.delivery.application.dto.ManagerQueryResponse;
+import com.delivery_signal.eureka.client.delivery.application.service.DeliveryManagerService;
+import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
+import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryManagerRegisterRequest;
+import com.delivery_signal.eureka.client.delivery.presentation.dto.response.DeliveryManagerResponse;
+import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryManagerMapper;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/v1/managers")
+public class DeliveryManagerController {
+
+    private final DeliveryManagerService deliveryManagerService;
+    private final DeliveryManagerMapper deliveryManagerMapper; // ResponseDTO 매퍼
+
+    // API Gateway에서 인증 후, USER ID와 ROLE을 헤더에 담아 전달
+    private static final String USER_ID_HEADER = "X-User-Id";
+    private static final String USER_ROLE_HEADER = "X-User-Role";
+    // 담당 허브 ID
+    private static final String USER_HUB_ID_HEADER = "X-User-Hub-Id";
+
+    public DeliveryManagerController(DeliveryManagerService deliveryManagerService,
+        DeliveryManagerMapper deliveryManagerMapper) {
+        this.deliveryManagerService = deliveryManagerService;
+        this.deliveryManagerMapper = deliveryManagerMapper;
+    }
+
+    /**
+     * 배송 생성
+     * order-service에서 통신하여 자동 생성
+     */
+    @PostMapping
+    public ResponseEntity<ApiResponse<DeliveryManagerResponse>> registerManager(
+        @Valid @RequestBody DeliveryManagerRegisterRequest request,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        // TODO: Role 추후에 ENUM으로 수정
+        // TODO: 권한 체크 -> 마스터 관리자 또는 허브 관리자 (담당 허브) 로직 추가 필요
+
+        // Presentation DTO를 Application 커맨드 변환
+        CreateDeliveryManagerCommand command = CreateDeliveryManagerCommand.builder()
+            .managerId(request.managerId())
+            .slackId(request.slackId())
+            .type(request.type())
+            .hubId(request.hubId())
+            .build();
+        // Service 호출 및 Application 쿼리 리스폰스 반환
+        ManagerQueryResponse response = deliveryManagerService.registerManager(currUserId,
+            command, role);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(deliveryManagerMapper.toResponse(response)));
+    }
+
+    /**
+     * 배송 담당자 정보 조회 (단, 배송 담당자는 본인의 정보만 조회 가능)
+     */
+    @GetMapping("/{user-id}")
+    public ResponseEntity<ApiResponse<DeliveryManagerResponse>> getDeliveryManager(
+        @PathVariable("user-id") Long managerId,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        ManagerQueryResponse response = deliveryManagerService.getDeliveryManagerInfo(managerId,
+            currUserId, role);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(deliveryManagerMapper.toResponse(response)));
+    }
+
+    /**
+     * 배송 담당자 수정
+     */
+    @PatchMapping("/{user-id}")
+    public ResponseEntity<ApiResponse<DeliveryManagerResponse>> updateManager(
+        @PathVariable("user-id") Long managerId,
+        @Valid @RequestBody DeliveryManagerRegisterRequest request,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        UpdateManagerCommand command = UpdateManagerCommand.builder()
+            .managerId(request.managerId())
+            .slackId(request.slackId())
+            .type(request.type())
+            .hubId(request.hubId())
+            .build();
+
+        ManagerQueryResponse response = deliveryManagerService.updateManager(managerId, command,
+            currUserId, role);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(deliveryManagerMapper.toResponse(response)));
+    }
+
+
+    @DeleteMapping("/{user-id}")
+    public ResponseEntity<Void> deleteManager(
+        @PathVariable("user-id") Long managerId,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        deliveryManagerService.softDeleteManager(managerId, currUserId);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+}

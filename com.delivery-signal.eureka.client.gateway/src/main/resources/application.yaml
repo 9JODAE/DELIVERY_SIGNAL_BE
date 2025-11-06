@@ -1,5 +1,5 @@
 server:
-  port: 19091
+  port: 80
 
 eureka:
   client:
@@ -49,7 +49,7 @@ spring:
             - id: delivery-service
               uri: lb://delivery-service
               predicates:
-                - Path=/open-api/v1/deliveries/**,/api/v1/deliveries/**
+                - Path=/open-api/v1/deliveries/**, /api/v1/deliveries/**, open-api/v1/managers/**,/api/v1/managers/**
               filters:
                 - RewritePath=/(open-api|api)/(?<segment>.*), /$\{segment}
 
