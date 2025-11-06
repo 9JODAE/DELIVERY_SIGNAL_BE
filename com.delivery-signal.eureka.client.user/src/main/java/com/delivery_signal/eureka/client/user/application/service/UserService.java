@@ -1,21 +1,24 @@
-package com.delivery_signal.eureka.client.user.application;
+package com.delivery_signal.eureka.client.user.application.service;
+
+import com.delivery_signal.eureka.client.user.application.mapper.UserMapper;
 
 import com.delivery_signal.eureka.client.user.domain.model.ApprovalStatus;
-import com.delivery_signal.eureka.client.user.presentation.controller.OrderFeignClient;
 import com.delivery_signal.eureka.client.user.domain.common.exception.ErrorCode;
 import com.delivery_signal.eureka.client.user.domain.common.exception.ServiceException;
+import com.delivery_signal.eureka.client.user.domain.model.User;
+
+import com.delivery_signal.eureka.client.user.presentation.controller.OrderFeignClient;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UserCreateRequestDto;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UserUpdateApprovalStatusRequestDto;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UserUpdateRequestDto;
 import com.delivery_signal.eureka.client.user.presentation.dto.response.UserResponseDto;
-import com.delivery_signal.eureka.client.user.domain.model.User;
-import com.delivery_signal.eureka.client.user.domain.mapper.UserMapper;
-import com.delivery_signal.eureka.client.user.infrastructure.repository.UserRepository;
+
+import com.delivery_signal.eureka.client.user.domain.repository.UserRepository;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

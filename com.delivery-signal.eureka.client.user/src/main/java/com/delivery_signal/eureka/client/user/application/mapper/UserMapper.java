@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.user.domain.mapper;
+package com.delivery_signal.eureka.client.user.application.mapper;
 
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UserCreateRequestDto;
 import com.delivery_signal.eureka.client.user.presentation.dto.response.UserResponseDto;

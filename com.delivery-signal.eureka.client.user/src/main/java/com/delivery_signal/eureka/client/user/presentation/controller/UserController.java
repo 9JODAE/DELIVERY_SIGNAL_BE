@@ -6,7 +6,7 @@ import com.delivery_signal.eureka.client.user.presentation.dto.request.UserUpdat
 import com.delivery_signal.eureka.client.user.presentation.dto.response.UserResponseDto;
 import com.delivery_signal.eureka.client.user.domain.model.ApprovalStatus;
 import com.delivery_signal.eureka.client.user.domain.model.UserRole;
-import com.delivery_signal.eureka.client.user.application.UserService;
+import com.delivery_signal.eureka.client.user.application.service.UserService;
 import com.delivery_signal.eureka.client.user.presentation.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
