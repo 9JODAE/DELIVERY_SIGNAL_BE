@@ -1,7 +1,7 @@
-package com.delivery_signal.eureka.client.user.domain.dto.response;
+package com.delivery_signal.eureka.client.user.presentation.dto.response;
 
-import com.delivery_signal.eureka.client.user.domain.entity.ApprovalStatus;
-import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
+import com.delivery_signal.eureka.client.user.domain.model.ApprovalStatus;
+import com.delivery_signal.eureka.client.user.domain.model.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

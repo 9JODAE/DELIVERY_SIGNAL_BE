@@ -1,10 +1,10 @@
-package com.delivery_signal.eureka.client.user.domain.controller;
+package com.delivery_signal.eureka.client.user.presentation.controller;
 
-import com.delivery_signal.eureka.client.user.domain.dto.request.UserCreateRequestDto;
-import com.delivery_signal.eureka.client.user.domain.dto.response.UserResponseDto;
-import com.delivery_signal.eureka.client.user.domain.entity.ApprovalStatus;
-import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
-import com.delivery_signal.eureka.client.user.domain.service.UserService;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.UserCreateRequestDto;
+import com.delivery_signal.eureka.client.user.presentation.dto.response.UserResponseDto;
+import com.delivery_signal.eureka.client.user.domain.model.ApprovalStatus;
+import com.delivery_signal.eureka.client.user.domain.model.UserRole;
+import com.delivery_signal.eureka.client.user.application.UserService;
 import com.delivery_signal.eureka.client.user.presentation.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -39,46 +39,46 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponseDto>> registerUser(@RequestBody UserCreateRequestDto requestDto) {
         UserResponseDto responseDto = userService.createUser(requestDto);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(responseDto));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
     }
 
     @GetMapping("/{userId}")
 //    @PreAuthorize("hasRole('MASTER')")
     @Operation(summary="MASTER의 특정 사용자 조회", description="사용자를 조회합니다")
-    public UserResponseDto findUser(@PathVariable("userId") Long userId) {
+    public ResponseEntity<ApiResponse<UserResponseDto>> findUser(@PathVariable("userId") Long userId) {
         /*
         UserResponseDto responseDto = userService.getUser(userId);
 
-        return responseDto;
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
 
         */
 
         // dummy data
-        return new UserResponseDto(
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(new UserResponseDto(
                 2L,
                 "kimhubgwan",
                 "UKIMHUBGWAN",
                 "서울특별시 센터 허브",
                 UserRole.HUB_MANAGER,
                 ApprovalStatus.APPROVED
-        );
+        )));
     }
 
     @GetMapping()
 //    @PreAuthorize("hasRole('MASTER')")
     @Operation(summary="MASTER의 사용자 전체 조회 및 검색", description="검색 키워드로 사용자를 조회합니다 (전체 조회 포함)")
-    public List<UserResponseDto> searchUser(
+    public ResponseEntity<ApiResponse<List<UserResponseDto>>> searchUser(
 //            @Parameter(description = "사용자 이름, 사용자 소속 그룹(허브 또는 업체)명, 권한으로 검색 가능")
             @RequestParam(required = false) String search) {
         /*
         List<UserResponseDto> responseDtos = userService.getUsers(search);
 
-        return responseDtos;
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
 
         */
 
         // dummy data
-        return List.of(
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(List.of(
                 new UserResponseDto(1L, "choigoim", "UCHOIGOIM", "delivery-signal", UserRole.MASTER, ApprovalStatus.PENDING),
 
                 // 허브 관리자
@@ -141,7 +141,7 @@ public class UserController {
                 new UserResponseDto(48L, "okgwan", "UOKCOMGWAN", "D 업체", UserRole.SUPPLIER_MANAGER, ApprovalStatus.PENDING),
                 new UserResponseDto(49L, "takgwan", "UTAKCOMGWAN", "E 업체", UserRole.SUPPLIER_MANAGER, ApprovalStatus.PENDING)
 
-        );
+        )));
     }
 
 

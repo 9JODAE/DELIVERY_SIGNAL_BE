@@ -1,5 +1,4 @@
-package com.delivery_signal.eureka.client.user.domain.entity;
-import com.delivery_signal.eureka.client.user.domain.common.entity.BaseEntity;
+package com.delivery_signal.eureka.client.user.domain.model;
 import jakarta.persistence.*;
 
 import lombok.*;

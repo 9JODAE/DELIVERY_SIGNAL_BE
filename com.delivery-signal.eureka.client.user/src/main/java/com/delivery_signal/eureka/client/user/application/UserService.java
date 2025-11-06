@@ -1,13 +1,13 @@
-package com.delivery_signal.eureka.client.user.domain.service;
+package com.delivery_signal.eureka.client.user.application;
 
-import com.delivery_signal.eureka.client.user.OrderFeignClient;
+import com.delivery_signal.eureka.client.user.presentation.controller.OrderFeignClient;
 import com.delivery_signal.eureka.client.user.domain.common.exception.ErrorCode;
 import com.delivery_signal.eureka.client.user.domain.common.exception.ServiceException;
-import com.delivery_signal.eureka.client.user.domain.dto.request.UserCreateRequestDto;
-import com.delivery_signal.eureka.client.user.domain.dto.response.UserResponseDto;
-import com.delivery_signal.eureka.client.user.domain.entity.User;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.UserCreateRequestDto;
+import com.delivery_signal.eureka.client.user.presentation.dto.response.UserResponseDto;
+import com.delivery_signal.eureka.client.user.domain.model.User;
 import com.delivery_signal.eureka.client.user.domain.mapper.UserMapper;
-import com.delivery_signal.eureka.client.user.domain.repository.UserRepository;
+import com.delivery_signal.eureka.client.user.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
