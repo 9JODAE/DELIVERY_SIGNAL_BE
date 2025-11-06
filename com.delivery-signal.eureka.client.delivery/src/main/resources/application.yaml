@@ -8,15 +8,17 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
-      format_sql: true
-      use_sql_comments: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
     show-sql: true
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/deliveryTest
+    url: jdbc:postgresql://localhost:5432/delivery_signal
     driver-class-name: org.postgresql.Driver
-    username: root
-    password: itsfrom90s
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
 eureka:
   client:
