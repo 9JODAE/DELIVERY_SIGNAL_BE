@@ -12,12 +12,12 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
-import com.delivery_signal.eureka.client.gateway.domain.exception.EmptyClaimsException;
-import com.delivery_signal.eureka.client.gateway.domain.exception.ExpiredException;
-import com.delivery_signal.eureka.client.gateway.domain.exception.InvalidSignatureException;
-import com.delivery_signal.eureka.client.gateway.domain.exception.MalFormedException;
-import com.delivery_signal.eureka.client.gateway.domain.exception.UnsupportedException;
-import com.delivery_signal.eureka.client.gateway.domain.exception.errorcode.TokenErrorCode;
+import com.delivery_signal.eureka.client.gateway.global.exception.EmptyClaimsException;
+import com.delivery_signal.eureka.client.gateway.global.exception.ExpiredException;
+import com.delivery_signal.eureka.client.gateway.global.exception.InvalidSignatureException;
+import com.delivery_signal.eureka.client.gateway.global.exception.MalFormedException;
+import com.delivery_signal.eureka.client.gateway.global.exception.UnsupportedException;
+import com.delivery_signal.eureka.client.gateway.global.exception.errorcode.TokenErrorCode;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
