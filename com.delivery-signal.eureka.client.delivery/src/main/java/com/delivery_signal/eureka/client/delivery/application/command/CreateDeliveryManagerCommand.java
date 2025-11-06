@@ -24,13 +24,4 @@ public record CreateDeliveryManagerCommand(
     // 업체 배송 담당자일 경우 필수. 허브 배송 담당자는 null 허용
     UUID hubId
 ) {
-
-    public static CreateDeliveryManagerCommand from(DeliveryManagerRegisterRequest request) {
-        return CreateDeliveryManagerCommand.builder()
-            .managerId(request.managerId())
-            .slackId(request.slackId())
-            .type(request.type())
-            .hubId(request.hubId())
-            .build();
-    }
 }

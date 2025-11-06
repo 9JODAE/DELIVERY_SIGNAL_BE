@@ -15,14 +15,4 @@ public record ManagerQueryResponse(
     Integer deliverySequence,
     LocalDateTime createdAt
 ) {
-    public static ManagerQueryResponse from(DeliveryManager manager) {
-        return ManagerQueryResponse.builder()
-            .deliveryManagerId(manager.getManagerId())
-            .hubId(manager.getHubId() != null ? manager.getHubId() : null)
-            .slackId(manager.getSlackId())
-            .managerType(manager.getManagerType())
-            .deliverySequence(manager.getDeliverySequence())
-            .createdAt(manager.getCreatedAt())
-            .build();
-    }
 }

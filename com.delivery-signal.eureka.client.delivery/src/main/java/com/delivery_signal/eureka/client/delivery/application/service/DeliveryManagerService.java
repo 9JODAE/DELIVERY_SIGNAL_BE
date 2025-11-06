@@ -37,7 +37,7 @@ public class DeliveryManagerService {
             .build();
 
         DeliveryManager savedManager = deliveryManagerRepository.save(manager);
-        return ManagerQueryResponse.from(savedManager);
+        return getManagerResponse(manager);
     }
 
 
@@ -46,7 +46,7 @@ public class DeliveryManagerService {
         // TODO: 권한 체크 -> 마스터 관리자가 아닌 경우, 본인의 ID와 요청 ID 비교
         // TODO: 배송 담당자는 본인의 정보만 조회 가능
         DeliveryManager manager = getDeliveryManagerByManagerId(managerId);
-        return ManagerQueryResponse.from(manager);
+        return getManagerResponse(manager);
     }
 
     @Transactional
@@ -56,7 +56,7 @@ public class DeliveryManagerService {
 
         // 순번은 여기서 변경하지 않음. 순번 재배열은 별도 로직
         manager.update(command.hubId(), command.slackId(), command.type());
-        return ManagerQueryResponse.from(manager);
+        return getManagerResponse(manager);
     }
 
     @Transactional
@@ -73,5 +73,16 @@ public class DeliveryManagerService {
     private DeliveryManager getDeliveryManagerByManagerId(Long managerId) {
         return deliveryManagerRepository.findActiveById(managerId)
             .orElseThrow(() -> new NoSuchElementException("배송 담당자 정보를 찾을 수 없습니다"));
+    }
+
+    private ManagerQueryResponse getManagerResponse(DeliveryManager manager) {
+        return ManagerQueryResponse.builder()
+            .deliveryManagerId(manager.getManagerId())
+            .hubId(manager.getHubId() != null ? manager.getHubId() : null)
+            .slackId(manager.getSlackId())
+            .managerType(manager.getManagerType())
+            .deliverySequence(manager.getDeliverySequence())
+            .createdAt(manager.getCreatedAt())
+            .build();
     }
 }

@@ -7,6 +7,7 @@ import com.delivery_signal.eureka.client.delivery.application.service.DeliveryMa
 import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryManagerRegisterRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.response.DeliveryManagerResponse;
+import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryManagerMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DeliveryManagerController {
 
     private final DeliveryManagerService deliveryManagerService;
+    private final DeliveryManagerMapper deliveryManagerMapper; // ResponseDTO 매퍼
 
     // API Gateway에서 인증 후, USER ID와 ROLE을 헤더에 담아 전달
     private static final String USER_ID_HEADER = "X-User-Id";
@@ -32,8 +34,10 @@ public class DeliveryManagerController {
     // 담당 허브 ID
     private static final String USER_HUB_ID_HEADER = "X-User-Hub-Id";
 
-    public DeliveryManagerController(DeliveryManagerService deliveryManagerService) {
+    public DeliveryManagerController(DeliveryManagerService deliveryManagerService,
+        DeliveryManagerMapper deliveryManagerMapper) {
         this.deliveryManagerService = deliveryManagerService;
+        this.deliveryManagerMapper = deliveryManagerMapper;
     }
 
     /**
@@ -50,11 +54,16 @@ public class DeliveryManagerController {
         // TODO: 권한 체크 -> 마스터 관리자 또는 허브 관리자 (담당 허브) 로직 추가 필요
 
         // Presentation DTO를 Application 커맨드 변환
-        CreateDeliveryManagerCommand command = CreateDeliveryManagerCommand.from(request);
+        CreateDeliveryManagerCommand command = CreateDeliveryManagerCommand.builder()
+            .managerId(request.managerId())
+            .slackId(request.slackId())
+            .type(request.type())
+            .hubId(request.hubId())
+            .build();
         // Service 호출 및 Application 쿼리 리스폰스 반환
         ManagerQueryResponse response = deliveryManagerService.registerManager(currUserId,
             command, role);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(DeliveryManagerResponse.from(response)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(deliveryManagerMapper.toResponse(response)));
     }
 
     /**
@@ -68,7 +77,7 @@ public class DeliveryManagerController {
     ) {
         ManagerQueryResponse response = deliveryManagerService.getDeliveryManagerInfo(managerId,
             currUserId, role);
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(DeliveryManagerResponse.from(response)));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(deliveryManagerMapper.toResponse(response)));
     }
 
     /**
@@ -90,7 +99,7 @@ public class DeliveryManagerController {
 
         ManagerQueryResponse response = deliveryManagerService.updateManager(managerId, command,
             currUserId, role);
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(DeliveryManagerResponse.from(response)));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(deliveryManagerMapper.toResponse(response)));
     }
 
 

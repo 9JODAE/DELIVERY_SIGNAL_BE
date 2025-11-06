@@ -1,7 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.presentation.dto.response;
 
 import com.delivery_signal.eureka.client.delivery.application.dto.ManagerQueryResponse;
-import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManager;
 import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManagerType;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -19,15 +18,4 @@ public record DeliveryManagerResponse(
     Integer deliverySequence,
     LocalDateTime createdAt
 ) {
-
-    public static DeliveryManagerResponse from(ManagerQueryResponse queryResponse) {
-        return DeliveryManagerResponse.builder()
-            .managerId(queryResponse.deliveryManagerId())
-            .hubId(queryResponse.hubId() != null ? queryResponse.hubId() : null)
-            .slackId(queryResponse.slackId())
-            .managerType(queryResponse.managerType())
-            .deliverySequence(queryResponse.deliverySequence())
-            .createdAt(queryResponse.createdAt())
-            .build();
-    }
 }
