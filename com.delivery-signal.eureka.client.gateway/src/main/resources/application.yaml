@@ -1,11 +1,22 @@
 server:
-  port: 19091  # 게이트웨이 서비스가 실행될 포트 번호
+  port: 80
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+
+
+jwt:
+  secret-key: ${KEY}
 
 spring:
   main:
-    web-application-type: reactive  # Spring 애플리케이션이 리액티브 웹 애플리케이션으로 설정됨
+    web-application-type: reactive
   application:
-    name: gateway-service  # 애플리케이션 이름을 'gateway-service'로 설정
+    name: gateway-service
   cloud:
     gateway:
       server:
@@ -14,28 +25,44 @@ spring:
             locator:
               enabled: true
           routes:
-            - id: order-service  # 라우트 식별자
-              uri: lb://order-service  # 'order-service'라는 이름으로 로드 밸런싱된 서비스로 라우팅
+            - id: order-service
+              uri: lb://order-service
               predicates:
-                - Path=/v1/orders/**  # /v1/orders/** 경로로 들어오는 요청을 이 라우트로 처리
+                - Path=/open-api/v1/orders/**,/api/v1/orders/**
+              filters:
+                - RewritePath=/(open-api|api)/(?<segment>.*), /$\{segment}
+
             - id: product-service
               uri: lb://product-service
               predicates:
-                - Path=/v1/products/**
+                - Path=/open-api/v1/products/**,/api/v1/products/**
+              filters:
+                - RewritePath=/(open-api|api)/(?<segment>.*), /$\{segment}
+
             - id: user-service
               uri: lb://user-service
               predicates:
-                - Path=/v1/users/**
+                - Path=/open-api/v1/users/**,/api/v1/users/**
+              filters:
+                - RewritePath=/(open-api|api)/(?<segment>.*), /$\{segment}
+
             - id: delivery-service
               uri: lb://delivery-service
               predicates:
-                - Path=/v1/deliveries/**
+                - Path=/open-api/v1/deliveries/**, /api/v1/deliveries/**, open-api/v1/managers/**,/api/v1/managers/**
+              filters:
+                - RewritePath=/(open-api|api)/(?<segment>.*), /$\{segment}
+
             - id: company-service
               uri: lb://company-service
               predicates:
-                - Path=/v1/companies/**
+                - Path=/open-api/v1/companies/**,/api/v1/companies/**
+              filters:
+                - RewritePath=/(open-api|api)/(?<segment>.*), /$\{segment}
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:19090/eureka/  # Eureka 서버의 URL을 지정
+            - id: hub-service
+              uri: lb://hub-service
+              predicates:
+                - Path=/open-api/v1/hubs/**,/api/v1/hubs/**
+              filters:
+                - RewritePath=/(open-api|api)/(?<segment>.*), /$\{segment}
