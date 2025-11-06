@@ -2,8 +2,6 @@ package com.delivery_signal.eureka.client.hub.application.command;
 
 import java.util.UUID;
 
-import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateHubRequest;
-
 /**
  * 허브 수정 Command
  */
@@ -13,14 +11,4 @@ public record UpdateHubCommand(
 	String address,
 	Double latitude,
 	Double longitude
-) {
-	public static UpdateHubCommand of(UUID hubId, UpdateHubRequest request) {
-		return new UpdateHubCommand(
-			hubId,
-			request.name(),
-			request.address(),
-			request.latitude(),
-			request.longitude()
-		);
-	}
-}
+) {}

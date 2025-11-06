@@ -3,11 +3,9 @@ package com.delivery_signal.eureka.client.hub.presentation.controller;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,7 +45,12 @@ public class HubController {
 	 */
 	@PostMapping
 	public ResponseEntity<ApiResponse<HubCreateResponse>> createHub(@Valid @RequestBody CreateHubRequest request) {
-		CreateHubCommand command = CreateHubCommand.from(request);
+		CreateHubCommand command = new CreateHubCommand(
+			request.name(),
+			request.address(),
+			request.latitude(),
+			request.longitude()
+		);
 		HubCreateResponse response = HubCreateResponse.of(hubService.createHub(command));
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
 	}
@@ -90,7 +93,13 @@ public class HubController {
 		@PathVariable UUID hubId,
 		@Valid @RequestBody UpdateHubRequest request
 	) {
-		UpdateHubCommand command = UpdateHubCommand.of(hubId, request);
+		UpdateHubCommand command = new UpdateHubCommand(
+			hubId,
+			request.name(),
+			request.address(),
+			request.latitude(),
+			request.longitude()
+		);
 		HubDetailResponse response = HubDetailResponse.from(hubService.updateHub(command));
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
 	}
