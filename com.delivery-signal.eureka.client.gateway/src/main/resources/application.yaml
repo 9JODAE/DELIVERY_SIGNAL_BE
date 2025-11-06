@@ -29,40 +29,28 @@ spring:
               uri: lb://order-service
               predicates:
                 - Path=/open-api/v1/orders/**,/api/v1/orders/**
-              filters:
-                - RewritePath=/(open-api|api)/(?<segment>.*), /$\{segment}
 
             - id: product-service
               uri: lb://product-service
               predicates:
                 - Path=/open-api/v1/products/**,/api/v1/products/**
-              filters:
-                - RewritePath=/(open-api|api)/(?<segment>.*), /$\{segment}
 
             - id: user-service
               uri: lb://user-service
               predicates:
                 - Path=/open-api/v1/users/**,/api/v1/users/**
-              filters:
-                - RewritePath=/(open-api|api)/(?<segment>.*), /$\{segment}
 
             - id: delivery-service
               uri: lb://delivery-service
               predicates:
-                - Path=/open-api/v1/deliveries/**, /api/v1/deliveries/**, open-api/v1/managers/**,/api/v1/managers/**
-              filters:
-                - RewritePath=/(open-api|api)/(?<segment>.*), /$\{segment}
+                - Path=/open-api/v1/deliveries/**,/api/v1/deliveries/**
 
             - id: company-service
               uri: lb://company-service
               predicates:
                 - Path=/open-api/v1/companies/**,/api/v1/companies/**
-              filters:
-                - RewritePath=/(open-api|api)/(?<segment>.*), /$\{segment}
 
             - id: hub-service
               uri: lb://hub-service
               predicates:
                 - Path=/open-api/v1/hubs/**,/api/v1/hubs/**
-              filters:
-                - RewritePath=/(open-api|api)/(?<segment>.*), /$\{segment}

@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.gateway.domain.exception.errorcode;
+package com.delivery_signal.eureka.client.gateway.global.exception.errorcode;
 
 import org.springframework.http.HttpStatus;
 

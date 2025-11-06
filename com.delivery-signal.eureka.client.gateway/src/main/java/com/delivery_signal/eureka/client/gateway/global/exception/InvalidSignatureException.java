@@ -1,6 +1,6 @@
-package com.delivery_signal.eureka.client.gateway.domain.exception;
+package com.delivery_signal.eureka.client.gateway.global.exception;
 
-import com.delivery_signal.eureka.client.gateway.domain.exception.errorcode.ErrorCode;
+import com.delivery_signal.eureka.client.gateway.global.exception.errorcode.ErrorCode;
 
 import lombok.Getter;
 
