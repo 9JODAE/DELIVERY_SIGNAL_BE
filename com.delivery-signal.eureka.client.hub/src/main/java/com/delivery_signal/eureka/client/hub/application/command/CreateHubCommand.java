@@ -3,7 +3,7 @@ package com.delivery_signal.eureka.client.hub.application.command;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRequest;
 
 /**
- * 허브 생성 Command 객체
+ * 허브 생성 Command
  */
 public record CreateHubCommand(
 	String name,

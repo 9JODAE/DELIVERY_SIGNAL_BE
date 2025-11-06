@@ -1,14 +1,15 @@
 package com.delivery_signal.eureka.client.hub.application.command;
 
-import org.springframework.data.domain.Sort;
-
+/**
+ * 허브 검색 Command
+ */
 public record SearchHubCommand(
 	String name,
 	String address,
 	Integer page,
 	Integer size,
 	String sortBy,
-	Sort.Direction direction
+	String direction
 ) {
 	public static SearchHubCommand of(
 		String name,
@@ -16,7 +17,7 @@ public record SearchHubCommand(
 		Integer page,
 		Integer size,
 		String sortBy,
-		Sort.Direction direction
+		String direction
 	) {
 		return new SearchHubCommand(name, address, page, size, sortBy, direction);
 	}

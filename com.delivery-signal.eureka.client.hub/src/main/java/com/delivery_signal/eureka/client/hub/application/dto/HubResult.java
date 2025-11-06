@@ -4,6 +4,9 @@ import java.util.UUID;
 
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
 
+/**
+ * 허브 조회 결과 DTO
+ */
 public record HubResult(
     UUID hubId,
     String name,

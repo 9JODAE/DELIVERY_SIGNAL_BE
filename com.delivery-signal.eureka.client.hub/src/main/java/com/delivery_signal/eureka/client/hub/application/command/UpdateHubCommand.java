@@ -4,6 +4,9 @@ import java.util.UUID;
 
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateHubRequest;
 
+/**
+ * 허브 수정 Command
+ */
 public record UpdateHubCommand(
 	UUID hubId,
 	String name,

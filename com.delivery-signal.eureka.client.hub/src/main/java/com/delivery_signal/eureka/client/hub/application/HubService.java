@@ -15,6 +15,7 @@ import com.delivery_signal.eureka.client.hub.domain.repository.HubQueryRepositor
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRepository;
 import com.delivery_signal.eureka.client.hub.domain.vo.Address;
 import com.delivery_signal.eureka.client.hub.domain.vo.Coordinate;
+import com.delivery_signal.eureka.client.hub.domain.vo.HubSearchCondition;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,7 +37,16 @@ public class HubService {
 
 	@Transactional(readOnly = true)
 	public Page<HubResult> searchHubs(SearchHubCommand command) {
-		return hubQueryRepository.searchHubs(command)
+		HubSearchCondition condition = new HubSearchCondition(
+			command.name(),
+			command.address(),
+			command.page(),
+			command.size(),
+			command.sortBy(),
+			command.direction()
+		);
+
+		return hubQueryRepository.searchHubs(condition)
 			.map(HubResult::from);
 	}
 

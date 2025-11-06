@@ -63,7 +63,7 @@ public class HubController {
 		@RequestParam(required = false) Integer page,
 		@RequestParam(required = false) Integer size,
 		@RequestParam(required = false) String sortBy,
-		@RequestParam(required = false) Sort.Direction direction
+		@RequestParam(required = false) String direction
 	) {
 		SearchHubCommand command = SearchHubCommand.of(name, address, page, size, sortBy, direction);
 		Page<HubResponse> response = hubService.searchHubs(command)

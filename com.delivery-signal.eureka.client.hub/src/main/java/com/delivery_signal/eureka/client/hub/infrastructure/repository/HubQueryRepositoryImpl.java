@@ -1,9 +1,9 @@
 package com.delivery_signal.eureka.client.hub.infrastructure.repository;
 
-import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
 import com.delivery_signal.eureka.client.hub.domain.model.QHub;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubQueryRepository;
+import com.delivery_signal.eureka.client.hub.domain.vo.HubSearchCondition;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -33,10 +33,10 @@ public class HubQueryRepositoryImpl implements HubQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Hub> searchHubs(SearchHubCommand command) {
-        Pageable pageable = createPageable(command);
-        BooleanBuilder conditions = buildSearchConditions(command);
-        OrderSpecifier<?> orderSpecifier = buildOrderSpecifier(command);
+    public Page<Hub> searchHubs(HubSearchCondition condition) {
+        Pageable pageable = createPageable(condition);
+        BooleanBuilder conditions = buildSearchConditions(condition);
+        OrderSpecifier<?> orderSpecifier = buildOrderSpecifier(condition);
 
         List<Hub> hubs = fetchHubs(conditions, orderSpecifier, pageable);
         long totalCount = countHubs(conditions);
@@ -44,9 +44,9 @@ public class HubQueryRepositoryImpl implements HubQueryRepository {
         return new PageImpl<>(hubs, pageable, totalCount);
     }
 
-    private Pageable createPageable(SearchHubCommand command) {
-		int page = normalizePage(command.page());
-		int size = normalizeSize(command.size());
+    private Pageable createPageable(HubSearchCondition condition) {
+		int page = normalizePage(condition.page());
+		int size = normalizeSize(condition.size());
 		return PageRequest.of(page, size);
     }
 
@@ -78,11 +78,11 @@ public class HubQueryRepositoryImpl implements HubQueryRepository {
         return count != null ? count : 0L;
     }
 
-    private BooleanBuilder buildSearchConditions(SearchHubCommand command) {
+    private BooleanBuilder buildSearchConditions(HubSearchCondition condition) {
         BooleanBuilder builder = new BooleanBuilder();
 
-		addNameCondition(builder, command.name());
-		addAddressCondition(builder, command.address());
+		addNameCondition(builder, condition.name());
+		addAddressCondition(builder, condition.address());
 
         return builder;
     }
@@ -99,9 +99,9 @@ public class HubQueryRepositoryImpl implements HubQueryRepository {
         }
     }
 
-	private OrderSpecifier<?> buildOrderSpecifier(SearchHubCommand command) {
-		String sortBy = normalizeSortBy(command.sortBy());
-		Sort.Direction direction = normalizeDirection(command.direction());
+	private OrderSpecifier<?> buildOrderSpecifier(HubSearchCondition condition) {
+		String sortBy = normalizeSortBy(condition.sortBy());
+		Sort.Direction direction = normalizeDirection(condition.direction());
 
 		return isCreatedAtSort(sortBy)
 			? buildCreatedAtOrder(direction)
@@ -114,10 +114,11 @@ public class HubQueryRepositoryImpl implements HubQueryRepository {
 			: sortBy;
 	}
 
-	private Sort.Direction normalizeDirection(Sort.Direction direction) {
-		return direction != Sort.Direction.ASC && direction != Sort.Direction.DESC
-			? DEFAULT_DIRECTION
-			: direction;
+	private Sort.Direction normalizeDirection(String direction) {
+		if (direction == null || direction.isBlank()) {
+			return DEFAULT_DIRECTION;
+		}
+		return "ASC".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
 	}
 
     private boolean isCreatedAtSort(String sortBy) {
