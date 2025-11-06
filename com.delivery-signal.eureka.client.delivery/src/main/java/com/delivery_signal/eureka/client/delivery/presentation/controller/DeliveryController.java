@@ -13,8 +13,15 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 부가 설명
+ * /open-api/ : 로그인 정보 없이 통신할 때 쓰는 프리픽스
+ * /api/ : 통신 시 로그인 인가가 필요할 때 쓰는 프리픽스
+ *
+ * => delivery의 경우 추후에 /api/ 프리픽스로 바꾸어야함 (로그인 정보 가지고 와서 해야할 경우 대비)
+ */
 @RestController
-@RequestMapping("/v1/deliveries")
+@RequestMapping("/open-api/v1/deliveries")
 public class DeliveryController {
 
     private final DeliveryService deliveryService;
