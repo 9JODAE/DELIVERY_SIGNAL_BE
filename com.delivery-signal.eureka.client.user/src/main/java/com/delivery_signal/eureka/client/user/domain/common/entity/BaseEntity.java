@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.user.common.entity;
+package com.delivery_signal.eureka.client.user.domain.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

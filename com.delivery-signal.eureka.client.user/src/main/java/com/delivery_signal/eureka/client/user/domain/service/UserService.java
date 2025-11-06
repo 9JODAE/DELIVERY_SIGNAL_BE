@@ -1,13 +1,13 @@
-package com.delivery_signal.eureka.client.user.service;
+package com.delivery_signal.eureka.client.user.domain.service;
 
 import com.delivery_signal.eureka.client.user.OrderFeignClient;
-import com.delivery_signal.eureka.client.user.common.exception.ErrorCode;
-import com.delivery_signal.eureka.client.user.common.exception.ServiceException;
-import com.delivery_signal.eureka.client.user.dto.request.UserCreateRequestDto;
-import com.delivery_signal.eureka.client.user.dto.response.UserResponseDto;
-import com.delivery_signal.eureka.client.user.entity.User;
-import com.delivery_signal.eureka.client.user.mapper.UserMapper;
-import com.delivery_signal.eureka.client.user.repository.UserRepository;
+import com.delivery_signal.eureka.client.user.domain.common.exception.ErrorCode;
+import com.delivery_signal.eureka.client.user.domain.common.exception.ServiceException;
+import com.delivery_signal.eureka.client.user.domain.dto.request.UserCreateRequestDto;
+import com.delivery_signal.eureka.client.user.domain.dto.response.UserResponseDto;
+import com.delivery_signal.eureka.client.user.domain.entity.User;
+import com.delivery_signal.eureka.client.user.domain.mapper.UserMapper;
+import com.delivery_signal.eureka.client.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +22,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+
+    // Feign Client
     private final OrderFeignClient orderFeignClient;
 
     public String getOrderInfo() {
@@ -34,7 +36,7 @@ public class UserService {
     }
 
 
-
+    // User 생성
     public UserResponseDto createUser(UserCreateRequestDto requestDto) {
         User user = userMapper.toEntity(requestDto);
 
@@ -42,12 +44,14 @@ public class UserService {
         return userMapper.from(user);
     }
 
+    // 특정 User 조회
     public UserResponseDto getUser(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
         return userMapper.from(user);
     }
 
 
+    // User 목록 조회 및 검색
     public List<UserResponseDto> getUsers(String search) {
         List<String> keywords = validSearchKeywords(search);
         Set<Long> presented = new HashSet<>();
@@ -76,6 +80,12 @@ public class UserService {
 
         return responseDtos;
     }
+
+
+
+
+
+
 
 
 

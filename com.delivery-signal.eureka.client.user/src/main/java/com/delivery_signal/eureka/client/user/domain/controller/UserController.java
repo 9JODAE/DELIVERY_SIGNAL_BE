@@ -1,13 +1,16 @@
-package com.delivery_signal.eureka.client.user.controller;
+package com.delivery_signal.eureka.client.user.domain.controller;
 
-import com.delivery_signal.eureka.client.user.dto.request.UserCreateRequestDto;
-import com.delivery_signal.eureka.client.user.dto.response.UserResponseDto;
-import com.delivery_signal.eureka.client.user.entity.ApprovalStatus;
-import com.delivery_signal.eureka.client.user.entity.UserRole;
-import com.delivery_signal.eureka.client.user.service.UserService;
+import com.delivery_signal.eureka.client.user.domain.dto.request.UserCreateRequestDto;
+import com.delivery_signal.eureka.client.user.domain.dto.response.UserResponseDto;
+import com.delivery_signal.eureka.client.user.domain.entity.ApprovalStatus;
+import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
+import com.delivery_signal.eureka.client.user.domain.service.UserService;
+import com.delivery_signal.eureka.client.user.presentation.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,18 +25,21 @@ public class UserController {
 
     private final UserService userService;
 
+
+    // Feign Client
     @GetMapping("/call")
     public String callOrderByUser() {
         return userService.callOrder();
     }
 
+
     @PostMapping()
 //    @PreAuthorize("hasRole('MASTER')")
     @Operation(summary="MASTER의 사용자 생성", description="새로운 사용자를 등록합니다")
-    public UserResponseDto registerUser(@RequestBody UserCreateRequestDto requestDto) {
+    public ResponseEntity<ApiResponse<UserResponseDto>> registerUser(@RequestBody UserCreateRequestDto requestDto) {
         UserResponseDto responseDto = userService.createUser(requestDto);
 
-        return responseDto;
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(responseDto));
     }
 
     @GetMapping("/{userId}")
@@ -137,6 +143,9 @@ public class UserController {
 
         );
     }
+
+
+
 
 
 }
