@@ -11,4 +11,14 @@ public record UpdateHubCommand(
 	String address,
 	Double latitude,
 	Double longitude
-) {}
+) {
+	public static UpdateHubCommand of(
+		UUID hubId,
+		String name,
+		String address,
+		Double latitude,
+		Double longitude
+	) {
+		return new UpdateHubCommand(hubId, name, address, latitude, longitude);
+	}
+}

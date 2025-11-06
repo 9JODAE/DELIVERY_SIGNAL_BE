@@ -5,10 +5,10 @@ import java.util.UUID;
 /**
  * 허브 생성 응답 DTO
  */
-public record HubCreateResponse(
+public record CreateHubResponse(
 	UUID hubId
 ) {
-	public static HubCreateResponse of(UUID hubId) {
-		return new HubCreateResponse(hubId);
+	public static CreateHubResponse of(UUID hubId) {
+		return new CreateHubResponse(hubId);
 	}
 }

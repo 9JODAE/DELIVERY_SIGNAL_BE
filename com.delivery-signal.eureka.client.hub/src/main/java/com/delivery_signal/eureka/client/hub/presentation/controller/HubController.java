@@ -23,7 +23,7 @@ import com.delivery_signal.eureka.client.hub.application.command.UpdateHubComman
 import com.delivery_signal.eureka.client.hub.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateHubRequest;
-import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubCreateResponse;
+import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHubResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubDetailResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubResponse;
 
@@ -44,14 +44,14 @@ public class HubController {
 	 * POST /v1/hubs
 	 */
 	@PostMapping
-	public ResponseEntity<ApiResponse<HubCreateResponse>> createHub(@Valid @RequestBody CreateHubRequest request) {
-		CreateHubCommand command = new CreateHubCommand(
+	public ResponseEntity<ApiResponse<CreateHubResponse>> createHub(@Valid @RequestBody CreateHubRequest request) {
+		CreateHubCommand command = CreateHubCommand.of(
 			request.name(),
 			request.address(),
 			request.latitude(),
 			request.longitude()
 		);
-		HubCreateResponse response = HubCreateResponse.of(hubService.createHub(command));
+		CreateHubResponse response = CreateHubResponse.of(hubService.createHub(command));
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
 	}
 
@@ -93,7 +93,7 @@ public class HubController {
 		@PathVariable UUID hubId,
 		@Valid @RequestBody UpdateHubRequest request
 	) {
-		UpdateHubCommand command = new UpdateHubCommand(
+		UpdateHubCommand command = UpdateHubCommand.of(
 			hubId,
 			request.name(),
 			request.address(),
