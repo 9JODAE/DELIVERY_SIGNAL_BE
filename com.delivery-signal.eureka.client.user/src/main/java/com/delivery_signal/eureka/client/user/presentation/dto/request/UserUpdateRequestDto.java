@@ -1,14 +1,14 @@
 package com.delivery_signal.eureka.client.user.presentation.dto.request;
 
 import com.delivery_signal.eureka.client.user.domain.model.UserRole;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record UserCreateRequestDto(
+public record UserUpdateRequestDto(
 
-        @NotBlank(message = "이름은 필수 정보입니다")
         @Size(min = 3, max = 10, message = "이름은 3~10자로 입력해야 합니다")
         @Pattern(
                 regexp = "^[a-z0-9]{3,10}$",
@@ -16,7 +16,6 @@ public record UserCreateRequestDto(
         )
         String username,
 
-        @NotBlank(message = "비밀번호는 필수 정보입니다")
         @Size(min = 8, max = 15, message = "비밀번호는 8~15자로 입력해야 합니다")
         @Pattern(
                 regexp = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+=\\-{}\\[\\]:;\"'<>,.?/]).*$",
@@ -24,22 +23,9 @@ public record UserCreateRequestDto(
         )
         String password,
 
-        @NotBlank(message = "Slack ID는 필수 정보입니다")
+        // 다른 서비스에 변경 알림 여부 논의 필요
         String slackId,
-
-        @NotBlank(message = "소속 업체(또는 허브)명은 필수 정보입니다")
         String organization,
 
-        @NotNull(message = "사용자의 Role은 필수 정보입니다")
-        UserRole role,
-
-        // Master 회원 가입
-        boolean isMaster,
-        String masterToken
-
-) {
-//    public UserCreateRequestDto {
-//        isMaster = false;
-//        if (masterToken == null) masterToken = "";
-//    }
-}
+        UserRole role
+) {}

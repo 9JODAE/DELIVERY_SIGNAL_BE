@@ -18,11 +18,11 @@ public class UserMapper {
 
     public User toEntity(UserCreateRequestDto requestDto) {
         return User.builder()
-                .username(requestDto.getUsername())
-                .password(requestDto.getPassword())
-                .slackId(requestDto.getSlackId())
-                .organization(requestDto.getOrganization())
-                .role(requestDto.getRole())
+                .username(requestDto.username())
+                .password(requestDto.password())
+                .slackId(requestDto.slackId())
+                .organization(requestDto.organization())
+                .role(requestDto.role())
                 .build();
     }
 }

@@ -1,6 +1,8 @@
 package com.delivery_signal.eureka.client.user.presentation.controller;
 
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UserCreateRequestDto;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.UserUpdateApprovalStatusRequestDto;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.UserUpdateRequestDto;
 import com.delivery_signal.eureka.client.user.presentation.dto.response.UserResponseDto;
 import com.delivery_signal.eureka.client.user.domain.model.ApprovalStatus;
 import com.delivery_signal.eureka.client.user.domain.model.UserRole;
@@ -142,6 +144,39 @@ public class UserController {
                 new UserResponseDto(49L, "takgwan", "UTAKCOMGWAN", "E 업체", UserRole.SUPPLIER_MANAGER, ApprovalStatus.PENDING)
 
         )));
+    }
+
+
+
+    @PatchMapping("/{userId}/approval")
+//    @PreAuthorize("hasAnyRole('MASTER, HUB_MANAGER')")
+    @Operation(summary="MASTER, Hub Manager의 사용자 회원가입 승인", description="사용자의 회원가입을 승인합니다")
+    public ResponseEntity<ApiResponse<UserResponseDto>> permitUser(@RequestBody UserUpdateApprovalStatusRequestDto requestDto, @PathVariable("userId") Long userId) {
+        UserResponseDto responseDto = userService.updateApprovalStatus(userId, requestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
+    }
+
+
+    @PutMapping("/{userId}")
+//    @PreAuthorize("hasRole('MASTER')")
+    @Operation(summary="MASTER의 사용자 정보 수정", description="사용자의 정보를 수정합니다")
+    public ResponseEntity<ApiResponse<UserResponseDto>> modifyUserInfo (@RequestBody UserUpdateRequestDto requestDto, @PathVariable("userId") Long userId) {
+        UserResponseDto responseDto = userService.updateUser(userId, requestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
+    }
+
+    @DeleteMapping("/{userId}")
+//    @PreAuthorize("hasRole('MASTER')")
+    @Operation(summary="MASTER의 사용자 정보 삭제", description="사용자의 정보를 삭제합니다")
+    public ResponseEntity<ApiResponse<UserResponseDto>> deleteUser (@PathVariable("userId") Long userId) {
+        Boolean deleted = userService.softDeleteUser(userId);
+
+        if (deleted) {
+            return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success());
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.notFound("사용자가 이미 삭제되었습니다"));
     }
 
 

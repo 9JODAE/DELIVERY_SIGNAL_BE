@@ -1,6 +1,9 @@
 package com.delivery_signal.eureka.client.user.domain.model;
 import jakarta.persistence.*;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Getter
@@ -50,13 +53,38 @@ public class User extends BaseEntity {
     }
 
     // 수정 메서드 추가
+
+    public void updateUsername(@Size(min = 3, max = 10, message = "이름은 3~10자로 입력해야 합니다") @Pattern(
+            regexp = "^[a-z0-9]{3,10}$",
+            message = "이름은 알파벳 소문자(a~z)와 숫자(0~9)로만 구성되어야 합니다"
+    ) String username) {
+        this.username = username;
+    }
+
+    public void updatePassword(@Size(min = 8, max = 15, message = "비밀번호는 8~15자로 입력해야 합니다") @Pattern(
+            regexp = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+=\\-{}\\[\\]:;\"'<>,.?/]).*$",
+            message = "비밀번호는 알파벳 대소문자와 숫자, 특수문자를 포함해야 합니다"
+    ) String password) {
+        this.password = password;
+    }
+
+    public void updateSlackId(String s) {
+        this.slackId = s;
+    }
+
+    public void updateOrganization(String organization) {
+        this.organization = organization;
+    }
+
+//    public void updateRole(UserRole role) { this.role = role; }
+
+    public void updateApprovalStatus(ApprovalStatus approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
+
     public void updateIsPublic(Boolean isPublic) {
         this.isPublic = isPublic;
     }
-    public void updateRole(UserRole role) {
-        this.role = role;
-    }
-
 }
 
 

@@ -30,4 +30,9 @@ public record ApiResponse<T>(
     public static <T> ApiResponse<T> accepted(T data) {
         return new ApiResponse<>(HttpStatus.ACCEPTED.value(), null, data);
     }
+
+    public static <T> ApiResponse<T> notFound(String message) {
+        return new ApiResponse<>(HttpStatus.NOT_FOUND.value(), message, null);
+    }
+
 }

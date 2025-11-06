@@ -21,29 +21,30 @@ public abstract class BaseEntity {
     private LocalDateTime createdAt;
 
     @CreatedBy
-    @Column(updatable = false, nullable = false, length = 100)
-    private String createdBy;
+    @Column(updatable = false, nullable = false)
+    private Long createdBy;
 
     @LastModifiedDate
     @Column
     private LocalDateTime updatedAt;
 
     @LastModifiedBy
-    @Column(length = 100)
-    private String updatedBy;
+    @Column
+    private Long updatedBy;
 
     @Column
     private LocalDateTime deletedAt;
 
-    @Column(length = 100)
-    private String deletedBy;
+    @Column
+    private Long deletedBy;
 
-    public void softDelete(String userName) {
-        this.deletedAt = LocalDateTime.now();
-        this.deletedBy = userName;
-    }
 
     public boolean isDeleted() {
-        return this.deletedAt != null;
+        return (this.deletedAt != null || this.deletedBy != null);
+    }
+
+    public void softDelete(Long userId) {
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = userId;
     }
 }

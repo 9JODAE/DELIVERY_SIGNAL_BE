@@ -1,20 +1,26 @@
 package com.delivery_signal.eureka.client.user.application;
 
+import com.delivery_signal.eureka.client.user.domain.model.ApprovalStatus;
 import com.delivery_signal.eureka.client.user.presentation.controller.OrderFeignClient;
 import com.delivery_signal.eureka.client.user.domain.common.exception.ErrorCode;
 import com.delivery_signal.eureka.client.user.domain.common.exception.ServiceException;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UserCreateRequestDto;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.UserUpdateApprovalStatusRequestDto;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.UserUpdateRequestDto;
 import com.delivery_signal.eureka.client.user.presentation.dto.response.UserResponseDto;
 import com.delivery_signal.eureka.client.user.domain.model.User;
 import com.delivery_signal.eureka.client.user.domain.mapper.UserMapper;
 import com.delivery_signal.eureka.client.user.infrastructure.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +36,7 @@ public class UserService {
         return orderFeignClient.getOrder();
     }
 
+    @Transactional
     public String callOrder() {
 
         return "User -> Order 호출 성공!" + getOrderInfo();
@@ -37,6 +44,7 @@ public class UserService {
 
 
     // User 생성
+    @Transactional
     public UserResponseDto createUser(UserCreateRequestDto requestDto) {
         User user = userMapper.toEntity(requestDto);
 
@@ -45,6 +53,7 @@ public class UserService {
     }
 
     // 특정 User 조회
+    @Transactional
     public UserResponseDto getUser(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
         return userMapper.from(user);
@@ -52,6 +61,7 @@ public class UserService {
 
 
     // User 목록 조회 및 검색
+    @Transactional
     public List<UserResponseDto> getUsers(String search) {
         List<String> keywords = validSearchKeywords(search);
         Set<Long> presented = new HashSet<>();
@@ -81,10 +91,55 @@ public class UserService {
         return responseDtos;
     }
 
+    // 회원가입 승인 상태 조정
+    @Transactional
+    public UserResponseDto updateApprovalStatus(Long userId, UserUpdateApprovalStatusRequestDto requestDto) {
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+        ApprovalStatus status = requestDto.approvalStatus();
+        user.updateApprovalStatus(status);
+
+        return userMapper.from(user);
+    }
 
 
+    @Transactional
+    public UserResponseDto updateUser(Long userId, UserUpdateRequestDto requestDto) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
 
+        if (requestDto.username() != null && !requestDto.username().isBlank()) {
+            user.updateUsername(requestDto.username());
+        }
 
+        if (requestDto.password() != null && !requestDto.password().isBlank()) {
+            user.updatePassword(requestDto.password());
+        }
+
+        if (requestDto.slackId() != null && !requestDto.slackId().isBlank()) {
+            user.updateSlackId(requestDto.slackId());
+        }
+
+        if (requestDto.organization() != null && !requestDto.organization().isBlank()) {
+            user.updateOrganization(requestDto.organization());
+        }
+
+//        if (requestDto.role() != null) { user.updateRole(requestDto.role()); }
+
+        return userMapper.from(user);
+    }
+
+    @Transactional
+    public Boolean softDeleteUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+
+        if (!user.isDeleted()) {
+//            userRepository.deleteById(userId); 대체
+            user.softDelete(userId);
+            return true;
+        }
+
+        return false;
+    }
 
 
 
@@ -97,10 +152,14 @@ public class UserService {
         return List.of(keyword.split("\\s+"));
     }
 
+    
+    
     private void addIfNotPresented(User user,Set<Long> presented, List<UserResponseDto> responseDtos) {
 
         if (presented.add(user.getUserId())) {  // 중복 여부 체크
             responseDtos.add(userMapper.from(user));  // 중복 없을 때만 DTO 변환
         }
     }
+
+
 }
