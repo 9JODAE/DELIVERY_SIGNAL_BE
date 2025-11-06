@@ -8,3 +8,6 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka/
+
+gateway:
+ base-url: ${GATEWAY_URL:http://gateway-service}
