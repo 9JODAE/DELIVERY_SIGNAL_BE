@@ -11,8 +11,8 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 public class OrderCreateResponseDto {
-    UUID orderId;
-    Long createBy;
-    LocalDateTime createAt;
-    String message;
+    private UUID orderId;
+    private Long createBy;
+    private LocalDateTime createAt;
+    private String message;
 }

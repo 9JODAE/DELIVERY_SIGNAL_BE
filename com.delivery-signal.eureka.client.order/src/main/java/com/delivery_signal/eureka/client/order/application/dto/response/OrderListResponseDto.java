@@ -13,17 +13,17 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 public class OrderListResponseDto {
-    UUID orderId;
-    UUID supplierCompanyId;
-    UUID receiverCompanyId;
-    UUID deliveryId;
-    List<OrderQueryResponseDto> products;
-    BigDecimal totalPrice;
-    String requestNote;
-    LocalDateTime createdAt;
-    Long createdBy;
-    LocalDateTime updatedAt;
-    Long updatedBy;
-    LocalDateTime deletedAt;
-    Long deletedBy;
+    private UUID orderId;
+    private UUID supplierCompanyId;
+    private UUID receiverCompanyId;
+    private UUID deliveryId;
+    private List<OrderQueryResponseDto> products;
+    private BigDecimal totalPrice;
+    private String requestNote;
+    private LocalDateTime createdAt;
+    private Long createdBy;
+    private LocalDateTime updatedAt;
+    private Long updatedBy;
+    private LocalDateTime deletedAt;
+    private Long deletedBy;
 }

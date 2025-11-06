@@ -10,9 +10,9 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 public class OrderForDeliveryResponseDto {
-    UUID orderId;
-    UUID supplierCompanyId;
-    UUID receiverCompanyId;
-    UUID deliveryId;
-    String requestNote;
+    private UUID orderId;
+    private UUID supplierCompanyId;
+    private UUID receiverCompanyId;
+    private UUID deliveryId;
+    private String requestNote;
 }

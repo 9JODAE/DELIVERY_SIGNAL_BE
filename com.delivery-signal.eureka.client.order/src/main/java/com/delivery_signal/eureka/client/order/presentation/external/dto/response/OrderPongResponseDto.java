@@ -10,7 +10,7 @@ import java.time.Instant;
 @Builder
 @AllArgsConstructor
 public class OrderPongResponseDto {
-    String toOrder;
-    String status;
-    Instant timestamp;
+    private String toOrder;
+    private String status;
+    private Instant timestamp;
 }

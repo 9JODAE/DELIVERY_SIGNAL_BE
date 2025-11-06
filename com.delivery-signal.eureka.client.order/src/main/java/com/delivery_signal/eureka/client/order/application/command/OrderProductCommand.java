@@ -13,6 +13,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class OrderProductCommand {
     private UUID productId;    // 상품 UUID
-    private int quantity;        // 수량
+    private Integer quantity;        // 수량
     private String requestNote;  // 요청사항
 }
