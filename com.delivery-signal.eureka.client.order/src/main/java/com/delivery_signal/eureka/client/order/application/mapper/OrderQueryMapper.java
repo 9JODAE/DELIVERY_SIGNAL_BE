@@ -1,9 +1,9 @@
 package com.delivery_signal.eureka.client.order.application.mapper;
 
-import com.delivery_signal.eureka.client.order.application.dto.response.OrderQueryResponseDto;
-import com.delivery_signal.eureka.client.order.domain.entity.Order;
 import com.delivery_signal.eureka.client.order.application.dto.response.OrderDetailResponseDto;
 import com.delivery_signal.eureka.client.order.application.dto.response.OrderListResponseDto;
+import com.delivery_signal.eureka.client.order.application.dto.response.OrderQueryResponseDto;
+import com.delivery_signal.eureka.client.order.domain.entity.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

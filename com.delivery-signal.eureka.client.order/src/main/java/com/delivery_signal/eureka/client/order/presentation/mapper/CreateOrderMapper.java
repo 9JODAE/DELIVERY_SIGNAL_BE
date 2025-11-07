@@ -2,7 +2,7 @@ package com.delivery_signal.eureka.client.order.presentation.mapper;
 
 import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
 import com.delivery_signal.eureka.client.order.application.command.OrderProductCommand;
-import com.delivery_signal.eureka.client.order.presentation.dto.request.CreateOrderRequestDto;
+import com.delivery_signal.eureka.client.order.presentation.external.dto.request.CreateOrderRequestDto;
 
 import java.util.List;
 

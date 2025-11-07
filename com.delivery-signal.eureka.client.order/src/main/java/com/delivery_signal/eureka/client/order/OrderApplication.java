@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
-@EnableFeignClients(basePackages = "com.delivery_signal.eureka.client.order.infrastructure.external")
+@EnableFeignClients(basePackages = "com.delivery_signal.eureka.client.order.infrastructure.client")
 public class OrderApplication {
 
 	public static void main(String[] args) {
