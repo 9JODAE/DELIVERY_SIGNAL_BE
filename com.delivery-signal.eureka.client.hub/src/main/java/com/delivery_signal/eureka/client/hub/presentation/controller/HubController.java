@@ -18,14 +18,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.delivery_signal.eureka.client.hub.application.HubService;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubCommand;
+import com.delivery_signal.eureka.client.hub.application.command.CreateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
+import com.delivery_signal.eureka.client.hub.application.command.SearchHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
+import com.delivery_signal.eureka.client.hub.application.command.UpdateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRequest;
+import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRouteRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateHubRequest;
-import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubCreateResponse;
+import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateHubRouteRequest;
+import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHubResponse;
+import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHubRouteResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubDetailResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubResponse;
+import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubRouteDetailResponse;
+import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubRouteResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -44,14 +52,14 @@ public class HubController {
 	 * POST /v1/hubs
 	 */
 	@PostMapping
-	public ResponseEntity<ApiResponse<HubCreateResponse>> createHub(@Valid @RequestBody CreateHubRequest request) {
-		CreateHubCommand command = new CreateHubCommand(
+	public ResponseEntity<ApiResponse<CreateHubResponse>> createHub(@Valid @RequestBody CreateHubRequest request) {
+		CreateHubCommand command = CreateHubCommand.of(
 			request.name(),
 			request.address(),
 			request.latitude(),
 			request.longitude()
 		);
-		HubCreateResponse response = HubCreateResponse.of(hubService.createHub(command));
+		CreateHubResponse response = CreateHubResponse.of(hubService.createHub(command));
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
 	}
 
@@ -93,7 +101,7 @@ public class HubController {
 		@PathVariable UUID hubId,
 		@Valid @RequestBody UpdateHubRequest request
 	) {
-		UpdateHubCommand command = new UpdateHubCommand(
+		UpdateHubCommand command = UpdateHubCommand.of(
 			hubId,
 			request.name(),
 			request.address(),
@@ -111,6 +119,97 @@ public class HubController {
 	@DeleteMapping("/{hubId}")
 	public ResponseEntity<ApiResponse<Void>> deleteHub(@PathVariable UUID hubId) {
 		hubService.deleteHub(hubId);
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.success("허브가 삭제되었습니다."));
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("허브가 삭제되었습니다."));
 	}
+
+
+
+	/**
+	 * 허브 이동정보 생성
+	 * POST /v1/hubs/{hubId}/routes
+	 */
+	@PostMapping("/{hubId}/routes")
+	public ResponseEntity<ApiResponse<CreateHubRouteResponse>> createHubRoute(
+		@PathVariable UUID hubId,
+		@Valid @RequestBody CreateHubRouteRequest request
+	) {
+		CreateHubRouteCommand command = CreateHubRouteCommand.of(
+			hubId,
+			request.arrivalHubId(),
+			request.distance(),
+			request.transitTime()
+		);
+		CreateHubRouteResponse response = CreateHubRouteResponse.of(hubService.createHubRoute(command));
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+	}
+
+	/**
+	 * 허브 이동정보 검색
+	 * GET /v1/hubs/routes
+	 */
+	@GetMapping("/routes")
+	public ResponseEntity<ApiResponse<Page<HubRouteResponse>>> searchHubRoutes(
+		@RequestParam(required = false) String departureHubName,
+		@RequestParam(required = false) String arrivalHubName,
+		@RequestParam(required = false) Integer page,
+		@RequestParam(required = false) Integer size,
+		@RequestParam(required = false) String sortBy,
+		@RequestParam(required = false) String direction
+	) {
+		SearchHubRouteCommand command = SearchHubRouteCommand.of(
+			departureHubName, arrivalHubName, page, size, sortBy, direction
+		);
+		Page<HubRouteResponse> response = hubService.searchHubRoutes(command)
+			.map(HubRouteResponse::from);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+	}
+
+	/**
+	 * 허브 이동정보 조회
+	 * GET /v1/hubs/{hubId}/routes/{hubRouteId}
+	 */
+	@GetMapping("/{hubId}/routes/{hubRouteId}")
+	public ResponseEntity<ApiResponse<HubRouteDetailResponse>> getHubRoute(
+		@PathVariable UUID hubId,
+		@PathVariable UUID hubRouteId
+	) {
+		HubRouteDetailResponse response = HubRouteDetailResponse.from(hubService.getHubRoute(hubId, hubRouteId));
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+	}
+
+	/**
+	 * 허브 이동정보 수정
+	 * PUT /v1/hubs/{hubId}/routes/{hubRouteId}
+	 */
+	@PutMapping("/{hubId}/routes/{hubRouteId}")
+	public ResponseEntity<ApiResponse<HubRouteDetailResponse>> updateHubRoute(
+		@PathVariable UUID hubId,
+		@PathVariable UUID hubRouteId,
+		@Valid @RequestBody UpdateHubRouteRequest request
+	) {
+		UpdateHubRouteCommand command = UpdateHubRouteCommand.of(
+			hubId,
+			hubRouteId,
+			request.distance(),
+			request.transitTime()
+		);
+		HubRouteDetailResponse response = HubRouteDetailResponse.from(
+			hubService.updateHubRoute(hubId, hubRouteId, command)
+		);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+	}
+
+	/**
+	 * 허브 이동정보 삭제
+	 * DELETE /v1/hubs/{hubId}/routes/{hubRouteId}
+	 */
+	@DeleteMapping("/{hubId}/routes/{hubRouteId}")
+	public ResponseEntity<ApiResponse<Void>> deleteHubRoute(
+		@PathVariable UUID hubId,
+		@PathVariable UUID hubRouteId
+	) {
+		hubService.deleteHubRoute(hubId, hubRouteId);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("허브 이동정보가 삭제되었습니다."));
+	}
+
 }

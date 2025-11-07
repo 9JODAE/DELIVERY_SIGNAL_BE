@@ -12,11 +12,11 @@ public record HubResponse(
 	String name,
 	String address
 ) {
-	public static HubResponse from(HubResult hubResult) {
+	public static HubResponse from(HubResult result) {
 		return new HubResponse(
-			hubResult.hubId(),
-			hubResult.name(),
-			hubResult.address()
+			result.hubId(),
+			result.name(),
+			result.address()
 		);
 	}
 }

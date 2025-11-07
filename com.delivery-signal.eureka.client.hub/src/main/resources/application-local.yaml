@@ -1,9 +1,12 @@
+server:
+  port: 19093
+
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/hub
+    url: jdbc:postgresql://localhost:5432/delivery_signal
     driver-class-name: org.postgresql.Driver
     username: {DB_USERNAME}
-    password:
+    password: {DB_PASSWORD}
 
   jpa:
     hibernate:
@@ -14,6 +17,12 @@ spring:
         show_sql: false
         use_sql_comments: false
         database-platform: org.hibernate.spatial.dialect.PostgreSQLDialect
+        default_schema: hub
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
 
 logging:
   level:
