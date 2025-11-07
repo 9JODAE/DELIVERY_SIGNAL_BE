@@ -51,7 +51,7 @@ public class DeliveryController {
         return ResponseEntity.status(HttpStatus.OK).body("Delivery Service 통신 성공");
     }
 
-    @PostMapping("/internal")
+    @PostMapping
     public ResponseEntity<ApiResponse<DeliveryQueryResponse>> createDelivery(
         @Valid @RequestBody DeliveryCreateRequest request,
         @RequestHeader(USER_ID_HEADER) Long currUserId,
