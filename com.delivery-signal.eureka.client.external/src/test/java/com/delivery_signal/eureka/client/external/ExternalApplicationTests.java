@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.ai;
+package com.delivery_signal.eureka.client.external;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
