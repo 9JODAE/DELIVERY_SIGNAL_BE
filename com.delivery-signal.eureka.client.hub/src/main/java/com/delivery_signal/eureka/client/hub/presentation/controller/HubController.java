@@ -20,6 +20,7 @@ import com.delivery_signal.eureka.client.hub.application.HubService;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
+import com.delivery_signal.eureka.client.hub.application.command.SearchHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
 import com.delivery_signal.eureka.client.hub.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRequest;
@@ -29,6 +30,7 @@ import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHub
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHubRouteResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubDetailResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubResponse;
+import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubRouteResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -117,8 +119,10 @@ public class HubController {
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.success("허브가 삭제되었습니다."));
 	}
 
+
+
 	/**
-	 * 허브 경로 생성
+	 * 허브 이동정보 생성
 	 * POST /v1/hubs/{hubId}/routes
 	 */
 	@PostMapping("/{hubId}/routes")
@@ -135,4 +139,27 @@ public class HubController {
 		CreateHubRouteResponse response = CreateHubRouteResponse.of(hubService.createHubRoute(command));
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
 	}
+
+	/**
+	 * 허브 이동정보 검색
+	 * GET /v1/hubs/routes
+	 */
+	@GetMapping("/routes")
+	public ResponseEntity<ApiResponse<Page<HubRouteResponse>>> searchHubRoutes(
+		@RequestParam(required = false) String departureHubName,
+		@RequestParam(required = false) String arrivalHubName,
+		@RequestParam(required = false) Integer page,
+		@RequestParam(required = false) Integer size,
+		@RequestParam(required = false) String sortBy,
+		@RequestParam(required = false) String direction
+	) {
+		SearchHubRouteCommand command = SearchHubRouteCommand.of(
+			departureHubName, arrivalHubName, page, size, sortBy, direction
+		);
+		Page<HubRouteResponse> response = hubService.searchHubRoutes(command)
+			.map(HubRouteResponse::from);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+	}
+
+
 }

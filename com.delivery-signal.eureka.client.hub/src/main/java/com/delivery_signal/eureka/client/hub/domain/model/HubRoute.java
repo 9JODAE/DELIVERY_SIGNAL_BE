@@ -3,7 +3,6 @@ package com.delivery_signal.eureka.client.hub.domain.model;
 import java.util.UUID;
 
 import org.hibernate.annotations.SQLRestriction;
-import org.hibernate.annotations.UuidGenerator;
 
 import com.delivery_signal.eureka.client.hub.domain.vo.Distance;
 import com.delivery_signal.eureka.client.hub.domain.vo.Duration;
@@ -29,7 +28,6 @@ import lombok.NoArgsConstructor;
 public class HubRoute extends BaseEntity {
 
 	@Id
-	@UuidGenerator
 	private UUID hubRouteId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -50,6 +48,7 @@ public class HubRoute extends BaseEntity {
 
 	public static HubRoute create(Hub departureHub, Hub arrivalHub, Distance distance, Duration transitTime) {
 		HubRoute hubRoute = new HubRoute();
+		hubRoute.hubRouteId = UUID.randomUUID();
 		hubRoute.departureHub = departureHub;
 		hubRoute.arrivalHub = arrivalHub;
 		hubRoute.distance = distance;

@@ -9,17 +9,22 @@ import org.springframework.transaction.annotation.Transactional;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
+import com.delivery_signal.eureka.client.hub.application.command.SearchHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.dto.HubResult;
+import com.delivery_signal.eureka.client.hub.application.dto.HubRouteResult;
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
 import com.delivery_signal.eureka.client.hub.domain.model.HubRoute;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubQueryRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRepository;
+import com.delivery_signal.eureka.client.hub.domain.repository.HubRouteQueryRepository;
 import com.delivery_signal.eureka.client.hub.domain.vo.Address;
 import com.delivery_signal.eureka.client.hub.domain.vo.Coordinate;
 import com.delivery_signal.eureka.client.hub.domain.vo.Distance;
 import com.delivery_signal.eureka.client.hub.domain.vo.Duration;
-import com.delivery_signal.eureka.client.hub.domain.vo.HubSearchCondition;
+import com.delivery_signal.eureka.client.hub.domain.mapper.HubRouteSearchCondition;
+import com.delivery_signal.eureka.client.hub.domain.mapper.HubSearchCondition;
+import com.delivery_signal.eureka.client.hub.domain.vo.HubName;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +35,7 @@ public class HubService {
 
 	private final HubRepository hubRepository;
 	private final HubQueryRepository hubQueryRepository;
+	private final HubRouteQueryRepository hubRouteQueryRepository;
 
 	/**
 	 * 허브 생성
@@ -50,7 +56,7 @@ public class HubService {
 	 */
 	@Transactional(readOnly = true)
 	public Page<HubResult> searchHubs(SearchHubCommand command) {
-		HubSearchCondition condition = new HubSearchCondition(
+		HubSearchCondition condition = HubSearchCondition.of(
 			command.name(),
 			command.address(),
 			command.page(),
@@ -96,8 +102,10 @@ public class HubService {
 		hub.softDelete(1L); // TODO 유저 서비스 개발 완료 시 변경
 	}
 
+
+
 	/**
-	 * 허브 경로 생성
+	 * 허브 이동정보 생성
 	 * @param command 허브 경로 생성 커맨드
 	 * @return 생성된 허브 경로 아이디
 	 */
@@ -110,6 +118,24 @@ public class HubService {
 		HubRoute route = HubRoute.create(departureHub, arrivalHub, distance, transitTime);
 		departureHub.addHubRoute(route);
 		return route.getHubRouteId();
+	}
+
+	/**
+	 * 허브 이동정보 검색
+	 * @param command 허브 경로 검색 커맨드
+	 * @return Page<HubRouteResult> 허브 경로 검색 결과
+	 */
+	public Page<HubRouteResult> searchHubRoutes(SearchHubRouteCommand command) {
+		HubRouteSearchCondition condition = HubRouteSearchCondition.of(
+			command.departureHubName(),
+			command.arrivalHubName(),
+			command.page(),
+			command.size(),
+			command.sortBy(),
+			command.direction()
+		);
+		return hubRouteQueryRepository.searchHubRoutes(condition)
+			.map(HubRouteResult::from);
 	}
 
 	private Hub getHubOrThrow(UUID hubId) {
