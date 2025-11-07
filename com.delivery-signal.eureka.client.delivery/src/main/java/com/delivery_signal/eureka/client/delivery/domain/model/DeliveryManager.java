@@ -57,6 +57,13 @@ public class DeliveryManager extends BaseEntity {
         this.deliverySequence = deliverySequence;
     }
 
+    public static DeliveryManager create(Long managerId, UUID hubId, String slackId, DeliveryManagerType managerType, Integer newSequence) {
+        if (newSequence < 0) {
+            throw new IllegalArgumentException("배송 순번은 0 이상이어야 합니다.");
+        }
+        return new DeliveryManager(managerId, hubId, slackId, managerType, newSequence);
+    }
+
     public void update(UUID hubId, String slackId, DeliveryManagerType managerType) {
         this.hubId = hubId;
         this.slackId = slackId;

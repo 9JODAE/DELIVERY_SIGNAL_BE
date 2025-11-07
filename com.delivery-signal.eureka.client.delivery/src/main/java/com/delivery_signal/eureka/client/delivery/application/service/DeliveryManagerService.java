@@ -32,13 +32,11 @@ public class DeliveryManagerService {
         Integer maxActiveSequence = deliveryManagerRepository.findMaxActiveSequence().orElse(-1);
         int newSequence = maxActiveSequence + 1;
 
-        DeliveryManager manager = DeliveryManager.builder()
-            .managerId(userId) // User ID를 Primary Key로 사용
-            .hubId(command.hubId())
-            .slackId(command.slackId())
-            .managerType(command.type())
-            .deliverySequence(newSequence)
-            .build();
+        DeliveryManager manager = DeliveryManager.create(userId,
+            command.hubId(),
+            command.slackId(),
+            command.type(),
+            newSequence);
 
         DeliveryManager savedManager = deliveryManagerRepository.save(manager);
         return getManagerResponse(savedManager);
