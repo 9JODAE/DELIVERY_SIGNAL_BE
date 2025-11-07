@@ -4,6 +4,7 @@ import com.delivery_signal.eureka.client.delivery.application.command.CreateDeli
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateManagerCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.ManagerQueryResponse;
 import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManager;
+import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManagerType;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryManagerRepository;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -32,15 +33,25 @@ public class DeliveryManagerService {
         // TODO : 배송담당자 타입이 업체 배송 담당자인 경우, 소속 허브ID가 존재하는 허브인지 확인
         // TODO: USER, HUB MSA 연동 & 유효성 검사 추가 예정
 
+        if (command.type() == DeliveryManagerType.PARTNER_DELIVERY && command.hubId() == null) {
+            throw new IllegalArgumentException("업체 배송 담당자는 소속 허브 ID가 필수입니다.");
+        }
+
         // 새로운 배송 담당자가 추가되면 가장 마지막 순번으로 설정
         Integer maxActiveSequence = deliveryManagerRepository.findMaxActiveSequence().orElse(-1);
         int newSequence = maxActiveSequence + 1;
 
-        DeliveryManager manager = DeliveryManager.create(userId,
+        deliveryManagerRepository.findActiveById(command.managerId())
+            .ifPresent(deliveryManager -> {
+                throw new IllegalStateException("이미 등록되어 있는 배송 담당자입니다.");
+            });
+
+        DeliveryManager manager = DeliveryManager.create(command.managerId(),
             command.hubId(),
             command.slackId(),
             command.type(),
-            newSequence);
+            newSequence,
+            userId);
 
         DeliveryManager savedManager = deliveryManagerRepository.save(manager);
         return getManagerResponse(savedManager);

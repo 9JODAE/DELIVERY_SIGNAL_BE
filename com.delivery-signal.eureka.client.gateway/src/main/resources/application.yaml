@@ -43,7 +43,7 @@ spring:
             - id: delivery-service
               uri: lb://delivery-service
               predicates:
-                - Path=/open-api/v1/deliveries/**,/api/v1/deliveries/**
+                - Path=/open-api/v1/deliveries, /open-api/v1/deliveries/**, /api/v1/deliveries/**, /open-api/v1/managers, /open-api/v1/managers/**, /api/v1/managers/**
 
             - id: company-service
               uri: lb://company-service

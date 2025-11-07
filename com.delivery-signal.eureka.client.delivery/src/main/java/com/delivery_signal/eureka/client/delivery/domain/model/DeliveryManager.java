@@ -5,8 +5,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.UUID;
@@ -29,8 +27,7 @@ public class DeliveryManager extends BaseEntity {
      * UserService의 User ID를 외래 키로 사용함
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "manager_id", nullable = false, updatable = false)
+    @Column(name = "manager_id")
     private Long managerId;
 
     // 소속 허브 ID (업체 배송 담당자일 경우 필수, 허브 배송 담당자는 NULL 허용)
@@ -49,19 +46,22 @@ public class DeliveryManager extends BaseEntity {
     @Column(name = "sequence", nullable = false)
     private Integer deliverySequence;
 
-    public DeliveryManager(Long managerId, UUID hubId, String slackId, DeliveryManagerType managerType, Integer deliverySequence) {
+    public DeliveryManager(Long managerId, UUID hubId, String slackId, DeliveryManagerType managerType, Integer deliverySequence,
+        Long creatorId) {
         this.managerId = managerId;
         this.hubId = hubId;
         this.slackId = slackId;
         this.managerType = managerType;
         this.deliverySequence = deliverySequence;
+        this.setCreatedBy(creatorId);
     }
 
-    public static DeliveryManager create(Long managerId, UUID hubId, String slackId, DeliveryManagerType managerType, Integer newSequence) {
+    public static DeliveryManager create(Long managerId, UUID hubId, String slackId,
+        DeliveryManagerType managerType, Integer newSequence, Long creatorId) {
         if (newSequence < 0) {
             throw new IllegalArgumentException("배송 순번은 0 이상이어야 합니다.");
         }
-        return new DeliveryManager(managerId, hubId, slackId, managerType, newSequence);
+        return new DeliveryManager(managerId, hubId, slackId, managerType, newSequence, creatorId);
     }
 
     public void update(UUID hubId, String slackId, DeliveryManagerType managerType) {
