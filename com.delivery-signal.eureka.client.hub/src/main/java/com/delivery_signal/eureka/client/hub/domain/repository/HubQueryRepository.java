@@ -3,7 +3,7 @@ package com.delivery_signal.eureka.client.hub.domain.repository;
 import org.springframework.data.domain.Page;
 
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
-import com.delivery_signal.eureka.client.hub.domain.vo.HubSearchCondition;
+import com.delivery_signal.eureka.client.hub.domain.mapper.HubSearchCondition;
 
 public interface HubQueryRepository {
 

@@ -20,4 +20,11 @@ public interface HubRepository {
 	 * @return 조회된 허브
 	 */
 	Optional<Hub> findById(UUID hubId);
+
+	/**
+	 * 허브 및 경로 조회 (Fetch Join)
+	 * @param hubId 허브 아이디
+	 * @return 조회된 허브 (경로 포함)
+	 */
+	Optional<Hub> findByIdWithRoutes(UUID hubId);
 }

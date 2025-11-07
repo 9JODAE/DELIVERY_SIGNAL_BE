@@ -2,8 +2,10 @@ package com.delivery_signal.eureka.client.order;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
+@EnableFeignClients(basePackages = "com.delivery_signal.eureka.client.order.infrastructure.external")
 public class OrderApplication {
 
 	public static void main(String[] args) {
