@@ -2,8 +2,6 @@ package com.delivery_signal.eureka.client.hub.domain.model;
 
 import java.time.LocalDateTime;
 
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -16,13 +14,6 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 
-@FilterDef(
-	name = "SoftDelete",
-	defaultCondition = "deleted_at IS NULL",
-	autoEnabled = true,
-	applyToLoadByKey = true
-)
-@Filter(name = "SoftDelete")
 @Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)

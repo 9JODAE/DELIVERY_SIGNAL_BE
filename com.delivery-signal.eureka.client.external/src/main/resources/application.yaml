@@ -10,6 +10,9 @@ spring:
     password: admin123
     driver-class-name: org.postgresql.Driver
   jpa:
+    properties:
+      hibernate:
+        default_schema: external_schema
     hibernate:
       ddl-auto: update
     show-sql: true

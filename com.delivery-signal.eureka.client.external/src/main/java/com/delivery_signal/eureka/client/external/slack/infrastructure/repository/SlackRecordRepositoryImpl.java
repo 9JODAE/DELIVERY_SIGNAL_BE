@@ -3,6 +3,8 @@ package com.delivery_signal.eureka.client.external.slack.infrastructure.reposito
 import com.delivery_signal.eureka.client.external.slack.domain.model.SlackRecord;
 import com.delivery_signal.eureka.client.external.slack.domain.repository.SlackRecordRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -23,5 +25,10 @@ public class SlackRecordRepositoryImpl implements SlackRecordRepository {
     @Override
     public Optional<SlackRecord> findById(UUID slackRecordId) {
         return slackRecordJpaRepository.findById(slackRecordId);
+    }
+
+    @Override
+    public Page<SlackRecord> findAll(Pageable pageable) {
+        return slackRecordJpaRepository.findAll(pageable);
     }
 }
