@@ -1,8 +1,8 @@
 package com.delivery_signal.eureka.client.external.slack.presentation.controller;
 
 import com.delivery_signal.eureka.client.external.global.response.CommonApiResponse;
-import com.delivery_signal.eureka.client.external.slack.application.service.SlackMessageServiceV1;
 import com.delivery_signal.eureka.client.external.global.response.PageResponse;
+import com.delivery_signal.eureka.client.external.slack.application.service.SlackMessageServiceV1;
 import com.delivery_signal.eureka.client.external.slack.application.dto.SlackRecordDto;
 import com.delivery_signal.eureka.client.external.slack.application.service.SlackRecordServiceV1;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.CreateSlackRecordResponse;
@@ -12,6 +12,7 @@ import com.delivery_signal.eureka.client.external.slack.presentation.dto.UpdateS
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.request.CreateSlackRecordRequest;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.request.UpdateSlackRecordRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
