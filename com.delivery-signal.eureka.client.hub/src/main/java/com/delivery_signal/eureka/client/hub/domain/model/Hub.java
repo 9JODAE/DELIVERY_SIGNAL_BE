@@ -53,6 +53,9 @@ public class Hub extends AggregateRootEntity<Hub> {
 	@OneToMany(mappedBy = "departureHub", cascade = CascadeType.ALL)
 	private List<HubRoute> hubRoutes = new ArrayList<>();
 
+	@OneToMany(mappedBy = "hub", cascade = CascadeType.ALL)
+	private List<Stock> stocks = new ArrayList<>();
+
 	public static Hub create(String name, Address address, Coordinate coordinate) {
 		Hub hub = new Hub();
 		hub.name = name;
@@ -96,5 +99,9 @@ public class Hub extends AggregateRootEntity<Hub> {
 			.filter(route -> route.getHubRouteId().equals(hubRouteId))
 			.findFirst()
 			.orElseThrow(() -> new IllegalArgumentException("요청한 허브 이동정보를 찾을 수 없습니다."));
+	}
+
+	public void addStock(Stock stock) {
+		this.stocks.add(stock);
 	}
 }
