@@ -6,7 +6,7 @@ spring:
     active: local
 
   application:
-    name: user
+    name: user-service
 
 
 eureka:

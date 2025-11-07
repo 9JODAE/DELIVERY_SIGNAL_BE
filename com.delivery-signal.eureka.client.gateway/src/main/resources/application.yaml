@@ -10,7 +10,7 @@ eureka:
 
 
 jwt:
-  secret-key: ${KEY:cLY1U1tX9LrjwzuBUL1Sz4J42L9dIV6EkdqwQhfuexhzW_7dYtX0dJKuxuHsE98IovTWzAu6ShkYKyiISBvJNw}
+  secret-key: ${KEY}
 
 spring:
   main:
@@ -38,7 +38,7 @@ spring:
             - id: user-service
               uri: lb://user-service
               predicates:
-                - Path=/open-api/v1/users/**,/api/v1/users/**
+                - Path=/open-api/v1/users/**,/open-api/v1/auth/**,/api/v1/users/**
 
             - id: delivery-service
               uri: lb://delivery-service
