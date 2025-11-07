@@ -119,7 +119,7 @@ public class HubController {
 	@DeleteMapping("/{hubId}")
 	public ResponseEntity<ApiResponse<Void>> deleteHub(@PathVariable UUID hubId) {
 		hubService.deleteHub(hubId);
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ApiResponse.success("허브가 삭제되었습니다."));
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("허브가 삭제되었습니다."));
 	}
 
 
@@ -197,6 +197,19 @@ public class HubController {
 			hubService.updateHubRoute(hubId, hubRouteId, command)
 		);
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+	}
+
+	/**
+	 * 허브 이동정보 삭제
+	 * DELETE /v1/hubs/{hubId}/routes/{hubRouteId}
+	 */
+	@DeleteMapping("/{hubId}/routes/{hubRouteId}")
+	public ResponseEntity<ApiResponse<Void>> deleteHubRoute(
+		@PathVariable UUID hubId,
+		@PathVariable UUID hubRouteId
+	) {
+		hubService.deleteHubRoute(hubId, hubRouteId);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("허브 이동정보가 삭제되었습니다."));
 	}
 
 }

@@ -67,6 +67,11 @@ public class Hub extends AggregateRootEntity<Hub> {
 		this.coordinate = coordinate;
 	}
 
+	public void delete(Long userId) {
+		this.hubRoutes.forEach(route -> route.softDelete(userId));
+		this.softDelete(userId);
+	}
+
 	public void addHubRoute(HubRoute route) {
 		this.hubRoutes.add(route);
 	}
@@ -81,9 +86,14 @@ public class Hub extends AggregateRootEntity<Hub> {
 		return route;
 	}
 
+	public void deleteHubRoute(UUID hubRouteId, Long userId) {
+		HubRoute route = findHubRouteById(hubRouteId);
+		route.softDelete(userId);
+	}
+
 	private HubRoute findHubRouteById(UUID hubRouteId) {
 		return this.hubRoutes.stream()
-			.filter(r -> r.getHubRouteId().equals(hubRouteId))
+			.filter(route -> route.getHubRouteId().equals(hubRouteId))
 			.findFirst()
 			.orElseThrow(() -> new IllegalArgumentException("요청한 허브 이동정보를 찾을 수 없습니다."));
 	}

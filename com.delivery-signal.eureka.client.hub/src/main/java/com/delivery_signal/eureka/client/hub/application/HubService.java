@@ -99,7 +99,7 @@ public class HubService {
 	 */
 	public void deleteHub(UUID hubId) {
 		Hub hub = getHubOrThrow(hubId);
-		hub.softDelete(1L); // TODO 유저 서비스 개발 완료 시 변경
+		hub.delete(1L); // TODO 유저 서비스 개발 완료 시 변경
 	}
 
 	private Hub getHubOrThrow(UUID hubId) {
@@ -157,12 +157,29 @@ public class HubService {
 		return HubRouteResult.from(route);
 	}
 
+	/**
+	 * 허브 이동정보 수정
+	 * @param hubId 출발 허브 아이디
+	 * @param hubRouteId 허브 이동정보 아이디
+	 * @param command 허브 이동정보 수정 커맨드
+	 * @return 수정된 허브 이동정보 결과
+	 */
 	public HubRouteResult updateHubRoute(UUID hubId, UUID hubRouteId, UpdateHubRouteCommand command) {
 		Hub hub = getHubWithRoutesOrThrow(hubId);
 		Distance distance = Distance.of(command.distance());
 		Duration transitTime = Duration.of(command.transitTime());
 		HubRoute route = hub.updateHubRoute(hubRouteId, distance, transitTime);
 		return HubRouteResult.from(route);
+	}
+
+	/**
+	 * 허브 이동정보 삭제
+	 * @param hubId 출발 허브 아이디
+	 * @param hubRouteId 허브 이동정보 아이디
+	 */
+	public void deleteHubRoute(UUID hubId, UUID hubRouteId) {
+		Hub hub = getHubWithRoutesOrThrow(hubId);
+		hub.deleteHubRoute(hubRouteId, 1L); // TODO 유저 서비스 개발 완료 시 변경
 	}
 
 	private Hub getHubWithRoutesOrThrow(UUID hubId) {
