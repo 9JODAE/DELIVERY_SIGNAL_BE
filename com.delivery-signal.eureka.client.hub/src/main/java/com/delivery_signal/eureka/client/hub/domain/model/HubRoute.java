@@ -56,4 +56,9 @@ public class HubRoute extends BaseEntity {
 		return hubRoute;
 	}
 
+	public void update(Distance distance, Duration transitTime) {
+		this.distance = distance;
+		this.transitTime = transitTime;
+	}
+
 }

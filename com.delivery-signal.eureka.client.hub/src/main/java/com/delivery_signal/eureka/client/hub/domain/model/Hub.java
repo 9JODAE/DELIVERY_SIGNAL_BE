@@ -72,6 +72,16 @@ public class Hub extends AggregateRootEntity<Hub> {
 	}
 
 	public HubRoute getHubRoute(UUID hubRouteId) {
+		return findHubRouteById(hubRouteId);
+	}
+
+	public HubRoute updateHubRoute(UUID hubRouteId, Distance distance, Duration transitTime) {
+		HubRoute route = findHubRouteById(hubRouteId);
+		route.update(distance, transitTime);
+		return route;
+	}
+
+	private HubRoute findHubRouteById(UUID hubRouteId) {
 		return this.hubRoutes.stream()
 			.filter(r -> r.getHubRouteId().equals(hubRouteId))
 			.findFirst()

@@ -11,6 +11,7 @@ import com.delivery_signal.eureka.client.hub.application.command.CreateHubRouteC
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
+import com.delivery_signal.eureka.client.hub.application.command.UpdateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.dto.HubResult;
 import com.delivery_signal.eureka.client.hub.application.dto.HubRouteResult;
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
@@ -129,6 +130,7 @@ public class HubService {
 	 * @param command 허브 경로 검색 커맨드
 	 * @return Page<HubRouteResult> 허브 경로 검색 결과
 	 */
+	@Transactional(readOnly = true)
 	public Page<HubRouteResult> searchHubRoutes(SearchHubRouteCommand command) {
 		HubRouteSearchCondition condition = HubRouteSearchCondition.of(
 			command.departureHubName(),
@@ -148,10 +150,23 @@ public class HubService {
 	 * @param hubRouteId 허브 이동정보 아이디
 	 * @return 허브 이동정보 조회 결과
 	 */
+	@Transactional(readOnly = true)
 	public HubRouteResult getHubRoute(UUID hubId, UUID hubRouteId) {
-		Hub hub = hubRepository.findByIdWithRoutes(hubId)
-			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
+		Hub hub = getHubWithRoutesOrThrow(hubId);
 		HubRoute route = hub.getHubRoute(hubRouteId);
 		return HubRouteResult.from(route);
+	}
+
+	public HubRouteResult updateHubRoute(UUID hubId, UUID hubRouteId, UpdateHubRouteCommand command) {
+		Hub hub = getHubWithRoutesOrThrow(hubId);
+		Distance distance = Distance.of(command.distance());
+		Duration transitTime = Duration.of(command.transitTime());
+		HubRoute route = hub.updateHubRoute(hubRouteId, distance, transitTime);
+		return HubRouteResult.from(route);
+	}
+
+	private Hub getHubWithRoutesOrThrow(UUID hubId) {
+		return hubRepository.findByIdWithRoutes(hubId)
+			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
 	}
 }

@@ -22,10 +22,12 @@ import com.delivery_signal.eureka.client.hub.application.command.CreateHubRouteC
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
+import com.delivery_signal.eureka.client.hub.application.command.UpdateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRouteRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateHubRequest;
+import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateHubRouteRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHubResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHubRouteResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubDetailResponse;
@@ -162,6 +164,10 @@ public class HubController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
 	}
 
+	/**
+	 * 허브 이동정보 조회
+	 * GET /v1/hubs/{hubId}/routes/{hubRouteId}
+	 */
 	@GetMapping("/{hubId}/routes/{hubRouteId}")
 	public ResponseEntity<ApiResponse<HubRouteDetailResponse>> getHubRoute(
 		@PathVariable UUID hubId,
@@ -171,5 +177,26 @@ public class HubController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
 	}
 
+	/**
+	 * 허브 이동정보 수정
+	 * PUT /v1/hubs/{hubId}/routes/{hubRouteId}
+	 */
+	@PutMapping("/{hubId}/routes/{hubRouteId}")
+	public ResponseEntity<ApiResponse<HubRouteDetailResponse>> updateHubRoute(
+		@PathVariable UUID hubId,
+		@PathVariable UUID hubRouteId,
+		@Valid @RequestBody UpdateHubRouteRequest request
+	) {
+		UpdateHubRouteCommand command = UpdateHubRouteCommand.of(
+			hubId,
+			hubRouteId,
+			request.distance(),
+			request.transitTime()
+		);
+		HubRouteDetailResponse response = HubRouteDetailResponse.from(
+			hubService.updateHubRoute(hubId, hubRouteId, command)
+		);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+	}
 
 }
