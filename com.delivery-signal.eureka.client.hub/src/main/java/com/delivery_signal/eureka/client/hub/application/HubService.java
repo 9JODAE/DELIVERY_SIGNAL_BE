@@ -8,14 +8,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubRouteCommand;
+import com.delivery_signal.eureka.client.hub.application.command.CreateStockCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.dto.HubResult;
 import com.delivery_signal.eureka.client.hub.application.dto.HubRouteResult;
+import com.delivery_signal.eureka.client.hub.application.dto.StockResult;
+import com.delivery_signal.eureka.client.hub.application.service.ProductClient;
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
 import com.delivery_signal.eureka.client.hub.domain.model.HubRoute;
+import com.delivery_signal.eureka.client.hub.domain.model.Stock;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubQueryRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRouteQueryRepository;
@@ -25,6 +29,7 @@ import com.delivery_signal.eureka.client.hub.domain.vo.Distance;
 import com.delivery_signal.eureka.client.hub.domain.vo.Duration;
 import com.delivery_signal.eureka.client.hub.domain.mapper.HubRouteSearchCondition;
 import com.delivery_signal.eureka.client.hub.domain.mapper.HubSearchCondition;
+import com.delivery_signal.eureka.client.hub.domain.vo.ProductId;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,6 +41,8 @@ public class HubService {
 	private final HubRepository hubRepository;
 	private final HubQueryRepository hubQueryRepository;
 	private final HubRouteQueryRepository hubRouteQueryRepository;
+
+	private final ProductClient productClient;
 
 	/**
 	 * 허브 생성
@@ -185,5 +192,25 @@ public class HubService {
 	private Hub getHubWithRoutesOrThrow(UUID hubId) {
 		return hubRepository.findByIdWithRoutes(hubId)
 			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
+	}
+
+
+	/**
+	 * 재고 생성
+	 * @param command 재고 생성 커맨드
+	 * @return 생성된 재고 아이디
+	 */
+	public UUID createStock(CreateStockCommand command) {
+		// TODO 상품 서비스로부터 상품 존재 유무 확인하는 로직
+		// if (!productClient.existsProduct(command.productId())) {
+		// 	throw new IllegalArgumentException("존재하지 않는 상품입니다. productId=" + command.productId());
+		// }
+
+		Hub hub = getHubOrThrow(command.hubId());
+		ProductId productId = ProductId.of(command.productId());
+
+		Stock stock = Stock.create(hub, productId, command.quantity());
+		hub.addStock(stock);
+		return stock.getStockId();
 	}
 }

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.delivery_signal.eureka.client.hub.application.HubService;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubRouteCommand;
+import com.delivery_signal.eureka.client.hub.application.command.CreateStockCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
@@ -26,10 +27,12 @@ import com.delivery_signal.eureka.client.hub.application.command.UpdateHubRouteC
 import com.delivery_signal.eureka.client.hub.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRouteRequest;
+import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateStockRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateHubRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateHubRouteRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHubResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHubRouteResponse;
+import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateStockResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubDetailResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubRouteDetailResponse;
@@ -210,6 +213,26 @@ public class HubController {
 	) {
 		hubService.deleteHubRoute(hubId, hubRouteId);
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("허브 이동정보가 삭제되었습니다."));
+	}
+
+
+
+	/**
+	 * 허브 재고 생성
+	 * POST /v1/hubs/{hubId}/stocks
+	 */
+	@PostMapping("/{hubId}/stocks")
+	public ResponseEntity<ApiResponse<CreateStockResponse>> createStock(
+		@PathVariable UUID hubId,
+		@Valid @RequestBody CreateStockRequest request
+	) {
+		CreateStockCommand command = CreateStockCommand.of(
+			hubId,
+			request.productId(),
+			request.quantity()
+		);
+		CreateStockResponse response = CreateStockResponse.of(hubService.createStock(command));
+		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
 	}
 
 }
