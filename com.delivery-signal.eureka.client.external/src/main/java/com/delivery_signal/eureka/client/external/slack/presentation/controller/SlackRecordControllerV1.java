@@ -1,6 +1,7 @@
 package com.delivery_signal.eureka.client.external.slack.presentation.controller;
 
 import com.delivery_signal.eureka.client.external.global.response.CommonApiResponse;
+import com.delivery_signal.eureka.client.external.slack.application.service.SlackMessageServiceV1;
 import com.delivery_signal.eureka.client.external.slack.application.service.SlackRecordServiceV1;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.CreateSlackRecordResponse;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.DeleteSlackRecordResponse;
@@ -20,6 +21,7 @@ import java.util.UUID;
 public class SlackRecordControllerV1 {
 
     private final SlackRecordServiceV1 serviceV1;
+    private final SlackMessageServiceV1 messageServiceV1;
 
     @PostMapping
     public ResponseEntity<CommonApiResponse<CreateSlackRecordResponse>> createSlackRecord(
@@ -62,6 +64,12 @@ public class SlackRecordControllerV1 {
         return CommonApiResponse.ok(response);
     }
 
+    @PostMapping("/message")
+    public ResponseEntity<CommonApiResponse<String>> sendSlackMessage(
+            @RequestParam String slackUserId,
+            @RequestParam String message){
+        return CommonApiResponse.ok(messageServiceV1.slackMessageSend(slackUserId,message));
+    }
 
 
 }
