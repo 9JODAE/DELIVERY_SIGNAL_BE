@@ -84,7 +84,7 @@ public class Delivery extends BaseEntity {
         this.deliveryManagerId = deliveryManagerId;
     }
 
-    public static Delivery create(CreateDeliveryCommand command) {
+    public static Delivery create(CreateDeliveryCommand command, Long creatorId) {
         return Delivery.builder()
             .orderId(command.orderId())
             .companyId(command.companyId())
@@ -95,6 +95,7 @@ public class Delivery extends BaseEntity {
             .recipient(command.recipient())
             .recipientSlackId(command.recipientSlackId())
             .deliveryManagerId(command.deliveryManagerId())
+            .createdBy(creatorId)
             .build();
     }
 }

@@ -3,6 +3,8 @@ package com.delivery_signal.eureka.client.delivery.application.service;
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
+import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryRouteRecords;
+import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRouteRecordsRepository;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.response.PagedDeliveryResponse;
 import com.delivery_signal.eureka.client.delivery.common.UserRole;
 import com.delivery_signal.eureka.client.delivery.domain.model.Delivery;
@@ -24,12 +26,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
+    private final DeliveryRouteRecordsRepository deliveryRouteRecordsRepository;
     private final OrderServiceClient orderServiceClient;
     private final DeliveryMapper deliveryMapper;
 
-    public DeliveryService(DeliveryRepository deliveryRepository, OrderServiceClient orderServiceClient,
+    public DeliveryService(DeliveryRepository deliveryRepository,
+        DeliveryRouteRecordsRepository deliveryRouteRecordsRepository, OrderServiceClient orderServiceClient,
         DeliveryMapper deliveryMapper) {
         this.deliveryRepository = deliveryRepository;
+        this.deliveryRouteRecordsRepository = deliveryRouteRecordsRepository;
         this.orderServiceClient = orderServiceClient;
         this.deliveryMapper = deliveryMapper;
     }
@@ -39,11 +44,28 @@ public class DeliveryService {
      * 새로운 주문에 대한 배송 및 전체 경로 기록 생성
      */
     @Transactional
-    public DeliveryQueryResponse createDelivery(CreateDeliveryCommand command) {
+    public DeliveryQueryResponse createDelivery(CreateDeliveryCommand command, Long creatorId) {
         // TODO: 허브 유효성 검사 (Hub 존재 여부 등) - CLIENT 통신 필요
         // TODO: 배송 경로 기록은 추후에 추가 예정
-        Delivery delivery = Delivery.create(command);
+        Delivery delivery = Delivery.create(command, creatorId);
         Delivery savedDelivery = deliveryRepository.save(delivery);
+
+        // 배송(허브 이동) 경로 기록 엔티티 목록 생성 및 저장
+        // TODO: 배송 담당자 할당 로직 수정 필요
+        Long initialHubManagerId = assignInitialHubManager();
+
+        List<DeliveryRouteRecords> routeRecords = command.routes().stream()
+            .map(segment ->
+                DeliveryRouteRecords.initialCreate(
+                    delivery,
+                    segment,
+                    initialHubManagerId,
+                    creatorId
+                ))
+            .toList();
+
+        // (허브 이동 정보) 경로 기록 리스트 저장
+        deliveryRouteRecordsRepository.saveAll(routeRecords);
         return deliveryMapper.toResponse(savedDelivery);
     }
 
@@ -90,5 +112,11 @@ public class DeliveryService {
             .toList();
 
         return PagedDeliveryResponse.from(deliveryPage, responses);
+    }
+
+    // TODO: Hub 배송 담당자를 할당하는 가상의 로직
+    private Long assignInitialHubManager() {
+        // TODO:  배송 순번 기준 할당 로직 호출
+        return 3L; // 임시 값
     }
 }

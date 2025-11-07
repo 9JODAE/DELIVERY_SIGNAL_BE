@@ -1,5 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.domain.model;
 
+import com.delivery_signal.eureka.client.delivery.application.command.RouteSegmentCommand;
 import com.delivery_signal.eureka.client.delivery.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,6 +37,7 @@ public class DeliveryRouteRecords extends BaseEntity {
     @JoinColumn(name = "delivery_id", nullable = false)
     private Delivery delivery;
 
+    // 배송 경로 상 허브의 순번
     @Column(name = "sequence", nullable = false)
     private Integer sequence;
 
@@ -53,7 +55,7 @@ public class DeliveryRouteRecords extends BaseEntity {
 
     // 에상 소요시간
     @Column(name = "est_time")
-    private Double estTime;
+    private Long estTime;
 
     // 실제 거리
     @Column(name = "actual_distance")
@@ -61,7 +63,7 @@ public class DeliveryRouteRecords extends BaseEntity {
 
     // 실제 소요시간
     @Column(name = "actual_time")
-    private Double actualTime;
+    private Long actualTime;
 
     // 배송 현재 상태
     @Enumerated(EnumType.STRING)
@@ -69,6 +71,22 @@ public class DeliveryRouteRecords extends BaseEntity {
     private DeliveryStatus currStatus;
 
     // 허브 배송 담당자 ID
-    @Column(name = "hub_delivery_manager_id", nullable = false)
+    @Column(name = "hub_delivery_manager_id")
     private Long hubDeliveryManagerId;
+
+    // Delivery 도메인 객체와 RouteSegmentCommand를 받아 최초 이력 엔티티 생성
+    public static DeliveryRouteRecords initialCreate(Delivery delivery, RouteSegmentCommand command,
+        Long initialHubManagerId, Long creatorId) {
+        return DeliveryRouteRecords.builder()
+            .delivery(delivery)
+            .sequence(command.sequence())
+            .departureHubId(command.departureHubId())
+            .destinationHubId(command.destinationHubId())
+            .estDistance(command.estDistance())
+            .estTime(command.estTime())
+            .currStatus(DeliveryStatus.HUB_WAITING) // 초기 상태
+            .hubDeliveryManagerId(initialHubManagerId)
+            .createdBy(creatorId)
+            .build();
+    }
 }

@@ -4,18 +4,15 @@ import com.delivery_signal.eureka.client.delivery.application.command.CreateDeli
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.service.DeliveryService;
-import com.delivery_signal.eureka.client.delivery.domain.model.Delivery;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.response.PagedDeliveryResponse;
+import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryMapper;
 import jakarta.validation.Valid;
-import java.util.List;
-import java.util.UUID;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -35,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DeliveryController {
 
     private final DeliveryService deliveryService;
+    private final DeliveryMapper deliveryMapper;
 
     // API Gateway에서 인증 후, USER ID와 ROLE을 헤더에 담아 전달
     private static final String USER_ID_HEADER = "X-User-Id";
@@ -42,8 +40,9 @@ public class DeliveryController {
     // 담당 허브 ID
     private static final String USER_HUB_ID_HEADER = "X-User-Hub-Id";
 
-    public DeliveryController(DeliveryService deliveryService) {
+    public DeliveryController(DeliveryService deliveryService, DeliveryMapper deliveryMapper) {
         this.deliveryService = deliveryService;
+        this.deliveryMapper = deliveryMapper;
     }
 
     // TEST 엔드포인트
@@ -59,19 +58,8 @@ public class DeliveryController {
         @RequestHeader(USER_ROLE_HEADER) String role
     ) {
         // 권한 확인 불필요 (내부 시스템에서 호출되므로)
-        CreateDeliveryCommand command = CreateDeliveryCommand.builder()
-            .orderId(request.orderId())
-            .companyId(request.companyId())
-            .status(request.status())
-            .departureHubId(request.departureHubId())
-            .destinationHubId(request.destinationHubId())
-            .address(request.address())
-            .recipient(request.recipient())
-            .recipientSlackId(request.recipientSlackId())
-            .deliveryManagerId(request.deliveryManagerId())
-            .build();
-
-        DeliveryQueryResponse response = deliveryService.createDelivery(command);
+        CreateDeliveryCommand command = deliveryMapper.toCreateDeliveryCommand(request);
+        DeliveryQueryResponse response = deliveryService.createDelivery(command, currUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 
