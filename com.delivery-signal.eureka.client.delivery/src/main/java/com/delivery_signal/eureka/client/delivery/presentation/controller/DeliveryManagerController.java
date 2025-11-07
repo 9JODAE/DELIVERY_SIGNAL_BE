@@ -9,6 +9,7 @@ import com.delivery_signal.eureka.client.delivery.presentation.dto.request.Deliv
 import com.delivery_signal.eureka.client.delivery.presentation.dto.response.DeliveryManagerResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryManagerMapper;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,7 +32,7 @@ public class DeliveryManagerController {
     // API Gateway에서 인증 후, USER ID와 ROLE을 헤더에 담아 전달
     private static final String USER_ID_HEADER = "X-User-Id";
     private static final String USER_ROLE_HEADER = "X-User-Role";
-    // 담당 허브 ID
+    // 담당 허브 관리자 ID
     private static final String USER_HUB_ID_HEADER = "X-User-Hub-Id";
 
     public DeliveryManagerController(DeliveryManagerService deliveryManagerService,
@@ -41,14 +42,16 @@ public class DeliveryManagerController {
     }
 
     /**
-     * 배송 생성
+     * 배송 생성 (권한: MASTER, HUB_MANAGER)
      * order-service에서 통신하여 자동 생성
+     * userHubId는 마스터 관리자는 NULL, 허브 관리자는 ID를 가짐
      */
     @PostMapping
     public ResponseEntity<ApiResponse<DeliveryManagerResponse>> registerManager(
         @Valid @RequestBody DeliveryManagerRegisterRequest request,
         @RequestHeader(USER_ID_HEADER) Long currUserId,
-        @RequestHeader(USER_ROLE_HEADER) String role
+        @RequestHeader(USER_ROLE_HEADER) String role,
+        @RequestHeader(value = USER_HUB_ID_HEADER, required = false) Long userHubId
     ) {
         // TODO: Role 추후에 ENUM으로 수정
         // TODO: 권한 체크 -> 마스터 관리자 또는 허브 관리자 (담당 허브) 로직 추가 필요
