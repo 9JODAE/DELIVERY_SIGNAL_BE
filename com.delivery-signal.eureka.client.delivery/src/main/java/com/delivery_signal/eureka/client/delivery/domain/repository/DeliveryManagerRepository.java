@@ -23,4 +23,10 @@ public interface DeliveryManagerRepository {
      * @return
      */
     Optional<DeliveryManager> findActiveById(Long id);
+
+    /**
+     * 마지막 배송 순번 조회
+     * @return
+     */
+    Optional<Integer> findMaxActiveSequence();
 }

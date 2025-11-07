@@ -6,6 +6,7 @@ import com.delivery_signal.eureka.client.delivery.application.dto.ManagerQueryRe
 import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManager;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryManagerRepository;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,16 +25,19 @@ public class DeliveryManagerService {
     @Transactional
     public ManagerQueryResponse registerManager(Long userId, CreateDeliveryManagerCommand command,
         String role) {
+        // TODO : 배송담당자 타입이 업체 배송 담당자인 경우, 소속 허브ID가 존재하는 허브인지 확인
         // TODO: USER, HUB MSA 연동 & 유효성 검사 추가 예정
 
-        // TODO: 새로운 배송 담당자가 추가되면 가장 마지막 순번으로 설정
+        // 새로운 배송 담당자가 추가되면 가장 마지막 순번으로 설정
+        Integer maxActiveSequence = deliveryManagerRepository.findMaxActiveSequence().orElse(-1);
+        int newSequence = maxActiveSequence + 1;
 
         DeliveryManager manager = DeliveryManager.builder()
             .managerId(userId) // User ID를 Primary Key로 사용
             .hubId(command.hubId())
             .slackId(command.slackId())
             .managerType(command.type())
-            .deliverySequence(0) // TODO: DUMMY 수정
+            .deliverySequence(newSequence)
             .build();
 
         DeliveryManager savedManager = deliveryManagerRepository.save(manager);
@@ -53,6 +57,8 @@ public class DeliveryManagerService {
     public ManagerQueryResponse updateManager(Long managerId, UpdateManagerCommand command, Long currUserId, String role) {
         DeliveryManager manager = getDeliveryManagerByManagerId(managerId);
         // TODO: 허브 유효성 검사 추가
+
+        // TODO : 배송담당자 타입이 업체 배송 담당자인 경우, 소속 허브ID가 존재하는 허브인지 확인
 
         // 순번은 여기서 변경하지 않음. 순번 재배열은 별도 로직
         manager.update(command.hubId(), command.slackId(), command.type());

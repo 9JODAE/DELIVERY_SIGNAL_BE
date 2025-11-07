@@ -24,4 +24,9 @@ public class DeliveryManagerRepositoryImpl implements DeliveryManagerRepository 
     public Optional<DeliveryManager> findActiveById(Long id) {
         return jpaRepository.findByManagerIdAndDeletedAtIsNull(id);
     }
+
+    @Override
+    public Optional<Integer> findMaxActiveSequence() {
+        return jpaRepository.findMaxDeliverySequence();
+    }
 }
