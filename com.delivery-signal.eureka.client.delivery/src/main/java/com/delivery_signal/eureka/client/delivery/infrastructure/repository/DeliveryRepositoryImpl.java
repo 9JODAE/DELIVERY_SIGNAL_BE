@@ -5,6 +5,8 @@ import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRepo
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -29,5 +31,10 @@ public class DeliveryRepositoryImpl implements DeliveryRepository {
     @Override
     public List<Delivery> findAllActive() {
         return jpaRepository.findAllByDeletedAtIsNull();
+    }
+
+    @Override
+    public Page<Delivery> findActivePageByManagerId(Long managerId, Pageable pageable) {
+        return jpaRepository.findAllByDeliveryManagerIdAndDeletedAtIsNull(managerId, pageable);
     }
 }

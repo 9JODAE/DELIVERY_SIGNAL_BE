@@ -34,6 +34,10 @@ public class Delivery extends BaseEntity {
     @Column(name = "order_id", nullable = false)
     private UUID orderId;
 
+    // 업체 ID
+    @Column(name = "company_id", nullable = false)
+    private UUID companyId;
+
     // 배송 현재 상태
     @Enumerated(EnumType.STRING)
     @Column(name = "curr_status", nullable = false)
@@ -63,12 +67,14 @@ public class Delivery extends BaseEntity {
     @Column(name = "delivery_manager_id", nullable = false)
     private Long deliveryManagerId;
 
-    public Delivery(UUID deliveryId, UUID orderId, DeliveryStatus currStatus, UUID departureHubId,
+    public Delivery(UUID deliveryId, UUID orderId, UUID companyId,
+        DeliveryStatus currStatus, UUID departureHubId,
         UUID destinationHubId, String deliveryAddress, String recipient,
         String recipientSlackId, Long deliveryManagerId) {
 
         this.deliveryId = deliveryId;
         this.orderId = orderId;
+        this.companyId = companyId;
         this.currStatus = currStatus;
         this.departureHubId = departureHubId;
         this.destinationHubId = destinationHubId;
@@ -81,6 +87,7 @@ public class Delivery extends BaseEntity {
     public static Delivery create(CreateDeliveryCommand command) {
         return Delivery.builder()
             .orderId(command.orderId())
+            .companyId(command.companyId())
             .currStatus(DeliveryStatus.valueOf(command.status()))
             .departureHubId(command.departureHubId())
             .destinationHubId(command.destinationHubId())

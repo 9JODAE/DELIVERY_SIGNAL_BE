@@ -1,10 +1,21 @@
 package com.delivery_signal.eureka.client.delivery.application.service;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
+import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
+import com.delivery_signal.eureka.client.delivery.presentation.dto.response.PagedDeliveryResponse;
+import com.delivery_signal.eureka.client.delivery.common.UserRole;
 import com.delivery_signal.eureka.client.delivery.domain.model.Delivery;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRepository;
+import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryMapper;
+import java.util.List;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,10 +25,13 @@ public class DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
     private final OrderServiceClient orderServiceClient;
+    private final DeliveryMapper deliveryMapper;
 
-    public DeliveryService(DeliveryRepository deliveryRepository, OrderServiceClient orderServiceClient) {
+    public DeliveryService(DeliveryRepository deliveryRepository, OrderServiceClient orderServiceClient,
+        DeliveryMapper deliveryMapper) {
         this.deliveryRepository = deliveryRepository;
         this.orderServiceClient = orderServiceClient;
+        this.deliveryMapper = deliveryMapper;
     }
 
     /**
@@ -30,7 +44,7 @@ public class DeliveryService {
         // TODO: 배송 경로 기록은 추후에 추가 예정
         Delivery delivery = Delivery.create(command);
         Delivery savedDelivery = deliveryRepository.save(delivery);
-        return getDeliveryResponse(savedDelivery);
+        return deliveryMapper.toResponse(savedDelivery);
     }
 
     // TODO: 테스트용, 추후 삭제 예정
@@ -51,15 +65,30 @@ public class DeliveryService {
 //        }
 //    }
 
-    private DeliveryQueryResponse getDeliveryResponse(Delivery delivery) {
-        return DeliveryQueryResponse.builder()
-            .deliveryId(delivery.getDeliveryId())
-            .orderId(delivery.getOrderId())
-            .status(delivery.getCurrStatus().getDescription())
-            .address(delivery.getDeliveryAddress())
-            .recipient(delivery.getRecipient())
-            .recipientSlackId(delivery.getRecipientSlackId())
-            .deliveryManagerId(delivery.getDeliveryManagerId())
-            .build();
+    /**
+     * 담당 배송 목록 조회
+     * 권한: 배송 담당자 본인만 가능
+     */
+    @Transactional(readOnly = true)
+    public PagedDeliveryResponse getMyDeliveries(Long currUserId, String role, DeliveryListQuery query) {
+
+        // 권한 확인 : 배송 담당자는 자신이 담당하는 배송만 조회 가능
+        if (!Objects.equals(role, UserRole.DELIVERY_MANAGER.name())) {
+            throw new RuntimeException("담당 배송 목록을 조회할 권한이 없습니다. (ROLE: " + role + ")");
+        }
+
+        Sort sort = Sort.by(query.direction(), query.sortBy());
+        Pageable pageable = PageRequest.of(query.page(), query.size(), sort);
+
+        // Domain 객체의 Page 반환
+        Page<Delivery> deliveryPage = deliveryRepository.findActivePageByManagerId(currUserId,
+            pageable);
+
+        List<DeliveryQueryResponse> responses = deliveryPage.getContent()
+            .stream()
+            .map(deliveryMapper::toResponse)
+            .toList();
+
+        return PagedDeliveryResponse.from(deliveryPage, responses);
     }
 }

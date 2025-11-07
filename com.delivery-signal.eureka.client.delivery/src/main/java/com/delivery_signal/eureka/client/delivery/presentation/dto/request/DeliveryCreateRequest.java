@@ -5,6 +5,7 @@ import java.util.UUID;
 // TODO: 루트 경로는 추후에 추가 예정
 public record DeliveryCreateRequest(
     UUID orderId,
+    UUID companyId,
     String status,
     UUID departureHubId,
     UUID destinationHubId,
