@@ -24,7 +24,6 @@ import com.delivery_signal.eureka.client.hub.domain.vo.Distance;
 import com.delivery_signal.eureka.client.hub.domain.vo.Duration;
 import com.delivery_signal.eureka.client.hub.domain.mapper.HubRouteSearchCondition;
 import com.delivery_signal.eureka.client.hub.domain.mapper.HubSearchCondition;
-import com.delivery_signal.eureka.client.hub.domain.vo.HubName;
 
 import lombok.RequiredArgsConstructor;
 
@@ -102,6 +101,11 @@ public class HubService {
 		hub.softDelete(1L); // TODO 유저 서비스 개발 완료 시 변경
 	}
 
+	private Hub getHubOrThrow(UUID hubId) {
+		return hubRepository.findById(hubId)
+			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
+	}
+
 
 
 	/**
@@ -138,8 +142,16 @@ public class HubService {
 			.map(HubRouteResult::from);
 	}
 
-	private Hub getHubOrThrow(UUID hubId) {
-		return hubRepository.findById(hubId)
+	/**
+	 * 허브 이동정보 조회
+	 * @param hubId 출발 허브 아이디
+	 * @param hubRouteId 허브 이동정보 아이디
+	 * @return 허브 이동정보 조회 결과
+	 */
+	public HubRouteResult getHubRoute(UUID hubId, UUID hubRouteId) {
+		Hub hub = hubRepository.findByIdWithRoutes(hubId)
 			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
+		HubRoute route = hub.getHubRoute(hubRouteId);
+		return HubRouteResult.from(route);
 	}
 }

@@ -30,6 +30,7 @@ import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHub
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHubRouteResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubDetailResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubResponse;
+import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubRouteDetailResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubRouteResponse;
 
 import jakarta.validation.Valid;
@@ -158,6 +159,15 @@ public class HubController {
 		);
 		Page<HubRouteResponse> response = hubService.searchHubRoutes(command)
 			.map(HubRouteResponse::from);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+	}
+
+	@GetMapping("/{hubId}/routes/{hubRouteId}")
+	public ResponseEntity<ApiResponse<HubRouteDetailResponse>> getHubRoute(
+		@PathVariable UUID hubId,
+		@PathVariable UUID hubRouteId
+	) {
+		HubRouteDetailResponse response = HubRouteDetailResponse.from(hubService.getHubRoute(hubId, hubRouteId));
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
 	}
 

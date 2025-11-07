@@ -9,6 +9,8 @@ import org.hibernate.annotations.UuidGenerator;
 
 import com.delivery_signal.eureka.client.hub.domain.vo.Address;
 import com.delivery_signal.eureka.client.hub.domain.vo.Coordinate;
+import com.delivery_signal.eureka.client.hub.domain.vo.Distance;
+import com.delivery_signal.eureka.client.hub.domain.vo.Duration;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -59,7 +61,7 @@ public class Hub extends AggregateRootEntity<Hub> {
 		return hub;
 	}
 
-	public void update(String name,Address address, Coordinate coordinate) {
+	public void update(String name, Address address, Coordinate coordinate) {
 		this.name = name;
 		this.address = address;
 		this.coordinate = coordinate;
@@ -67,5 +69,12 @@ public class Hub extends AggregateRootEntity<Hub> {
 
 	public void addHubRoute(HubRoute route) {
 		this.hubRoutes.add(route);
+	}
+
+	public HubRoute getHubRoute(UUID hubRouteId) {
+		return this.hubRoutes.stream()
+			.filter(r -> r.getHubRouteId().equals(hubRouteId))
+			.findFirst()
+			.orElseThrow(() -> new IllegalArgumentException("요청한 허브 이동정보를 찾을 수 없습니다."));
 	}
 }
