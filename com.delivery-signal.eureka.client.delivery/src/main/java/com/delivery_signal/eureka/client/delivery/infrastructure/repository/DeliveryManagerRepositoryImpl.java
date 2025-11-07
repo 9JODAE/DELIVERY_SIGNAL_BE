@@ -29,4 +29,23 @@ public class DeliveryManagerRepositoryImpl implements DeliveryManagerRepository 
     public Optional<Integer> findMaxActiveSequence() {
         return jpaRepository.findMaxDeliverySequence();
     }
+
+    @Override
+    public Long countActiveManagers() {
+        return jpaRepository.countByDeletedAtIsNull();
+    }
+
+    @Override
+    public Optional<DeliveryManager> findNextActiveManager(int lastSequence) {
+
+        Optional<DeliveryManager> nextManager = jpaRepository.findNextBySequenceGreaterThan(
+            lastSequence);
+
+        if (nextManager.isPresent()) {
+            return nextManager;
+        }
+
+        // 다음 배정된 배송 담당자가 없으면 순환 (다시 순번 0부터 시작)
+        return jpaRepository.findFirstActiveManager();
+    }
 }

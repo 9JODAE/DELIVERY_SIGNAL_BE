@@ -29,4 +29,18 @@ public interface DeliveryManagerRepository {
      * @return
      */
     Optional<Integer> findMaxActiveSequence();
+
+    /**
+     * 현재 배송 담당자 수
+     * @return
+     */
+    Long countActiveManagers();
+
+    /**
+     * 다음 배정될 순번의 배송 담당자를 조회 (순환 로직/라운드로빈)
+     * lastSequence : 직전에 배정된 담당자의 순번
+     * @param lastSequence
+     * @return
+     */
+    Optional<DeliveryManager> findNextActiveManager(int lastSequence);
 }

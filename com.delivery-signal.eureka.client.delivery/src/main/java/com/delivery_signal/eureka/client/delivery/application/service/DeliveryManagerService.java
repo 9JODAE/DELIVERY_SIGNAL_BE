@@ -7,6 +7,7 @@ import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManager;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryManagerRepository;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,13 +19,16 @@ public class DeliveryManagerService {
 //    private final HubServiceClient hubServiceClient;
 //    private final UserServiceClient userServiceClient;
 
+    private int lastAssignedSequence = -1;
+
     public DeliveryManagerService(DeliveryManagerRepository deliveryManagerRepository) {
         this.deliveryManagerRepository = deliveryManagerRepository;
     }
 
     @Transactional
     public ManagerQueryResponse registerManager(Long userId, CreateDeliveryManagerCommand command,
-        String role) {
+        String role, UUID userHubId) {
+        // TODO: 권한 검증: 마스터/허브 관리자만 가능
         // TODO : 배송담당자 타입이 업체 배송 담당자인 경우, 소속 허브ID가 존재하는 허브인지 확인
         // TODO: USER, HUB MSA 연동 & 유효성 검사 추가 예정
 
@@ -41,7 +45,6 @@ public class DeliveryManagerService {
         DeliveryManager savedManager = deliveryManagerRepository.save(manager);
         return getManagerResponse(savedManager);
     }
-
 
     @Transactional(readOnly = true)
     public ManagerQueryResponse getDeliveryManagerInfo(Long managerId, Long currUserId, String role) {
@@ -72,6 +75,24 @@ public class DeliveryManagerService {
         }
         // 논리적 삭제 처리
         manager.softDelete(deletedByUserId);
+    }
+
+    @Transactional
+    public Long assignNextDeliveryManager() {
+        // 활성 담당자 수 확인 (순환 로직 기반)
+        Long activeCount = deliveryManagerRepository.countActiveManagers();
+        if (activeCount == 0) {
+            throw new IllegalStateException("현재 배정 가능한 배송 담당자가 없습니다.");
+        }
+
+        DeliveryManager nextManager = deliveryManagerRepository.findNextActiveManager(lastAssignedSequence)
+            .orElseThrow(() -> new IllegalStateException("배정 로직 오류: 다음 담당자를 찾을 수 없습니다."));
+
+        // TODO: lastAssignedSequence도 결국에는 별도의 테이블/Redis 만들어서 관리해야 함 (그래야 마지막 정확한 시퀀스 번호 가져올 수 있음)
+        // 마지막 순번 업데이트
+        this.lastAssignedSequence = nextManager.getDeliverySequence();
+        // 배정된 담당자 ID 반환
+        return nextManager.getManagerId();
     }
 
     private DeliveryManager getDeliveryManagerByManagerId(Long managerId) {

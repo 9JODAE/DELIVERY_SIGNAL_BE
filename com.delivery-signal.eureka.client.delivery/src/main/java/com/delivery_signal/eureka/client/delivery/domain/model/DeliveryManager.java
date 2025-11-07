@@ -70,6 +70,11 @@ public class DeliveryManager extends BaseEntity {
         this.managerType = managerType;
     }
 
+    // 순번 변경
+    public void setDeliverySequence(int sequence) {
+        this.deliverySequence = sequence;
+    }
+
     public void softDelete(Long userId) {
         super.markDeleted(userId);
     }

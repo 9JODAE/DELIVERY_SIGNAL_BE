@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/v1/managers")
+@RequestMapping("/open-api/v1/managers")
 public class DeliveryManagerController {
 
     private final DeliveryManagerService deliveryManagerService;
@@ -114,5 +114,18 @@ public class DeliveryManagerController {
     ) {
         deliveryManagerService.softDeleteManager(managerId, currUserId);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    /**
+     * 다음 배송 담당자 배정
+     * 다른 MSA에서 FeignClient를 통해 호출될 엔드포인트 (내부 호출)
+     */
+    @PostMapping("/assign")
+    public ResponseEntity<ApiResponse<Long>> assignNextManager(
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        Long deliveryManagerId = deliveryManagerService.assignNextDeliveryManager();
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(deliveryManagerId));
     }
 }
