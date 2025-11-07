@@ -6,14 +6,19 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/delivery_signal
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    username: ${DB_USERNAME:user}
+    password: ${DB_PASSWORD:user1234}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
         show_sql: true
+
+service:
+  jwt:
+    access-expiration: 10800000  # 만료시간: 36000ms=1h
+    secret-key: ${JWT_SECRET_KEY:cLY1U1tX9LrjwzuBUL1Sz4J42L9dIV6EkdqwQhfuexhzW_7dYtX0dJKuxuHsE98IovTWzAu6ShkYKyiISBvJNw}

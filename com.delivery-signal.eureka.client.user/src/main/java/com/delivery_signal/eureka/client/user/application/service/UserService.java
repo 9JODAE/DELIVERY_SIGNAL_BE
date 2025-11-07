@@ -28,12 +28,16 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-
     // Feign Client
     private final OrderFeignClient orderFeignClient;
+
+    // 통신 테스트 (Other Service -> User Service)
+
+    // 통신 테스트 (User Service -> Other Service)
+
+
 
     public String getOrderInfo() {
         return orderFeignClient.getOrder();

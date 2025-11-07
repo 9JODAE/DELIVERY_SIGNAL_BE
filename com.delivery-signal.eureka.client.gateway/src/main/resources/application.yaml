@@ -10,7 +10,7 @@ eureka:
 
 
 jwt:
-  secret-key: ${KEY}
+  secret-key: ${KEY:cLY1U1tX9LrjwzuBUL1Sz4J42L9dIV6EkdqwQhfuexhzW_7dYtX0dJKuxuHsE98IovTWzAu6ShkYKyiISBvJNw}
 
 spring:
   main:

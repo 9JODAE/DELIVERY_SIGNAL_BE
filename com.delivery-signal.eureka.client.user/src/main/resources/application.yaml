@@ -13,8 +13,3 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka/
-
-
-
-# DB : deliverey_signal
-# DB-Password :

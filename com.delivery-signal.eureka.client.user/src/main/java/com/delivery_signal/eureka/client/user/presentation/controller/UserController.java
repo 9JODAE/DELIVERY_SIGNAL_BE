@@ -22,7 +22,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 //@Tag(name="domain-controller", description = "MASTER의 생성/수정/삭제 + 모든 사용자의 권한별 조회 API")
-@RequestMapping("/v1/users")
+@RequestMapping("/v1/users") // gateway: open-api|api/v1/users/**
 public class UserController {
 
     private final UserService userService;
@@ -31,9 +31,13 @@ public class UserController {
     // Feign Client
     @GetMapping("/call")
     public String callOrderByUser() {
-        return userService.callOrder();
+        return "Gateway 사용 성공";
+        //return userService.callOrder();
     }
 
+    // 통신 테스트 (Other Service -> User Service)
+
+    // 통신 테스트 (User Service -> Other Service)
 
     @PostMapping()
 //    @PreAuthorize("hasRole('MASTER')")
