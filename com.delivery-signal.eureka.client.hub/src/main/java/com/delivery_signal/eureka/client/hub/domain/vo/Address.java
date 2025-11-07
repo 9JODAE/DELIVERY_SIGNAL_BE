@@ -9,8 +9,11 @@ import lombok.NoArgsConstructor;
 @Getter
 @Embeddable
 @EqualsAndHashCode
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
 public class Address {
+
+	private static final int MIN_ADDRESS_LENGTH = 12;
+	private static final int MAX_ADDRESS_LENGTH = 100;
 
 	private String value;
 
@@ -27,8 +30,9 @@ public class Address {
 		if (address == null || address.isBlank()) {
 			throw new IllegalArgumentException("주소는 필수입니다.");
 		}
-		if (address.length() < 12 || address.length() > 100) {
-			throw new IllegalArgumentException("주소는 12자 이상 100자 이하여야 합니다.");
+		if (address.length() < MIN_ADDRESS_LENGTH || address.length() > MAX_ADDRESS_LENGTH) {
+			throw new IllegalArgumentException(
+				"주소는 " + MIN_ADDRESS_LENGTH + "자 이상 " + MAX_ADDRESS_LENGTH + "자 이하여야 합니다.");
 		}
 	}
 }

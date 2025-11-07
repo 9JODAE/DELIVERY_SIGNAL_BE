@@ -8,4 +8,13 @@ public record CreateHubCommand(
 	String address,
 	Double latitude,
 	Double longitude
-) {}
+) {
+	public static CreateHubCommand of(
+		String name,
+		String address,
+		Double latitude,
+		Double longitude
+	) {
+		return new CreateHubCommand(name, address, latitude, longitude);
+	}
+}
