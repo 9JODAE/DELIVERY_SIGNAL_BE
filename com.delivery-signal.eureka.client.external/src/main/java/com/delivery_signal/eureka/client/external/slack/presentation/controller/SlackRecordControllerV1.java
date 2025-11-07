@@ -1,6 +1,8 @@
 package com.delivery_signal.eureka.client.external.slack.presentation.controller;
 
 import com.delivery_signal.eureka.client.external.global.response.CommonApiResponse;
+import com.delivery_signal.eureka.client.external.global.response.PageResponse;
+import com.delivery_signal.eureka.client.external.slack.application.dto.SlackRecordDto;
 import com.delivery_signal.eureka.client.external.slack.application.service.SlackRecordServiceV1;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.CreateSlackRecordResponse;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.DeleteSlackRecordResponse;
@@ -9,13 +11,14 @@ import com.delivery_signal.eureka.client.external.slack.presentation.dto.UpdateS
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.request.CreateSlackRecordRequest;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.request.UpdateSlackRecordRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/v1/slack")
+@RequestMapping("/v1/slacks")
 @RequiredArgsConstructor
 public class SlackRecordControllerV1 {
 
@@ -40,6 +43,20 @@ public class SlackRecordControllerV1 {
         );
         return CommonApiResponse.ok(response);
     }
+
+    @GetMapping
+    public ResponseEntity<CommonApiResponse<PageResponse<SlackRecordResponse>>> getSlackRecordList(
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sortBy", defaultValue = "createdAt") String sortBy,
+            @RequestParam(value = "isAsc", defaultValue = "false") boolean isAsc
+            ) {
+        Page<SlackRecordDto> slackRecordDtoPage = serviceV1.getSlackRecordList(page, size, sortBy, isAsc);
+        Page<SlackRecordResponse> slackRecordResponsePage = slackRecordDtoPage.map(SlackRecordResponse::from);
+        return CommonApiResponse.ok(PageResponse.fromPage(slackRecordResponsePage));
+    }
+
+
 
     @PatchMapping("/{id}")
     public ResponseEntity<CommonApiResponse<UpdateSlackRecordResponse>> updateSlackRecord(
