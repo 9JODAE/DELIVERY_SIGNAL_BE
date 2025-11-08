@@ -67,7 +67,11 @@ public class DeliveryService {
             .map(segment ->
                 DeliveryRouteRecords.initialCreate(
                     delivery,
-                    segment,
+                    segment.sequence(),
+                    segment.departureHubId(),
+                    segment.destinationHubId(),
+                    segment.estDistance(),
+                    segment.estTime(),
                     initialHubManagerId,
                     creatorId
                 ))

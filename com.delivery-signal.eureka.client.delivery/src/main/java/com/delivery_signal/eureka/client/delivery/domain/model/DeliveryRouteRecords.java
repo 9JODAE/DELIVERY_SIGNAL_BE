@@ -1,6 +1,5 @@
 package com.delivery_signal.eureka.client.delivery.domain.model;
 
-import com.delivery_signal.eureka.client.delivery.application.command.RouteSegmentCommand;
 import com.delivery_signal.eureka.client.delivery.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -75,15 +74,16 @@ public class DeliveryRouteRecords extends BaseEntity {
     private Long hubDeliveryManagerId;
 
     // Delivery 도메인 객체와 RouteSegmentCommand를 받아 최초 이력 엔티티 생성
-    public static DeliveryRouteRecords initialCreate(Delivery delivery, RouteSegmentCommand command,
+    public static DeliveryRouteRecords initialCreate(Delivery delivery, Integer sequence,
+        UUID departureHubId, UUID destinationHubId, Double estDistance, Long estTime,
         Long initialHubManagerId, Long creatorId) {
         return DeliveryRouteRecords.builder()
             .delivery(delivery)
-            .sequence(command.sequence())
-            .departureHubId(command.departureHubId())
-            .destinationHubId(command.destinationHubId())
-            .estDistance(command.estDistance())
-            .estTime(command.estTime())
+            .sequence(sequence)
+            .departureHubId(departureHubId)
+            .destinationHubId(destinationHubId)
+            .estDistance(estDistance)
+            .estTime(estTime)
             .currStatus(DeliveryStatus.HUB_WAITING) // 초기 상태
             .hubDeliveryManagerId(initialHubManagerId)
             .createdBy(creatorId)
