@@ -22,8 +22,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+// TODO: 추후 /api/v1/... 로 바꿀 예정
 @RestController
-@RequestMapping("/api/v1/managers")
+@RequestMapping("/open-api/v1/managers")
 public class DeliveryManagerController {
 
     private final DeliveryManagerService deliveryManagerService;

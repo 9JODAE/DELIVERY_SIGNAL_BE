@@ -3,27 +3,30 @@ package com.delivery_signal.eureka.client.delivery.application.service;
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryManagerCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateManagerCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.ManagerQueryResponse;
-import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManager;
-import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManagerType;
+import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryManager;
+import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryManagerType;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryManagerRepository;
+import com.delivery_signal.eureka.client.delivery.domain.service.DeliveryAssignmentService;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 public class DeliveryManagerService {
 
     private final DeliveryManagerRepository deliveryManagerRepository;
+    private final DeliveryAssignmentService deliveryAssignmentService;
     // TODO: 추후 FeignClient 연동 예정
 //    private final HubServiceClient hubServiceClient;
 //    private final UserServiceClient userServiceClient;
 
-    private int lastAssignedSequence = -1;
-
-    public DeliveryManagerService(DeliveryManagerRepository deliveryManagerRepository) {
+    public DeliveryManagerService(DeliveryManagerRepository deliveryManagerRepository,
+        DeliveryAssignmentService deliveryAssignmentService) {
         this.deliveryManagerRepository = deliveryManagerRepository;
+        this.deliveryAssignmentService = deliveryAssignmentService;
     }
 
     @Transactional
@@ -88,20 +91,19 @@ public class DeliveryManagerService {
         manager.softDelete(deletedByUserId);
     }
 
+    /**
+     * 배송 담당자 순번을 관리하고 다음 담당자를 배정
+     */
     @Transactional
     public Long assignNextDeliveryManager() {
+        // TODO: 권한 유효성 검사 (마스터 관리자, 허브 관리자 (담당 허브 한정)만 가능)
+
         // 활성 담당자 수 확인 (순환 로직 기반)
         Long activeCount = deliveryManagerRepository.countActiveManagers();
         if (activeCount == 0) {
             throw new IllegalStateException("현재 배정 가능한 배송 담당자가 없습니다.");
         }
-
-        DeliveryManager nextManager = deliveryManagerRepository.findNextActiveManager(lastAssignedSequence)
-            .orElseThrow(() -> new IllegalStateException("배정 로직 오류: 다음 담당자를 찾을 수 없습니다."));
-
-        // TODO: lastAssignedSequence도 결국에는 별도의 테이블/Redis 만들어서 관리해야 함 (그래야 마지막 정확한 시퀀스 번호 가져올 수 있음)
-        // 마지막 순번 업데이트
-        this.lastAssignedSequence = nextManager.getDeliverySequence();
+        DeliveryManager nextManager = deliveryAssignmentService.getNextManagerForAssignment();
         // 배정된 담당자 ID 반환
         return nextManager.getManagerId();
     }

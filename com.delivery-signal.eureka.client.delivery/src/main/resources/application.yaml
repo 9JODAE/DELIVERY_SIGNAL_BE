@@ -4,6 +4,11 @@ spring:
   application:
     name: delivery-service
 
+  data:
+    redis:
+      host: localhost # Docker 환경이라면 컨테이너 이름 또는 IP
+      port: 6380
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:

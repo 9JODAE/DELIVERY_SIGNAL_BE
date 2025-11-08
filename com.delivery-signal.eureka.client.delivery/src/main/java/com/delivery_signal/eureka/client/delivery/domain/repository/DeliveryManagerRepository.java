@@ -1,6 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.domain.repository;
 
-import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManager;
+import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryManager;
 import java.util.Optional;
 
 public interface DeliveryManagerRepository {

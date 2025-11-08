@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.delivery.domain.model;
+package com.delivery_signal.eureka.client.delivery.domain.entity;
 
 import lombok.Getter;
 
