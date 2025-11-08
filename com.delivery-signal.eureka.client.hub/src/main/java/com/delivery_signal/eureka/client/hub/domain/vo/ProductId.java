@@ -14,13 +14,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductId {
 
-	private UUID productId;
+	private UUID value;
 
 	public ProductId(UUID productId) {
 		if (productId == null) {
 			throw new IllegalArgumentException("유효하지 않은 상품 ID입니다");
 		}
-		this.productId = productId;
+		this.value = productId;
 	}
 
 	public static  ProductId of(UUID productId) {

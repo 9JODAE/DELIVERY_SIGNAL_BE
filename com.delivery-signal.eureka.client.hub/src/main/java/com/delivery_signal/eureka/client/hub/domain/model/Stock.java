@@ -34,7 +34,7 @@ public class Stock extends BaseEntity {
 	private Hub hub;
 
 	@Embedded
-	@AttributeOverride(name = "productId", column = @Column(name = "product_id", nullable = false))
+	@AttributeOverride(name = "value", column = @Column(name = "product_id", nullable = false))
 	private ProductId productId;
 
 	@Column(nullable = false)
