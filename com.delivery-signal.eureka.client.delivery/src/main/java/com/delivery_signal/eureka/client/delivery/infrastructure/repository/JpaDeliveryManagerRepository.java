@@ -30,10 +30,10 @@ public interface JpaDeliveryManagerRepository extends JpaRepository<DeliveryMana
     Long countByDeletedAtIsNull();
 
     // lastSequence보다 크면서 가장 작은 순번(바로 다음 순번)을 가진 담당자 조회
-    @Query(value = "SELECT dm.* FROM delivery_manager dm WHERE dm.deleted_at IS NULL AND dm.delivery_sequence > :lastSequence ORDER BY dm.delivery_sequence ASC LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT dm.* FROM p_delivery_managers dm WHERE dm.deleted_at IS NULL AND dm.sequence > :lastSequence ORDER BY dm.sequence ASC LIMIT 1", nativeQuery = true)
     Optional<DeliveryManager> findNextBySequenceGreaterThan(@Param("lastSequence") int lastSequence);
 
     // 다음 배송 담당자가 없으면 순번 0부터 시작하는 가장 작은 순번의 담당자 조회
-    @Query(value = "SELECT dm.* FROM delivery_manager dm WHERE dm.deleted_at IS NULL ORDER BY dm.delivery_sequence ASC LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT dm.* FROM p_delivery_managers dm WHERE dm.deleted_at IS NULL ORDER BY dm.sequence ASC LIMIT 1", nativeQuery = true)
     Optional<DeliveryManager> findFirstActiveManager();
 }
