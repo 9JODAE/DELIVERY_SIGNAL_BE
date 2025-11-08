@@ -6,7 +6,7 @@ import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryR
 import com.delivery_signal.eureka.client.delivery.application.mapper.DeliveryDomainMapper;
 import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryRouteRecords;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRouteRecordsRepository;
-import com.delivery_signal.eureka.client.delivery.presentation.dto.response.PagedDeliveryResponse;
+import com.delivery_signal.eureka.client.delivery.application.dto.PagedDeliveryResponse;
 import com.delivery_signal.eureka.client.delivery.common.UserRole;
 import com.delivery_signal.eureka.client.delivery.domain.model.Delivery;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRepository;

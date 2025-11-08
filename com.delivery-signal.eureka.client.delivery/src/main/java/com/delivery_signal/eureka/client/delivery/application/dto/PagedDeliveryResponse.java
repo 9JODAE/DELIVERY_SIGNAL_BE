@@ -1,6 +1,5 @@
-package com.delivery_signal.eureka.client.delivery.presentation.dto.response;
+package com.delivery_signal.eureka.client.delivery.application.dto;
 
-import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
 import com.delivery_signal.eureka.client.delivery.domain.model.Delivery;
 import java.util.List;
 import org.springframework.data.domain.Page;
