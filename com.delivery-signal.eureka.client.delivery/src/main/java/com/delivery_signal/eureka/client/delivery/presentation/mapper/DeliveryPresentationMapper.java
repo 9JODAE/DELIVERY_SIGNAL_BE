@@ -2,14 +2,14 @@ package com.delivery_signal.eureka.client.delivery.presentation.mapper;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.RouteSegmentCommand;
-import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
-import com.delivery_signal.eureka.client.delivery.domain.model.Delivery;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DeliveryMapper {
-
+public class DeliveryPresentationMapper {
+    /**
+     * Request DTO -> Application Command
+     */
     public CreateDeliveryCommand toCreateDeliveryCommand(DeliveryCreateRequest request) {
         return CreateDeliveryCommand.builder()
             .orderId(request.orderId())
@@ -35,24 +35,6 @@ public class DeliveryMapper {
             .destinationHubId(dto.destinationHubId())
             .estDistance(dto.estDistance())
             .estTime(dto.estTime())
-            .build();
-    }
-
-    public DeliveryQueryResponse toResponse(Delivery delivery) {
-        if (delivery == null) {
-            return null;
-        }
-
-        return DeliveryQueryResponse.builder()
-            .deliveryId(delivery.getDeliveryId())
-            .orderId(delivery.getOrderId())
-            .departureHubId(delivery.getDepartureHubId())
-            .destinationHubId(delivery.getDestinationHubId())
-            .status(String.valueOf(delivery.getCurrStatus()))
-            .address(delivery.getDeliveryAddress())
-            .recipient(delivery.getRecipient())
-            .recipientSlackId(delivery.getRecipientSlackId())
-            .deliveryManagerId(delivery.getDeliveryManagerId())
             .build();
     }
 }

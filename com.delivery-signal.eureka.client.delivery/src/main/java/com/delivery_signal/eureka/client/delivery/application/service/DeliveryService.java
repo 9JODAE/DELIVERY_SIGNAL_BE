@@ -3,13 +3,13 @@ package com.delivery_signal.eureka.client.delivery.application.service;
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
+import com.delivery_signal.eureka.client.delivery.application.mapper.DeliveryDomainMapper;
 import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryRouteRecords;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRouteRecordsRepository;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.response.PagedDeliveryResponse;
 import com.delivery_signal.eureka.client.delivery.common.UserRole;
 import com.delivery_signal.eureka.client.delivery.domain.model.Delivery;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRepository;
-import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryMapper;
 import java.util.List;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
@@ -27,15 +27,15 @@ public class DeliveryService {
     private final DeliveryRepository deliveryRepository;
     private final DeliveryRouteRecordsRepository deliveryRouteRecordsRepository;
     private final OrderServiceClient orderServiceClient;
-    private final DeliveryMapper deliveryMapper;
+    private final DeliveryDomainMapper deliveryDomainMapper;
 
     public DeliveryService(DeliveryRepository deliveryRepository,
         DeliveryRouteRecordsRepository deliveryRouteRecordsRepository, OrderServiceClient orderServiceClient,
-        DeliveryMapper deliveryMapper) {
+        DeliveryDomainMapper deliveryDomainMapper) {
         this.deliveryRepository = deliveryRepository;
         this.deliveryRouteRecordsRepository = deliveryRouteRecordsRepository;
         this.orderServiceClient = orderServiceClient;
-        this.deliveryMapper = deliveryMapper;
+        this.deliveryDomainMapper = deliveryDomainMapper;
     }
 
     /**
@@ -79,7 +79,7 @@ public class DeliveryService {
 
         // (허브 이동 정보) 경로 기록 리스트 저장
         deliveryRouteRecordsRepository.saveAll(routeRecords);
-        return deliveryMapper.toResponse(savedDelivery);
+        return deliveryDomainMapper.toResponse(savedDelivery);
     }
 
     // TODO: 테스트용, 추후 삭제 예정
@@ -121,7 +121,7 @@ public class DeliveryService {
 
         List<DeliveryQueryResponse> responses = deliveryPage.getContent()
             .stream()
-            .map(deliveryMapper::toResponse)
+            .map(deliveryDomainMapper::toResponse)
             .toList();
 
         return PagedDeliveryResponse.from(deliveryPage, responses);

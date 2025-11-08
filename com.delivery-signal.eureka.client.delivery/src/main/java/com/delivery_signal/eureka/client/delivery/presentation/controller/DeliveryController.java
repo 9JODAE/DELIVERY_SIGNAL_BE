@@ -7,7 +7,7 @@ import com.delivery_signal.eureka.client.delivery.application.service.DeliverySe
 import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.response.PagedDeliveryResponse;
-import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryMapper;
+import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryPresentationMapper;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DeliveryController {
 
     private final DeliveryService deliveryService;
-    private final DeliveryMapper deliveryMapper;
+    private final DeliveryPresentationMapper deliveryPresentationMapper;
 
     // API Gateway에서 인증 후, USER ID와 ROLE을 헤더에 담아 전달
     private static final String USER_ID_HEADER = "X-User-Id";
@@ -40,9 +40,9 @@ public class DeliveryController {
     // 담당 허브 ID
     private static final String USER_HUB_ID_HEADER = "X-User-Hub-Id";
 
-    public DeliveryController(DeliveryService deliveryService, DeliveryMapper deliveryMapper) {
+    public DeliveryController(DeliveryService deliveryService, DeliveryPresentationMapper deliveryPresentationMapper) {
         this.deliveryService = deliveryService;
-        this.deliveryMapper = deliveryMapper;
+        this.deliveryPresentationMapper = deliveryPresentationMapper;
     }
 
     // TEST 엔드포인트
@@ -58,7 +58,7 @@ public class DeliveryController {
         @RequestHeader(USER_ROLE_HEADER) String role
     ) {
         // 권한 확인 불필요 (내부 시스템에서 호출되므로)
-        CreateDeliveryCommand command = deliveryMapper.toCreateDeliveryCommand(request);
+        CreateDeliveryCommand command = deliveryPresentationMapper.toCreateDeliveryCommand(request);
         DeliveryQueryResponse response = deliveryService.createDelivery(command, currUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
