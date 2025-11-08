@@ -17,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +46,17 @@ public class DeliveryService {
     public DeliveryQueryResponse createDelivery(CreateDeliveryCommand command, Long creatorId) {
         // TODO: 허브 유효성 검사 (Hub 존재 여부 등) - CLIENT 통신 필요
         // TODO: 배송 경로 기록은 추후에 추가 예정
-        Delivery delivery = Delivery.create(command, creatorId);
+        Delivery delivery = Delivery.create(command.orderId(),
+            command.companyId(),
+            command.status(),
+            command.departureHubId(),
+            command.destinationHubId(),
+            command.address(),
+            command.recipient(),
+            command.recipientSlackId(),
+            command.deliveryManagerId(),
+            creatorId
+        );
         Delivery savedDelivery = deliveryRepository.save(delivery);
 
         // 배송(허브 이동) 경로 기록 엔티티 목록 생성 및 저장

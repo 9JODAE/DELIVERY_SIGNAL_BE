@@ -1,6 +1,5 @@
 package com.delivery_signal.eureka.client.delivery.domain.model;
 
-import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -67,34 +66,19 @@ public class Delivery extends BaseEntity {
     @Column(name = "delivery_manager_id", nullable = false)
     private Long deliveryManagerId;
 
-    public Delivery(UUID deliveryId, UUID orderId, UUID companyId,
-        DeliveryStatus currStatus, UUID departureHubId,
-        UUID destinationHubId, String deliveryAddress, String recipient,
-        String recipientSlackId, Long deliveryManagerId) {
-
-        this.deliveryId = deliveryId;
-        this.orderId = orderId;
-        this.companyId = companyId;
-        this.currStatus = currStatus;
-        this.departureHubId = departureHubId;
-        this.destinationHubId = destinationHubId;
-        this.deliveryAddress = deliveryAddress;
-        this.recipient = recipient;
-        this.recipientSlackId = recipientSlackId;
-        this.deliveryManagerId = deliveryManagerId;
-    }
-
-    public static Delivery create(CreateDeliveryCommand command, Long creatorId) {
+    public static Delivery create(UUID orderId, UUID companyId, String status, UUID departureHubId,
+        UUID destinationHubId, String address, String recipient,
+        String recipientSlackId, Long deliveryManagerId, Long creatorId) {
         return Delivery.builder()
-            .orderId(command.orderId())
-            .companyId(command.companyId())
-            .currStatus(DeliveryStatus.valueOf(command.status()))
-            .departureHubId(command.departureHubId())
-            .destinationHubId(command.destinationHubId())
-            .deliveryAddress(command.address())
-            .recipient(command.recipient())
-            .recipientSlackId(command.recipientSlackId())
-            .deliveryManagerId(command.deliveryManagerId())
+            .orderId(orderId)
+            .companyId(companyId)
+            .currStatus(DeliveryStatus.valueOf(status))
+            .departureHubId(departureHubId)
+            .destinationHubId(destinationHubId)
+            .deliveryAddress(address)
+            .recipient(recipient)
+            .recipientSlackId(recipientSlackId)
+            .deliveryManagerId(deliveryManagerId)
             .createdBy(creatorId)
             .build();
     }
