@@ -1,7 +1,7 @@
 package com.delivery_signal.eureka.client.order.application.service.internal;
 
 import com.delivery_signal.eureka.client.order.application.port.out.DeliveryCommandPort;
-import com.delivery_signal.eureka.client.order.presentation.internal.dto.response.OrderForDeliveryResponseDto;
+import com.delivery_signal.eureka.client.order.application.dto.response.OrderForDeliveryResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

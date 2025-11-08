@@ -5,7 +5,7 @@ import com.delivery_signal.eureka.client.order.application.port.out.DeliveryComm
 import com.delivery_signal.eureka.client.order.domain.vo.delivery.DeliveryCreatedInfo;
 import com.delivery_signal.eureka.client.order.infrastructure.client.delivery.DeliveryClient;
 import com.delivery_signal.eureka.client.order.infrastructure.client.delivery.dto.DeliveryCreateRequestDto;
-import com.delivery_signal.eureka.client.order.presentation.internal.dto.response.OrderForDeliveryResponseDto;
+import com.delivery_signal.eureka.client.order.application.dto.response.OrderForDeliveryResponseDto;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.stereotype.Component;

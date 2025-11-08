@@ -1,7 +1,7 @@
 package com.delivery_signal.eureka.client.order.presentation.internal.controller;
 
 import com.delivery_signal.eureka.client.order.application.service.internal.InternalOrderService;
-import com.delivery_signal.eureka.client.order.presentation.internal.dto.response.OrderForDeliveryResponseDto;
+import com.delivery_signal.eureka.client.order.application.dto.response.OrderForDeliveryResponseDto;
 import com.delivery_signal.eureka.client.order.presentation.internal.dto.response.OrderPongResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

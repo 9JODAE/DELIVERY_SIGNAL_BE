@@ -38,7 +38,6 @@ public class OrderService {
     private final DeliveryCommandPort deliveryCommandPort;
 
     //요청으로 인해 외부 msa의 읽기사용
-    private final UserQueryPort userQueryPort;
     private final HubQueryPort HubQueryPort;
     private final CompanyQueryPort companyQueryPort;
     private final ProductQueryPort productQueryPort;
@@ -49,7 +48,6 @@ public class OrderService {
     private final OrderProductRepository orderProductRepository;
 
     public OrderService(DeliveryCommandPort deliveryCommandPort,
-                        UserQueryPort userQueryPort,
                         CompanyQueryPort companyQueryPort,
                         HubQueryPort HubQueryPort,
                         ProductQueryPort productQueryPort,
@@ -58,7 +56,6 @@ public class OrderService {
                         OrderRepository orderRepository,
                         OrderProductRepository orderProductRepository) {
         this.deliveryCommandPort = deliveryCommandPort;
-        this.userQueryPort = userQueryPort;
         this.companyQueryPort = companyQueryPort;
         this.HubQueryPort = HubQueryPort;
         this.productQueryPort = productQueryPort;
