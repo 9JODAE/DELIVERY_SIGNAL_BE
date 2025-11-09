@@ -18,12 +18,12 @@ public interface HubClient {
      * @param productIds 상품의 id리스트
      * @return 상품과 재고의 List
      */
-    @PostMapping("open-api/v1/hubs/stocks")
+    @PostMapping("/open-api/v1/hubs/stocks")
     Map<UUID, Integer> getStockQuantities(@RequestBody List<UUID> productIds);
 
-    @PostMapping("/stock/decrease")
+    @PostMapping("/open-api/v1/hubs/stocks/decrease")
     void decreaseStock(@RequestBody List<StockUpdateRequestDto> requests);
 
-    @PostMapping("/stock/restore")
+    @PostMapping("/open-api/v1/hubs/stocks/restore")
     void restoreStock(@RequestBody List<StockUpdateRequestDto> requests);
 }
