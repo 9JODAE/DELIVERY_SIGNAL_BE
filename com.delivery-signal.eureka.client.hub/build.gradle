@@ -67,6 +67,9 @@ dependencies {
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    // Redisson
+    implementation 'org.redisson:redisson-spring-boot-starter:3.52.0'
+
     // Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 

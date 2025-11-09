@@ -19,6 +19,12 @@ spring:
         database-platform: org.hibernate.spatial.dialect.PostgreSQLDialect
         default_schema: hub
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+
 eureka:
   client:
     service-url:
