@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "order-service", path = "/v1/orders")
+@FeignClient(name = "order-service", path = "/v1/orders/external")
 public interface OrderServiceClient {
 
-    @GetMapping
+    @GetMapping("/ping")
     OrderPongResponseDto ping(@RequestParam(required = false) String from);
 
     record OrderPongResponseDto(

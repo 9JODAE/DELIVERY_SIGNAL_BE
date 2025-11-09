@@ -26,12 +26,16 @@ public class Delivery extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "delivery_id")
+    @Column(name = "delivery_id", nullable = false, updatable = false)
     private UUID deliveryId;
 
     // 주문 ID (Order Service와 연동)
     @Column(name = "order_id", nullable = false)
     private UUID orderId;
+
+    // 업체 ID
+    @Column(name = "company_id", nullable = false)
+    private UUID companyId;
 
     // 배송 현재 상태
     @Enumerated(EnumType.STRING)
@@ -61,6 +65,23 @@ public class Delivery extends BaseEntity {
     // 업체 배송담당자 ID
     @Column(name = "delivery_manager_id", nullable = false)
     private Long deliveryManagerId;
+
+    public static Delivery create(UUID orderId, UUID companyId, String status, UUID departureHubId,
+        UUID destinationHubId, String address, String recipient,
+        String recipientSlackId, Long deliveryManagerId, Long creatorId) {
+        return Delivery.builder()
+            .orderId(orderId)
+            .companyId(companyId)
+            .currStatus(DeliveryStatus.valueOf(status))
+            .departureHubId(departureHubId)
+            .destinationHubId(destinationHubId)
+            .deliveryAddress(address)
+            .recipient(recipient)
+            .recipientSlackId(recipientSlackId)
+            .deliveryManagerId(deliveryManagerId)
+            .createdBy(creatorId)
+            .build();
+    }
 }
 
 
