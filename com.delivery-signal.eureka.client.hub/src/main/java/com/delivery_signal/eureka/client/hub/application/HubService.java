@@ -1,5 +1,6 @@
 package com.delivery_signal.eureka.client.hub.application;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -8,23 +9,29 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubRouteCommand;
+import com.delivery_signal.eureka.client.hub.application.command.CreateStockCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubRouteCommand;
+import com.delivery_signal.eureka.client.hub.application.command.SearchStockCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.dto.HubResult;
 import com.delivery_signal.eureka.client.hub.application.dto.HubRouteResult;
+import com.delivery_signal.eureka.client.hub.domain.mapper.StockSearchCondition;
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
 import com.delivery_signal.eureka.client.hub.domain.model.HubRoute;
+import com.delivery_signal.eureka.client.hub.domain.model.Stock;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubQueryRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRouteQueryRepository;
+import com.delivery_signal.eureka.client.hub.domain.repository.StockQueryRepository;
 import com.delivery_signal.eureka.client.hub.domain.vo.Address;
 import com.delivery_signal.eureka.client.hub.domain.vo.Coordinate;
 import com.delivery_signal.eureka.client.hub.domain.vo.Distance;
 import com.delivery_signal.eureka.client.hub.domain.vo.Duration;
 import com.delivery_signal.eureka.client.hub.domain.mapper.HubRouteSearchCondition;
 import com.delivery_signal.eureka.client.hub.domain.mapper.HubSearchCondition;
+import com.delivery_signal.eureka.client.hub.domain.vo.ProductId;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,6 +43,7 @@ public class HubService {
 	private final HubRepository hubRepository;
 	private final HubQueryRepository hubQueryRepository;
 	private final HubRouteQueryRepository hubRouteQueryRepository;
+	private final StockQueryRepository stockQueryRepository;
 
 	/**
 	 * 허브 생성
@@ -86,10 +94,10 @@ public class HubService {
 	 * @return 수정된 허브 결과
 	 */
 	public HubResult updateHub(UpdateHubCommand command) {
-	    Hub hub = getHubOrThrow(command.hubId());
+		Hub hub = getHubOrThrow(command.hubId());
 		Address address = Address.of(command.address());
 		Coordinate coordinate = Coordinate.of(command.latitude(), command.longitude());
-	    hub.update(command.name(), address, coordinate);
+		hub.update(command.name(), address, coordinate);
 		return HubResult.from(hub);
 	}
 
@@ -185,5 +193,44 @@ public class HubService {
 	private Hub getHubWithRoutesOrThrow(UUID hubId) {
 		return hubRepository.findByIdWithRoutes(hubId)
 			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
+	}
+
+	/**
+	 * 재고 생성
+	 * @param command 재고 생성 커맨드
+	 * @return 생성된 재고 아이디
+	 */
+	public UUID createStock(CreateStockCommand command) {
+		// TODO 상품 서비스로부터 상품 존재 유무 확인하는 로직
+		// if (!productClient.exists(command.productId())) {
+		// 	throw new IllegalArgumentException("존재하지 않는 상품입니다. productId=" + command.productId());
+		// }
+
+		Hub hub = getHubOrThrow(command.hubId());
+		ProductId productId = ProductId.of(command.productId());
+
+		Stock stock = Stock.create(hub, productId, command.quantity());
+		hub.addStock(stock);
+		return stock.getStockId();
+	}
+
+	/**
+	 * 재고 검색
+	 * @param command 재고 검색 커맨드
+	 * @param productIds 상품 아이디 리스트
+	 * @return Page<Stock> 재고 검색 결과
+	 */
+	@Transactional(readOnly = true)
+	public Page<Stock> findStocks(SearchStockCommand command, List<UUID> productIds) {
+		StockSearchCondition condition = StockSearchCondition.of(
+			command.hubId(),
+			productIds,
+			command.page(),
+			command.size(),
+			command.sortBy(),
+			command.direction()
+		);
+
+		return stockQueryRepository.searchStocks(condition);
 	}
 }

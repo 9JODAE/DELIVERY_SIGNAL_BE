@@ -19,21 +19,27 @@ import org.springframework.web.bind.annotation.RestController;
 import com.delivery_signal.eureka.client.hub.application.HubService;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubRouteCommand;
+import com.delivery_signal.eureka.client.hub.application.command.CreateStockCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubRouteCommand;
+import com.delivery_signal.eureka.client.hub.application.command.SearchStockCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubRouteCommand;
+import com.delivery_signal.eureka.client.hub.application.facade.StockSearchFacade;
 import com.delivery_signal.eureka.client.hub.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRouteRequest;
+import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateStockRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateHubRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateHubRouteRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHubResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHubRouteResponse;
+import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateStockResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubDetailResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubRouteDetailResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubRouteResponse;
+import com.delivery_signal.eureka.client.hub.presentation.dto.response.StockResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 public class HubController {
 
 	private final HubService hubService;
+	private final StockSearchFacade stockSearchFacade;
 
 	/**
 	 * 허브 생성
@@ -210,6 +217,42 @@ public class HubController {
 	) {
 		hubService.deleteHubRoute(hubId, hubRouteId);
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("허브 이동정보가 삭제되었습니다."));
+	}
+
+
+
+	/**
+	 * 허브 재고 생성
+	 * POST /v1/hubs/{hubId}/stocks
+	 */
+	@PostMapping("/{hubId}/stocks")
+	public ResponseEntity<ApiResponse<CreateStockResponse>> createStock(
+		@PathVariable UUID hubId,
+		@Valid @RequestBody CreateStockRequest request
+	) {
+		CreateStockCommand command = CreateStockCommand.of(
+			hubId,
+			request.productId(),
+			request.quantity()
+		);
+		CreateStockResponse response = CreateStockResponse.of(hubService.createStock(command));
+		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+	}
+
+	@GetMapping("/stocks")
+	public ResponseEntity<ApiResponse<Page<StockResponse>>> searchStocks(
+		@RequestParam(required = false) String productName,
+		@RequestParam(required = false) Integer page,
+		@RequestParam(required = false) Integer size,
+		@RequestParam(required = false) String sortBy,
+		@RequestParam(required = false) String direction
+	) {
+		// TODO 유저 서비스 개발 완료 시, hubId 추가
+		UUID hubId = UUID.fromString("2965b14e-21df-4b15-b5cf-cfaf6d6bee8f");
+		SearchStockCommand command = SearchStockCommand.of(hubId, productName, page, size, sortBy, direction);
+		Page<StockResponse> response = stockSearchFacade.searchStocks(command)
+			.map(StockResponse::from);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
 	}
 
 }
