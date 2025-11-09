@@ -17,7 +17,6 @@ import com.delivery_signal.eureka.client.order.domain.repository.OrderRepository
 import com.delivery_signal.eureka.client.order.domain.service.OrderDomainService;
 import com.delivery_signal.eureka.client.order.domain.vo.company.CompanyInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.delivery.DeliveryCreatedInfo;
-import com.delivery_signal.eureka.client.order.domain.vo.hub.HubStockInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.product.ProductInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,9 +34,10 @@ public class OrderService {
 
     //요청으로 인해 외부 msa의 쓰기사용
     private final DeliveryCommandPort deliveryCommandPort;
+    private final HubCommandPort hubCommandPort;
 
     //요청으로 인해 외부 msa의 읽기사용
-    private final HubQueryPort HubQueryPort;
+    private final HubQueryPort hubQueryPort;
     private final CompanyQueryPort companyQueryPort;
     private final ProductQueryPort productQueryPort;
 
@@ -47,17 +46,11 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
 
-    public OrderService(DeliveryCommandPort deliveryCommandPort,
-                        CompanyQueryPort companyQueryPort,
-                        HubQueryPort HubQueryPort,
-                        ProductQueryPort productQueryPort,
-                        OrderDomainService orderDomainService,
-                        OrderQueryMapper orderQueryMapper,
-                        OrderRepository orderRepository,
-                        OrderProductRepository orderProductRepository) {
+    public OrderService(DeliveryCommandPort deliveryCommandPort, HubCommandPort hubCommandPort, HubQueryPort hubQueryPort, CompanyQueryPort companyQueryPort, ProductQueryPort productQueryPort, OrderDomainService orderDomainService, OrderQueryMapper orderQueryMapper, OrderRepository orderRepository, OrderProductRepository orderProductRepository) {
         this.deliveryCommandPort = deliveryCommandPort;
+        this.hubCommandPort = hubCommandPort;
+        this.hubQueryPort = hubQueryPort;
         this.companyQueryPort = companyQueryPort;
-        this.HubQueryPort = HubQueryPort;
         this.productQueryPort = productQueryPort;
         this.orderDomainService = orderDomainService;
         this.orderQueryMapper = orderQueryMapper;
@@ -84,65 +77,61 @@ public class OrderService {
                 .map(OrderProductCommand::getProductId)
                 .toList();
 
-        // 상품 정보 조회 (한 번에)
+        // 상품 정보 조회
         List<ProductInfo> productInfos = productQueryPort.getProducts(productIds);
 
-        // 상품 검증: 각 상품이 해당 업체에 속하는지 확인
-        for (ProductInfo p : productInfos) {
-            if (!p.getCompanyId().equals(command.getSupplierCompanyId())) {
-                throw new NotFoundException("상품",p.getProductId());
-            }
-        }
+        // 상품 검증: 각 상품이 공급업체에 속하는지 확인
+        productInfos.stream()
+                .filter(p -> !p.getCompanyId().equals(command.getSupplierCompanyId()))
+                .findFirst()
+                .ifPresent(p -> {
+                    throw new NotFoundException("상품", p.getProductId());
+                });
 
-        // 공급업체 검증 및 상품 검증 각 상품이 해당 업체에 속하는지 확인
-        for (ProductInfo p : productInfos) {
-            if (!p.getCompanyId().equals(command.getSupplierCompanyId())) {
-                throw new NotFoundException("상품",p.getProductId());
-            }
-        }
-
-        // 업체 존재 여부 검증 및 상품 정보, 업체의 담당 허브 Id 등 가져옴.
+        // 업체 존재 여부 검증
         CompanyInfo supplier = companyQueryPort.getCompanyById(command.getSupplierCompanyId());
         CompanyInfo receiver = companyQueryPort.getCompanyById(command.getReceiverCompanyId());
 
-        // 허브에게 상품 재고 요청
-        List<HubStockInfo> productStocks = HubQueryPort.getStockQuantities(productIds);
+        // 허브 재고 조회
+        Map<UUID, Integer> productStocks = hubQueryPort.getStockQuantities(productIds);
 
-        //내가 가진 상품과 수량을 Map리스트화
-        Map<UUID, Integer> productQuantities = command.getProducts().stream()
-                .collect(Collectors.toMap(
-                        OrderProductCommand::getProductId,
-                        OrderProductCommand::getQuantity
-                ));
-
-        //상품 재고 검증
-        productStocks.stream()
-                .filter(s -> s.getStockQuantity() < productQuantities.getOrDefault(s.getProductId(), 0))
+        // 재고 부족 시 빠른 실패
+        command.getProducts().stream()
+                .filter(p -> productStocks.getOrDefault(p.getProductId(), 0) < p.getQuantity())
                 .findFirst()
-                .ifPresent(s -> {
-                    throw new IllegalStateException("재고 부족: " + s.getProductId());
+                .ifPresent(p -> {
+                    throw new IllegalStateException("재고 부족: 상품 " + p.getProductId() + "의 재고가 부족합니다.");
                 });
-
 
         // 주문 상품 도메인 생성
         UUID deliveryId = UUID.randomUUID();
         List<OrderProduct> orderProducts = productInfos.stream()
-                .map(info -> OrderProduct.builder()
-                        .productId(info.getProductId())
-                        .productName(info.getProductName())
-                        .productPriceAtOrder(info.getPrice())
-                        .transferQuantity(productQuantities.get(info.getProductId()))
-                        .build())
+                .map(info -> {
+                    int quantity = command.getProducts().stream()
+                            .filter(p -> p.getProductId().equals(info.getProductId()))
+                            .findFirst()
+                            .map(OrderProductCommand::getQuantity)
+                            .orElse(0);
+                    return OrderProduct.builder()
+                            .productId(info.getProductId())
+                            .productName(info.getProductName())
+                            .productPriceAtOrder(info.getPrice())
+                            .transferQuantity(quantity)
+                            .build();
+                })
                 .toList();
 
-        //주문 생성
+        // 주문 생성 (도메인 로직)
         Order order = orderDomainService.createOrder(
                 supplier.getHubId(), receiver.getHubId(), command.getRequestNote(), orderProducts, deliveryId);
 
         // 주문 저장
         orderRepository.save(order);
 
-        //배송 생성 요청
+        // 허브 재고 차감 요청
+        hubCommandPort.decreaseStock(command.getProducts());
+
+        // 배송 생성 요청
         CreateDeliveryRequestDto deliveryRequest = CreateDeliveryRequestDto.builder()
                 .deliveryId(deliveryId)
                 .orderId(order.getId())
@@ -153,12 +142,16 @@ public class OrderService {
                 .address(receiver.getAddress())
                 .build();
 
-
         DeliveryCreatedInfo deliveryInfo = deliveryCommandPort.createDelivery(deliveryRequest);
 
         log.info("주문 id: {}, 배송 요청 완료: {}", deliveryRequest.getOrderId(), deliveryInfo.getMessage());
 
-        return new OrderCreateResponseDto(order.getId(), order.getCreatedBy(), order.getCreatedAt(), "주문이 완료되었습니다.");
+        return new OrderCreateResponseDto(
+                order.getId(),
+                order.getCreatedBy(),
+                order.getCreatedAt(),
+                "주문이 완료되었습니다."
+        );
     }
 
     /**
