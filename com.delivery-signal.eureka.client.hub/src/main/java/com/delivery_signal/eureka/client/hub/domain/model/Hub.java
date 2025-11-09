@@ -104,4 +104,17 @@ public class Hub extends AggregateRootEntity<Hub> {
 	public void addStock(Stock stock) {
 		this.stocks.add(stock);
 	}
+
+	public Stock updateStockQuantity(UUID stockId, int quantity) {
+		Stock stock = findStockById(stockId);
+		stock.updateQuantity(quantity);
+		return stock;
+	}
+
+	private Stock findStockById(UUID stockId) {
+		return this.stocks.stream()
+			.filter(stock -> stock.getStockId().equals(stockId))
+			.findFirst()
+			.orElseThrow(() -> new IllegalArgumentException("요청한 재고를 찾을 수 없습니다."));
+	}
 }
