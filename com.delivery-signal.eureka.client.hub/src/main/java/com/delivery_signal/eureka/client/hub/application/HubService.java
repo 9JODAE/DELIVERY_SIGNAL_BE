@@ -7,11 +7,14 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.CreateStockCommand;
+import com.delivery_signal.eureka.client.hub.application.command.DeductStockQuantityCommand;
+import com.delivery_signal.eureka.client.hub.application.command.RestoreStockQuantityCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchStockCommand;
@@ -52,7 +55,7 @@ public class HubService {
 	private final HubQueryRepository hubQueryRepository;
 	private final HubRouteQueryRepository hubRouteQueryRepository;
 	private final StockQueryRepository stockQueryRepository;
-	private final StockReadRepository getStockQuantitiesRepository;
+	private final StockReadRepository stockReadRepository;
 
 	private final DistributedLockManager distributedLockManager;
 
@@ -127,8 +130,6 @@ public class HubService {
 		return hubRepository.findById(hubId)
 			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
 	}
-
-
 
 	/**
 	 * 허브 이동정보 생성
@@ -253,7 +254,8 @@ public class HubService {
 	 * @return Map<UUID, Integer> 상품 아이디별 수량 Map
 	 */
 	public Map<UUID, Integer> getStockQuantities(List<UUID> productIds) {
-		return getStockQuantitiesRepository.getStocks(productIds).stream()
+		List<Stock> stocks = getStocksByProductIdsOrThrow(productIds);
+		return stocks.stream()
 			.collect(Collectors.toMap(
 				stock -> stock.getProductId().getValue(),
 				Stock::getQuantity
@@ -266,21 +268,76 @@ public class HubService {
 	 * @return 수정된 재고 결과
 	 */
 	public StockResult updateStock(UpdateStockCommand command) {
-		String lockKey = STOCK_LOCK_PREFIX + command.stockId().toString();
-
-		Stock stock = distributedLockManager.executeWithLock(lockKey, () -> {
-			Hub hub = getHubWithStocksOrThrow(command.hubId());
-			return hub.updateStockQuantity(command.stockId(), command.quantity());
-		});
+		Hub hub = getHubWithStocksOrThrow(command.hubId());
+		Stock stock = hub.updateStockQuantity(command.stockId(), command.quantity());
 
 		log.info("재고 수정 완료. hubId={}, stockId={}, quantity={}",
-			command.hubId(), command.stockId(), command.quantity());
+			command.hubId(), command.stockId(), stock.getQuantity());
 
 		return StockResult.from(stock);
+	}
+
+	/**
+	 * 재고 차감
+	 * @param command 재고 차감 Command
+	 * @param productToStockId 상품 아이디별 재고 아이디 Map
+	 */
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void deductStocks(DeductStockQuantityCommand command, Map<UUID, UUID> productToStockId) {
+	    Hub hub = getHubWithStocksOrThrow(command.hubId());
+
+	    command.items().forEach((productId, quantity) ->
+	        deductStock(hub, productId, quantity, productToStockId.get(productId))
+	    );
+	}
+
+	/**
+	 * 재고 복구
+	 * @param command 재고 복구 Command
+	 * @param productToStockId 상품 아이디별 재고 아이디 Map
+	 */
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void restoreStocks(RestoreStockQuantityCommand command, Map<UUID, UUID> productToStockId) {
+	    Hub hub = getHubWithStocksOrThrow(command.hubId());
+
+	    command.items().forEach((productId, quantity) ->
+	        restoreStock(hub, productId, quantity, productToStockId.get(productId))
+	    );
+	}
+
+	private void deductStock(Hub hub, UUID productId, int quantity, UUID stockId) {
+	    try {
+	        hub.deductStocks(stockId, quantity);
+			log.info("재고 차감 완료 - productId={}, stockId={}, quantity={}", productId, stockId, quantity);
+	    } catch (IllegalArgumentException ex) {
+			log.error("재고 부족 - productId={}, 요청수량={}", productId, quantity);
+			throw new IllegalStateException("재고가 부족합니다. productId=" + productId);
+	    }
+	}
+
+	private void restoreStock(Hub hub, UUID productId, int quantity, UUID stockId) {
+	    try {
+	        hub.restoreStocks(stockId, quantity);
+			log.info("재고 복구 완료 - productId={}, stockId={}, quantity={}", productId, stockId, quantity);
+	    } catch (IllegalArgumentException ex) {
+	        throw new IllegalStateException("재고 복구 실패. productId=" + productId, ex);
+	    }
 	}
 
 	private Hub getHubWithStocksOrThrow(UUID hubId) {
 		return hubRepository.findByIdWithStocks(hubId)
 			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
 	}
+
+	@Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+	public List<Stock> getStocksByProductIdsOrThrow(List<UUID> productIds) {
+		List<Stock> stocks = stockReadRepository.getStocks(productIds);
+
+		if (productIds.size() != stocks.size()) {
+			throw new IllegalArgumentException("일부 재고를 찾을 수 없습니다.");
+		}
+
+		return stocks;
+	}
+
 }

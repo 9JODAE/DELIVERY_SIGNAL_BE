@@ -11,6 +11,7 @@ import com.delivery_signal.eureka.client.hub.domain.vo.Address;
 import com.delivery_signal.eureka.client.hub.domain.vo.Coordinate;
 import com.delivery_signal.eureka.client.hub.domain.vo.Distance;
 import com.delivery_signal.eureka.client.hub.domain.vo.Duration;
+import com.delivery_signal.eureka.client.hub.presentation.dto.request.DeductStockQuantityRequest;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -24,7 +25,9 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Getter
 @Entity
 @Table(name = "p_hubs")
@@ -116,5 +119,15 @@ public class Hub extends AggregateRootEntity<Hub> {
 			.filter(stock -> stock.getStockId().equals(stockId))
 			.findFirst()
 			.orElseThrow(() -> new IllegalArgumentException("요청한 재고를 찾을 수 없습니다."));
+	}
+
+	public void deductStocks(UUID stockId, int quantity) {
+		Stock stock = findStockById(stockId);
+		stock.deduct(quantity);
+	}
+
+	public void restoreStocks(UUID stockId, int quantity) {
+		Stock stock = findStockById(stockId);
+		stock.restore(quantity);
 	}
 }
