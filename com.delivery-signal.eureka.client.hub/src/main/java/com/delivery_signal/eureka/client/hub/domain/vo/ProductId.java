@@ -2,6 +2,8 @@ package com.delivery_signal.eureka.client.hub.domain.vo;
 
 import java.util.UUID;
 
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -11,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Embeddable
 @EqualsAndHashCode
+@Access(AccessType.FIELD)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductId {
 

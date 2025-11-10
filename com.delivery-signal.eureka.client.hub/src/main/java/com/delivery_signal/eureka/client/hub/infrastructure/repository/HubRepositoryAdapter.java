@@ -30,4 +30,9 @@ public class HubRepositoryAdapter implements HubRepository {
 	public Optional<Hub> findByIdWithRoutes(UUID hubId) {
 		return jpaHubRepository.findByIdWithRoutes(hubId);
 	}
+
+	@Override
+	public Optional<Hub> findByIdWithStocks(UUID hubId) {
+		return jpaHubRepository.findByIdWithStocks(hubId);
+	}
 }

@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.delivery.presentation.controller;
+package com.delivery_signal.eureka.client.delivery.presentation.controller.external;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;

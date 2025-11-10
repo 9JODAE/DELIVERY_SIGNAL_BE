@@ -25,6 +25,7 @@ import com.delivery_signal.eureka.client.hub.application.command.SearchHubRouteC
 import com.delivery_signal.eureka.client.hub.application.command.SearchStockCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubRouteCommand;
+import com.delivery_signal.eureka.client.hub.application.command.UpdateStockCommand;
 import com.delivery_signal.eureka.client.hub.application.facade.StockSearchFacade;
 import com.delivery_signal.eureka.client.hub.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRequest;
@@ -32,6 +33,7 @@ import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubR
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateStockRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateHubRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateHubRouteRequest;
+import com.delivery_signal.eureka.client.hub.presentation.dto.request.UpdateStockRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHubResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateHubRouteResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.CreateStockResponse;
@@ -39,7 +41,8 @@ import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubDetail
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubRouteDetailResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.response.HubRouteResponse;
-import com.delivery_signal.eureka.client.hub.presentation.dto.response.StockResponse;
+import com.delivery_signal.eureka.client.hub.presentation.dto.response.StockDetailResponse;
+import com.delivery_signal.eureka.client.hub.presentation.dto.response.UpdateStockResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +51,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/hubs")
+@RequestMapping("/api/v1/hubs")
 public class HubController {
 
 	private final HubService hubService;
@@ -239,8 +242,12 @@ public class HubController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
 	}
 
+	/**
+	 * 허브 재고 검색
+	 * GET /v1/hubs/stocks
+	 */
 	@GetMapping("/stocks")
-	public ResponseEntity<ApiResponse<Page<StockResponse>>> searchStocks(
+	public ResponseEntity<ApiResponse<Page<StockDetailResponse>>> searchStocks(
 		@RequestParam(required = false) String productName,
 		@RequestParam(required = false) Integer page,
 		@RequestParam(required = false) Integer size,
@@ -250,9 +257,28 @@ public class HubController {
 		// TODO 유저 서비스 개발 완료 시, hubId 추가
 		UUID hubId = UUID.fromString("2965b14e-21df-4b15-b5cf-cfaf6d6bee8f");
 		SearchStockCommand command = SearchStockCommand.of(hubId, productName, page, size, sortBy, direction);
-		Page<StockResponse> response = stockSearchFacade.searchStocks(command)
-			.map(StockResponse::from);
+		Page<StockDetailResponse> response = stockSearchFacade.searchStocks(command)
+			.map(StockDetailResponse::from);
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
 	}
+
+	/**
+	 * 허브 재고 수정
+	 * PUT /v1/hubs/{hubId}/stocks/{stockId}
+	 */
+	@PutMapping("/{hubId}/stocks/{stockId}")
+	public ResponseEntity<ApiResponse<UpdateStockResponse>> updateStock(
+		@PathVariable UUID hubId,
+		@PathVariable UUID stockId,
+		@Valid @RequestBody UpdateStockRequest request
+	) {
+		log.info("request received: hubId={}, stockId={}, quantity={}",
+			hubId, stockId, request.quantity());
+		UpdateStockCommand command = UpdateStockCommand.of(hubId, stockId, request.quantity());
+		UpdateStockResponse response = UpdateStockResponse.from(hubService.updateStock(command));
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+	}
+
+
 
 }

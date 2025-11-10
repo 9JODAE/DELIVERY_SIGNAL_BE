@@ -1,7 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.domain.repository;
 
-import com.delivery_signal.eureka.client.delivery.domain.model.Delivery;
-import java.util.List;
+import com.delivery_signal.eureka.client.delivery.domain.entity.Delivery;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;

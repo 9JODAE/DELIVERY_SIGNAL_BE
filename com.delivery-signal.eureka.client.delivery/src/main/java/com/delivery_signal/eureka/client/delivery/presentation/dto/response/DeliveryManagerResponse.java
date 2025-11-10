@@ -1,7 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.presentation.dto.response;
 
-import com.delivery_signal.eureka.client.delivery.application.dto.ManagerQueryResponse;
-import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManagerType;
+import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryManagerType;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Builder;
