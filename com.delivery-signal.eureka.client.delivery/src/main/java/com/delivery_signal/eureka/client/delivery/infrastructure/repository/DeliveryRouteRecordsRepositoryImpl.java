@@ -36,4 +36,9 @@ public class DeliveryRouteRecordsRepositoryImpl implements DeliveryRouteRecordsR
     public Optional<DeliveryRouteRecords> findLatestRouteRecord(UUID deliveryId) {
         return jpaRepository.findLatestRecordByDeliveryId(deliveryId);
     }
+
+    @Override
+    public List<DeliveryRouteRecords> findAllByDeliveryIdOrderBySequence(UUID deliveryId) {
+        return jpaRepository.findAllByDeliveryDeliveryIdAndDeletedAtIsNullOrderBySequenceAsc(deliveryId);
+    }
 }

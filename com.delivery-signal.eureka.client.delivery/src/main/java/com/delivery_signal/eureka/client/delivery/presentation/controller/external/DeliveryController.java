@@ -5,6 +5,7 @@ import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeli
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryStatusCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
+import com.delivery_signal.eureka.client.delivery.application.dto.RouteRecordQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.service.DeliveryService;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
@@ -13,6 +14,7 @@ import com.delivery_signal.eureka.client.delivery.presentation.dto.request.Deliv
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryStatusUpdateRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryPresentationMapper;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -134,5 +136,19 @@ public class DeliveryController {
     ) {
         deliveryService.softDeleteDelivery(deliveryId, currUserId, role);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
+    }
+
+    /**
+     * 특정 배송의 경로 이력 조회
+     */
+    @GetMapping("/{delivery-id}/routes")
+    public ResponseEntity<ApiResponse<List<RouteRecordQueryResponse>>> getDeliveryRoutes(
+        @PathVariable("delivery-id") UUID deliveryId,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        List<RouteRecordQueryResponse> response = deliveryService.getDeliveryRoutes(deliveryId,
+            currUserId, role);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
     }
 }

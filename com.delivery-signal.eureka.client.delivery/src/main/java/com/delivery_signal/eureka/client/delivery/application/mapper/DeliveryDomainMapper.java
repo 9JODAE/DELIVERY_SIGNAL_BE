@@ -17,10 +17,14 @@ public class DeliveryDomainMapper {
         return RouteRecordQueryResponse.builder()
             .routeId(record.getRouteId())
             .deliveryId(record.getDelivery().getDeliveryId())
+            .sequence(record.getSequence())
+            .departureHubId(record.getDepartureHubId())
+            .destinationHubId(record.getDestinationHubId())
             .actualDistance(record.getActualDistance())
             .actualTime(record.getActualTime())
             .status(record.getCurrStatus().getDescription())
             .hubDeliveryManagerId(record.getHubDeliveryManagerId())
+            .createdAt(record.getCreatedAt())
             .build();
     }
 

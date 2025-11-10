@@ -20,6 +20,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -251,6 +252,28 @@ public class DeliveryService {
         delivery.softDelete(currUserId);
     }
 
+
+    /**
+     * 배송 경로 이력 조회
+     * 권한: 모든 로그인 사용자 (단, 허브 관리자와 배송 담당자는 자신이 담당하는 허브/배송만)
+     */
+    @Transactional(readOnly = true)
+    public List<RouteRecordQueryResponse> getDeliveryRoutes(UUID deliveryId, Long currUserId, String role) {
+        Delivery delivery = getDelivery(deliveryId);
+        // 조회 및 검색 권한: 모든 로그인 사용자 가능, 단 배송 담당자는 자신이 담당하는 배송만 조회 가능
+        if (!hasReadPermission(delivery, currUserId, UserRole.valueOf(role))) {
+            throw new RuntimeException("해당 배송의 경로 이력을 조회할 권한이 없습니다.");
+        }
+
+        // 배송별 경로 이력 리스트 조회 (논리적 삭제되지 않은 데이터만 조회됨)
+        List<DeliveryRouteRecords> records = deliveryRouteRecordsRepository.findAllByDeliveryIdOrderBySequence(
+            deliveryId);
+
+        return records.stream()
+            .map(deliveryDomainMapper::toResponse)
+            .collect(Collectors.toList());
+    }
+
     // TODO: Hub 배송 담당자를 할당하는 가상의 로직
     private Long assignInitialHubManager() {
         // TODO:  배송 순번 기준 할당 로직 호출
@@ -325,5 +348,30 @@ public class DeliveryService {
             return true; // 임시 허용
         }
         return false;
+    }
+
+    /**
+     * 배송 조회 권한: 모든 로그인 사용자 (단, 허브 관리자와 배송 담당자는 자신이 담당하는 허브/배송만)
+     */
+    private boolean hasReadPermission(Delivery delivery, Long currUserid, UserRole role) {
+//        if (role == UserRole.MASTER_ADMIN || role == UserRole.HUB_ADMIN || role == UserRole.PARTNER_AGENT) {
+//            return true;
+//        }
+
+        if (role.equals(UserRole.MASTER) || role.equals(UserRole.SUPPLIER_MANAGER)) {
+            return true;
+        }
+
+        // TODO: 허브 관리자는 delivery의 fromHubId/toHubId 중 하나를 관리하는지 확인 (허브 FeignClient 필요)
+        if (role.equals(UserRole.HUB_MANAGER)) {
+            // return hubService.isManagingHub(currUserId, delivery.getFromHubId())
+            //         || hubService.isManagingHub(currUserId, delivery.getToHubId());
+            return true; // 임시 허용
+        }
+
+        if (role == UserRole.DELIVERY_MANAGER) {
+            return delivery.getDeliveryManagerId().equals(currUserid);
+        }
+        return true;
     }
 }

@@ -19,4 +19,7 @@ public interface DeliveryRouteRecordsRepository {
 
     // 특정 배송의 가장 최근 상태 기록을 조회
     Optional<DeliveryRouteRecords> findLatestRouteRecord(UUID deliveryId);
+
+    // 특정 배송 ID에 대한 모든 활성 경로 기록을 배송 순번대로 조회
+    List<DeliveryRouteRecords> findAllByDeliveryIdOrderBySequence(UUID deliveryId);
 }
