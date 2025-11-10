@@ -7,11 +7,6 @@ spring:
   application:
     name: external-service
 
-  datasource:
-    url: jdbc:postgresql://localhost:5432/delivery_signal
-    username: admin
-    password: admin123
-    driver-class-name: org.postgresql.Driver
   jpa:
     properties:
       hibernate:

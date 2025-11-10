@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/v1/slacks")
+@RequestMapping("open-api/v1/externals/slacks")
 @RequiredArgsConstructor
 public class SlackRecordControllerV1 {
 

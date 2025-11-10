@@ -54,3 +54,8 @@ spring:
               uri: lb://hub-service
               predicates:
                 - Path=/open-api/v1/hubs/**,/api/v1/hubs/**
+
+            - id: external-service
+              uri: lb://external-service
+              predicates:
+                - Path=/open-api/v1/externals/**,/api/v1/externals/**
