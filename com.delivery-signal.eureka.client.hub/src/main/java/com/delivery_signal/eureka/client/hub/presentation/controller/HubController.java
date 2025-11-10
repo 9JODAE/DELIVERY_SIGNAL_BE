@@ -20,6 +20,7 @@ import com.delivery_signal.eureka.client.hub.application.HubService;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.CreateStockCommand;
+import com.delivery_signal.eureka.client.hub.application.command.DeleteStockCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchStockCommand;
@@ -281,6 +282,17 @@ public class HubController {
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
 	}
 
-
-
+	/**
+	 * 허브 재고 삭제
+	 * DELETE /v1/hubs/{hubId}/stocks/{stockId}
+	 */
+	@DeleteMapping("/{hubId}/stocks/{stockId}")
+	public ResponseEntity<ApiResponse<Void>> deleteStock(
+		@PathVariable UUID hubId,
+		@PathVariable UUID stockId
+	) {
+		DeleteStockCommand command = DeleteStockCommand.of(hubId, stockId);
+		hubService.deleteStock(command);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("재고가 삭제되었습니다."));
+	}
 }

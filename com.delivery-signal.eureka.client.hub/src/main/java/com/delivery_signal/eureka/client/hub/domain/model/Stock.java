@@ -75,4 +75,12 @@ public class Stock extends BaseEntity {
 
 		this.quantity += quantity;
 	}
+
+	public void delete(Long userId) {
+		if (quantity > 0) {
+			throw new IllegalStateException("재고가 남아있는 상태에서는 삭제할 수 없습니다.");
+		}
+
+		this.softDelete(userId);
+	}
 }

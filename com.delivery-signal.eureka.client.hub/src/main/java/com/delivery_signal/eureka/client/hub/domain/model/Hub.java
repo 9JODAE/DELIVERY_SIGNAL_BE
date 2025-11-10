@@ -130,4 +130,9 @@ public class Hub extends AggregateRootEntity<Hub> {
 		Stock stock = findStockById(stockId);
 		stock.restore(quantity);
 	}
+
+	public void deleteStock(UUID stockId, Long userId) {
+		Stock stock = findStockById(stockId);
+		stock.delete(userId);
+	}
 }

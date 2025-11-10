@@ -14,6 +14,7 @@ import com.delivery_signal.eureka.client.hub.application.command.CreateHubComman
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.CreateStockCommand;
 import com.delivery_signal.eureka.client.hub.application.command.DeductStockQuantityCommand;
+import com.delivery_signal.eureka.client.hub.application.command.DeleteStockCommand;
 import com.delivery_signal.eureka.client.hub.application.command.RestoreStockQuantityCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubRouteCommand;
@@ -264,7 +265,7 @@ public class HubService {
 
 	/**
 	 * 재고 수정
-	 * @param command 재고 수정 커맨드
+	 * @param command 재고 수정 Command
 	 * @return 수정된 재고 결과
 	 */
 	public StockResult updateStock(UpdateStockCommand command) {
@@ -275,6 +276,15 @@ public class HubService {
 			command.hubId(), command.stockId(), stock.getQuantity());
 
 		return StockResult.from(stock);
+	}
+
+	/**
+	 * 재고 삭제
+	 * @param command 재고 삭제 Command
+	 */
+	public void deleteStock(DeleteStockCommand command) {
+		Hub hub = getHubWithStocksOrThrow(command.hubId());
+		hub.deleteStock(command.stockId(), 1L); // TODO 유저 서비스 개발 완료 시 변경
 	}
 
 	/**
@@ -339,5 +349,4 @@ public class HubService {
 
 		return stocks;
 	}
-
 }
