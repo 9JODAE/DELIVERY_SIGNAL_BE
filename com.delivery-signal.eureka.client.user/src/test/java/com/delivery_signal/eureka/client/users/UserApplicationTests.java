@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.user;
+package com.delivery_signal.eureka.client.users;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

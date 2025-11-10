@@ -1,5 +1,9 @@
+// java
 package com.delivery_signal.eureka.client.hub.infrastructure.redis;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -17,50 +21,121 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class RedissonLockAdapter implements DistributedLockManager {
 
-	private final RedissonClient redissonClient;
+    private final RedissonClient redissonClient;
 
-	private static final String LOCK_PREFIX = "LOCK:";
-	private static final long DEFAULT_WAIT_TIME = 5L;
-	private static final long DEFAULT_LEASE_TIME = 3L;
+    private static final String LOCK_PREFIX = "LOCK:";
+    private static final long LOCK_WAIT_TIME_SECONDS = 5L;
+    private static final long LOCK_LEASE_TIME_DISABLED = -1L;
 
-	/**
-	 * 분산락을 획득하고 비즈니스 로직 실행
-	 *
-	 * @param lockKey 락 키
-	 * @param waitTime 락 획득 대기 시간 (초)
-	 * @param leaseTime 락 유지 시간 (초)
-	 * @param supplier 실행할 비즈니스 로직
-	 */
-	public <T> T executeWithLock(String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
-		RLock lock = redissonClient.getLock(LOCK_PREFIX + lockKey);
+    @Override
+    public <T> T executeWithLock(String lockKey, Supplier<T> supplier) {
+        validateLockKey(lockKey);
+        return executeWithSortedLocks(Collections.singletonList(lockKey), supplier);
+    }
 
-		try {
-			boolean acquired = lock.tryLock(waitTime, leaseTime, TimeUnit.SECONDS);
+    @Override
+    public <T> T executeWithLocks(List<String> lockKeys, Supplier<T> supplier) {
+        validateLockKeys(lockKeys);
+        return executeWithSortedLocks(lockKeys, supplier);
+    }
 
-			if (!acquired) {
-				log.warn("락 획득 실패 - lockKey: {}", lockKey);
-				throw new IllegalStateException("다른 요청이 처리 중입니다. 잠시 후 다시 시도해주세요.");
-			}
+    private <T> T executeWithSortedLocks(List<String> rawKeys, Supplier<T> supplier) {
+        List<String> sortedKeys = normalizeLockKeys(rawKeys);
 
-			log.debug("락 획득 성공 - lockKey: {}", lockKey);
-			return supplier.get();
+        if (sortedKeys.isEmpty()) {
+            return supplier.get();
+        }
 
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			log.error("락 획득 중 인터럽트 발생 - lockKey: {}", lockKey, e);
-			throw new IllegalStateException("요청 처리 중 오류가 발생했습니다.", e);
-		} finally {
-			if (lock.isHeldByCurrentThread()) {
-				lock.unlock();
-				log.debug("락 해제 완료 - lockKey: {}", lockKey);
-			}
-		}
-	}
+        List<RLock> acquiredLocks = acquireLocksOrThrow(sortedKeys);
 
-	/**
-	 * 기본 설정으로 분산락 실행
-	 */
-	public <T> T executeWithLock(String lockKey, Supplier<T> supplier) {
-		return executeWithLock(lockKey, DEFAULT_WAIT_TIME, DEFAULT_LEASE_TIME, supplier);
-	}
+        try {
+            log.info("비즈니스 로직 실행 시작 - keys={}", sortedKeys);
+            return supplier.get();
+        } finally {
+            releaseAllLocks(acquiredLocks);
+            log.info("락 해제 완료 - keys={}", sortedKeys);
+        }
+    }
+
+    private List<String> normalizeLockKeys(List<String> rawKeys) {
+        return rawKeys.stream()
+            .filter(key -> key != null && !key.trim().isEmpty())
+            .map(String::trim)
+            .distinct()
+            .sorted()
+            .toList();
+    }
+
+    private List<RLock> acquireLocksOrThrow(List<String> keys) {
+        List<RLock> acquiredLocks = new ArrayList<>(keys.size());
+
+        try {
+            for (String key : keys) {
+                RLock lock = acquireLockWithTimeout(key);
+                acquiredLocks.add(lock);
+            }
+
+            log.info("분산 락 획득 완료 - keys={}", keys);
+            return acquiredLocks;
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            releaseAllLocks(acquiredLocks);
+            throw new IllegalStateException("락 획득 중 인터럽트 발생", e);
+        } catch (LockAcquisitionFailedException e) {
+            releaseAllLocks(acquiredLocks);
+            throw e;
+        }
+    }
+
+    private RLock acquireLockWithTimeout(String key) throws InterruptedException {
+        RLock lock = redissonClient.getLock(LOCK_PREFIX + key);
+
+        boolean acquired = lock.tryLock(
+            LOCK_WAIT_TIME_SECONDS,
+            LOCK_LEASE_TIME_DISABLED,
+            TimeUnit.SECONDS
+        );
+
+        if (!acquired) {
+            log.warn("락 획득 실패 - key={}", key);
+            throw new LockAcquisitionFailedException(key);
+        }
+
+        return lock;
+    }
+
+    private void releaseAllLocks(List<RLock> locks) {
+        for (int i = locks.size() - 1; i >= 0; i--) {
+            releaseLockSafely(locks.get(i));
+        }
+    }
+
+    private void releaseLockSafely(RLock lock) {
+        try {
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
+        } catch (Exception e) {
+            log.error("락 해제 실패 - lock={}", lock.getName(), e);
+        }
+    }
+
+    private void validateLockKey(String lockKey) {
+        if (lockKey == null || lockKey.isBlank()) {
+            throw new IllegalArgumentException("락 키는 null이거나 공백일 수 없습니다.");
+        }
+    }
+
+    private void validateLockKeys(List<String> lockKeys) {
+        if (lockKeys == null) {
+            throw new IllegalArgumentException("락 키 리스트는 null일 수 없습니다.");
+        }
+    }
+
+    private static class LockAcquisitionFailedException extends RuntimeException {
+        public LockAcquisitionFailedException(String key) {
+            super(String.format("현재 다른 작업이 진행 중입니다. (key=%s)", key));
+        }
+    }
 }

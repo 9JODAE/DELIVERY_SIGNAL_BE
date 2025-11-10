@@ -29,8 +29,18 @@ ext {
 }
 
 dependencies {
-	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // Spring
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Eureka
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
+
+    // Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

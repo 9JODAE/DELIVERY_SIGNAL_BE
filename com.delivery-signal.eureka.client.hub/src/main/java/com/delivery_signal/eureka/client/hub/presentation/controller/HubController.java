@@ -20,12 +20,14 @@ import com.delivery_signal.eureka.client.hub.application.HubService;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.CreateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.CreateStockCommand;
+import com.delivery_signal.eureka.client.hub.application.command.DeleteStockCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.SearchStockCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateStockCommand;
+import com.delivery_signal.eureka.client.hub.application.facade.StockFacade;
 import com.delivery_signal.eureka.client.hub.application.facade.StockSearchFacade;
 import com.delivery_signal.eureka.client.hub.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRequest;
@@ -55,6 +57,7 @@ import lombok.extern.slf4j.Slf4j;
 public class HubController {
 
 	private final HubService hubService;
+	private final StockFacade stockFacade;
 	private final StockSearchFacade stockSearchFacade;
 
 	/**
@@ -275,10 +278,21 @@ public class HubController {
 		log.info("request received: hubId={}, stockId={}, quantity={}",
 			hubId, stockId, request.quantity());
 		UpdateStockCommand command = UpdateStockCommand.of(hubId, stockId, request.quantity());
-		UpdateStockResponse response = UpdateStockResponse.from(hubService.updateStock(command));
+		UpdateStockResponse response = UpdateStockResponse.from(stockFacade.updateStock(command));
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
 	}
 
-
-
+	/**
+	 * 허브 재고 삭제
+	 * DELETE /v1/hubs/{hubId}/stocks/{stockId}
+	 */
+	@DeleteMapping("/{hubId}/stocks/{stockId}")
+	public ResponseEntity<ApiResponse<Void>> deleteStock(
+		@PathVariable UUID hubId,
+		@PathVariable UUID stockId
+	) {
+		DeleteStockCommand command = DeleteStockCommand.of(hubId, stockId);
+		hubService.deleteStock(command);
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("재고가 삭제되었습니다."));
+	}
 }
