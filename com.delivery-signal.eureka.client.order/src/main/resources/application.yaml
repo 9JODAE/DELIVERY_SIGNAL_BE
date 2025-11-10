@@ -2,15 +2,64 @@ server:
   port: 19099
 
 spring:
-  profiles:
-    active: local
   application:
     name: order-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/orderTest
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: 1111
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+      hibernate:
+        default_schema: order
+      format_sql: true
+      use_sql_comments: true
+    show-sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 eureka:
+  instance:
+    prefer-ip-address: false
+    hostname: order-service
   client:
+    register-with-eureka: true
+    fetch-registry: true
     service-url:
       defaultZone: http://localhost:19090/eureka/
 
 gateway:
- base-url: ${GATEWAY_URL:http://gateway-service}
+  base-url: http://gateway-service
+
+server:
+  port: 19099
+
+internal:
+  company:
+    url: http://localhost:9999 #임시
+  hub:
+    url: http://localhost:19093
+  product:
+    url: http://localhost:9998 #임시
+  delivery:
+    url: http://localhost:19091
+  user:
+    url: http://localhost:19092
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui
+
+
+
+
+

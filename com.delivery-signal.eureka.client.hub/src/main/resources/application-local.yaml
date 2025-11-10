@@ -19,6 +19,12 @@ spring:
         database-platform: org.hibernate.spatial.dialect.PostgreSQLDialect
         default_schema: hub
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+
 eureka:
   client:
     service-url:
@@ -28,3 +34,17 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.type.descriptor.sql.BasicBinder: trace
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 5
+        slowCallRateThreshold: 100
+        slowCallDurationThreshold: 60000
+        failureRateThreshold: 50
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 20s

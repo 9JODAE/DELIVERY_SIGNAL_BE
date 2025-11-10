@@ -1,8 +1,7 @@
 package com.delivery_signal.eureka.client.delivery.domain.repository;
 
-import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManager;
+import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryManager;
 import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DeliveryManagerRepository {
     /**
@@ -24,4 +23,24 @@ public interface DeliveryManagerRepository {
      * @return
      */
     Optional<DeliveryManager> findActiveById(Long id);
+
+    /**
+     * 마지막 배송 순번 조회
+     * @return
+     */
+    Optional<Integer> findMaxActiveSequence();
+
+    /**
+     * 현재 배송 담당자 수
+     * @return
+     */
+    Long countActiveManagers();
+
+    /**
+     * 다음 배정될 순번의 배송 담당자를 조회 (순환 로직/라운드로빈)
+     * lastSequence : 직전에 배정된 담당자의 순번
+     * @param lastSequence
+     * @return
+     */
+    Optional<DeliveryManager> findNextActiveManager(int lastSequence);
 }

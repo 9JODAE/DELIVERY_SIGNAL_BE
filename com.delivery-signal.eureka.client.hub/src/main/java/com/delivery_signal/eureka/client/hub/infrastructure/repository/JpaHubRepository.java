@@ -18,4 +18,11 @@ public interface JpaHubRepository extends JpaRepository<Hub, UUID> {
 	WHERE h.hubId = :hubId
 	""")
 	Optional<Hub> findByIdWithRoutes(@Param("hubId") UUID hubId);
+
+	@Query("""
+	SELECT h FROM Hub h
+	LEFT JOIN FETCH h.stocks
+	WHERE h.hubId = :hubId
+	""")
+	Optional<Hub> findByIdWithStocks(@Param("hubId") UUID hubId);
 }

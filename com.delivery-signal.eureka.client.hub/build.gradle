@@ -67,6 +67,9 @@ dependencies {
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    // Redisson
+    implementation 'org.redisson:redisson-spring-boot-starter:3.52.0'
+
     // Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
@@ -76,6 +79,12 @@ dependencies {
 
     // OpenFeign
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    // Resilience4j Circuit Breaker
+    implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.2.0'
+
+    // Spring AOP
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 
     // Test dependencies
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

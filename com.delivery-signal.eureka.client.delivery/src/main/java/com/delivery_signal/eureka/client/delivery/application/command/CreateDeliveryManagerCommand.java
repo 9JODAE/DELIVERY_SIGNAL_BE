@@ -1,6 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.application.command;
 
-import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManagerType;
+import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryManagerType;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 import lombok.Builder;
