@@ -97,6 +97,13 @@ public class Delivery extends BaseEntity {
             throw new IllegalStateException("업체 이동 중 상태에서는 완료만 가능합니다.");
         }
 
+        // 상태 역행 방지 로직 (예: DELIVERING -> HUB_WAITING 불가)
+        if (newStatus.ordinal() < this.currStatus.ordinal()) {
+            if (!this.currStatus.equals(DeliveryStatus.HUB_ARRIVED)) {
+                throw new IllegalStateException("상태를 이전 단계로 되돌릴 수 없습니다.");
+            }
+        }
+
         this.currStatus = newStatus;
         super.update(updatorId);
     }
@@ -109,7 +116,6 @@ public class Delivery extends BaseEntity {
         if (!this.currStatus.equals(DeliveryStatus.HUB_WAITING)) {
             throw new IllegalStateException("배송이 시작된(" + this.currStatus.name() + ") 상태에서는 삭제할 수 없습니다.");
         }
-
         super.markDeleted(deleterId);
     }
 }
