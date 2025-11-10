@@ -89,4 +89,28 @@ public class DeliveryRouteRecords extends BaseEntity {
             .createdBy(creatorId)
             .build();
     }
+
+    public void recordMovement(DeliveryStatus newStatus, Double actualDistance,
+        Long actualTime, Long updatorId) {
+        // 이미 도착 완료된 경로 재기록 방지
+        if (this.currStatus.equals(DeliveryStatus.HUB_ARRIVED)) {
+            throw new IllegalStateException("이미 허브 도착 처리된 경로입니다.");
+        }
+
+        // 상태 전이 규칙 (HUB_WAITING -> HUB_MOVING -> HUB_ARRIVED)
+        // 다음 단계로의 전이만 가능
+        if (this.currStatus.equals(DeliveryStatus.HUB_WAITING) && !newStatus.equals(DeliveryStatus.HUB_MOVING)) {
+            throw new IllegalStateException("대기 중 상태에서는 이동 중 상태로만 변경 가능합니다.");
+        }
+
+        // 상태 역행 방지 로직 (예: HUB_MOVING -> HUB_WAITING 불가)
+        if (newStatus.ordinal() < this.currStatus.ordinal()) {
+            throw new IllegalStateException("상태를 이전 단계로 되돌릴 수 없습니다.");
+        }
+
+        this.currStatus = newStatus;
+        this.actualDistance = actualDistance;
+        this.actualTime = actualTime;
+        super.update(updatorId);
+    }
 }

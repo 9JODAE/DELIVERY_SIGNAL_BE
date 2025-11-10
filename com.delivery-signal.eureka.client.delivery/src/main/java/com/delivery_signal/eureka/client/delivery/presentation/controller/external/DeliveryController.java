@@ -2,13 +2,16 @@ package com.delivery_signal.eureka.client.delivery.presentation.controller.exter
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryStatusCommand;
+import com.delivery_signal.eureka.client.delivery.application.command.UpdateRouteRecordCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
+import com.delivery_signal.eureka.client.delivery.application.dto.RouteRecordQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.service.DeliveryService;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
 import com.delivery_signal.eureka.client.delivery.application.dto.PagedDeliveryResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryStatusUpdateRequest;
+import com.delivery_signal.eureka.client.delivery.presentation.dto.request.RouteRecordUpdateRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryPresentationMapper;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -105,6 +108,25 @@ public class DeliveryController {
         UpdateDeliveryStatusCommand command = deliveryPresentationMapper.toUpdateDeliveryStatusCommand(
             request);
         DeliveryQueryResponse response = deliveryService.updateDeliveryStatus(deliveryId,
+            command, currUserId, role);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+    }
+
+    /**
+     * 허브 간 이동 경로 상태 및 실제 정보 기록 (업데이트 방식)
+     * => 추후 점이력 형식으로 쌓는 방식도 고려 (출발지 허브 ID와 목적지 허브 ID가 가지는 식별성을 통해 조회할 수 있게끔)
+     * 예: HUB_WAITING -> HUB_MOVING, HUB_MOVING -> HUB_ARRIVED
+     */
+    @PatchMapping("/{route-id}")
+    public ResponseEntity<ApiResponse<RouteRecordQueryResponse>> recordHubMovement(
+        @PathVariable("route-id") UUID routeId,
+        @Valid @RequestBody RouteRecordUpdateRequest request,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        UpdateRouteRecordCommand command = deliveryPresentationMapper.toUpdateRouteRecordCommand(
+            request);
+        RouteRecordQueryResponse response = deliveryService.recordHubMovement(routeId,
             command, currUserId, role);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
     }

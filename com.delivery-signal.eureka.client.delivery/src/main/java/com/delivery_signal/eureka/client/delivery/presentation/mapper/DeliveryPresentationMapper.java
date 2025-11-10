@@ -3,8 +3,10 @@ package com.delivery_signal.eureka.client.delivery.presentation.mapper;
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.RouteSegmentCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryStatusCommand;
+import com.delivery_signal.eureka.client.delivery.application.command.UpdateRouteRecordCommand;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryStatusUpdateRequest;
+import com.delivery_signal.eureka.client.delivery.presentation.dto.request.RouteRecordUpdateRequest;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -35,8 +37,15 @@ public class DeliveryPresentationMapper {
      */
     public UpdateDeliveryStatusCommand toUpdateDeliveryStatusCommand(DeliveryStatusUpdateRequest request) {
         return UpdateDeliveryStatusCommand.builder()
-            .routeId(request.routeId())
             .newStatus(request.newStatus())
+            .build();
+    }
+
+    public UpdateRouteRecordCommand toUpdateRouteRecordCommand(RouteRecordUpdateRequest request) {
+        return UpdateRouteRecordCommand.builder()
+            .newStatus(request.newStatus())
+            .actualDistance(request.actualDistance())
+            .actualTime(request.actualTime())
             .build();
     }
 

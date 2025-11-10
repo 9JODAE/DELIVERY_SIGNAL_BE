@@ -2,11 +2,16 @@ package com.delivery_signal.eureka.client.delivery.application.service;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryStatusCommand;
+import com.delivery_signal.eureka.client.delivery.application.command.UpdateRouteRecordCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
+import com.delivery_signal.eureka.client.delivery.application.dto.RouteRecordQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.mapper.DeliveryDomainMapper;
+import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManager;
+import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManagerType;
 import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryRouteRecords;
 import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryStatus;
+import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryManagerRepository;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRouteRecordsRepository;
 import com.delivery_signal.eureka.client.delivery.application.dto.PagedDeliveryResponse;
 import com.delivery_signal.eureka.client.delivery.common.UserRole;
@@ -34,7 +39,8 @@ public class DeliveryService {
     private final DeliveryDomainMapper deliveryDomainMapper;
 
     public DeliveryService(DeliveryRepository deliveryRepository,
-        DeliveryRouteRecordsRepository deliveryRouteRecordsRepository, OrderServiceClient orderServiceClient,
+        DeliveryRouteRecordsRepository deliveryRouteRecordsRepository,
+        OrderServiceClient orderServiceClient,
         DeliveryDomainMapper deliveryDomainMapper) {
         this.deliveryRepository = deliveryRepository;
         this.deliveryRouteRecordsRepository = deliveryRouteRecordsRepository;
@@ -153,6 +159,29 @@ public class DeliveryService {
     }
 
     /**
+     * 허브 간 이동 경로의 상태 및 실제 정보 기록 (허브 관리자/허브 배송 담당자가 호출)
+     * 권한 : 마스터, 허브 관리자(담당 허브), 허브 배송 담당자
+     */
+    @Transactional
+    public RouteRecordQueryResponse recordHubMovement(UUID routeId, UpdateRouteRecordCommand command,
+        Long updatorId, String role) {
+        DeliveryRouteRecords record = getDeliveryRouteRecords(routeId);
+        // 허브 배송 담당자인 경우, 해당 경로의 hubDeliveryManagerId와 일치해야 함
+
+        if (!hasHubMovementPermission(record, updatorId, UserRole.valueOf(role))) {
+            throw new RuntimeException("해당 허브 이동 정보를 기록/수정할 권한이 없습니다.");
+        }
+
+        DeliveryStatus newStatus = DeliveryStatus.valueOf(command.newStatus());
+
+        // 허브 간 이동 경로 상태 기록 (HUB_WAITING, HUB_MOVING 또는 HUB_ARRIVED 상태로만 가능)
+        record.recordMovement(newStatus, command.actualDistance(),
+            command.actualTime(), updatorId);
+
+        return deliveryDomainMapper.toResponse(record);
+    }
+
+    /**
      * 배송 논리적 삭제
      */
     @Transactional
@@ -181,6 +210,11 @@ public class DeliveryService {
             .orElseThrow(() -> new NoSuchElementException("배송 정보를 찾을 수 없습니다."));
     }
 
+    private DeliveryRouteRecords getDeliveryRouteRecords(UUID routeId) {
+        return deliveryRouteRecordsRepository.findActiveById(routeId)
+            .orElseThrow(() -> new NoSuchElementException("배송 경로 기록을 찾을 수 없습니다."));
+    }
+
     /**
      * 배송 업데이트 권한: 마스터 관리자, 해당 허브 관리자, 해당 배송 담당자만 가능
      */
@@ -200,6 +234,27 @@ public class DeliveryService {
             return delivery.getDeliveryManagerId().equals(updatorId);
         }
 
+        return false;
+    }
+
+    /**
+     * 배송 경로 기록 업데이트(이력 추가) 권한 : 마스터, 허브 관리자, 허브 배송 담당자만 가능
+     */
+    private boolean hasHubMovementPermission(DeliveryRouteRecords record, Long currUserId, UserRole role) {
+        if (role == UserRole.MASTER) return true;
+
+        // TODO: 허브 FeignClient 호출을 통해 currUserId가 record.departureHubId 또는 record.destinationHubId를 담당하는지 확인
+        if (role.equals(UserRole.HUB_MANAGER)) {
+            // return hubService.isManagingHub(currUserId, record.getFromHubId())
+            //         || hubService.isManagingHub(currUserId, record.getToHubId());
+            return true; // 임시 허용
+        }
+
+        if (role == UserRole.DELIVERY_MANAGER) {
+            // 배송 담당자일 경우, 해당 경로에 할당된 허브 배송 담당자여야 함
+            // 허브 배송 담당자는 해당 경로에 할당된 담당자 ID와 일치해야 함
+            return record.getHubDeliveryManagerId() != null && record.getHubDeliveryManagerId().equals(currUserId);
+        }
         return false;
     }
 
