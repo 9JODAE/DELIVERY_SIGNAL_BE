@@ -15,6 +15,6 @@ public interface UserClient {
     /**
      * 사용자 검증 + Role 정보 조회
      */
-    @GetMapping("/internal-api/v1/users/authorization")
+    @GetMapping("/open-api/v1/users/authorization")
     UserAuthorizationInfo getUserAuthorizationInfo(@RequestParam("userId") Long userId);
 }

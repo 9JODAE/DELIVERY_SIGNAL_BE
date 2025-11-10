@@ -1,15 +1,19 @@
 package com.delivery_signal.eureka.client.order.domain.vo.user;
 
+import lombok.Builder;
+import lombok.Getter;
+
 /**
  * 사용자 권한 정보 VO
  * - 단일 권한만 가짐
  * - 활성 여부(active) 확인 가능
  */
-public record UserAuthorizationInfo(
-        Long userId,
-        boolean active,
-        String role
-) {
+@Getter
+@Builder
+public class UserAuthorizationInfo {
+        private final Long userId;
+        private final boolean active;
+        private final String role;
 
     /**
      * 활성 사용자 여부
