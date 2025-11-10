@@ -119,6 +119,6 @@ public class DeliveryController {
         @RequestHeader(USER_ROLE_HEADER) String role
     ) {
         deliveryService.softDeleteDelivery(deliveryId, currUserId, role);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
     }
 }
