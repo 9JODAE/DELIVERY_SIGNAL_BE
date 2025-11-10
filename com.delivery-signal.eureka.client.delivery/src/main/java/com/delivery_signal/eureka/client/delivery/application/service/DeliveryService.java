@@ -1,6 +1,7 @@
 package com.delivery_signal.eureka.client.delivery.application.service;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
+import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryInfoCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryStatusCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateRouteRecordCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
@@ -135,6 +136,23 @@ public class DeliveryService {
             .toList();
 
         return PagedDeliveryResponse.from(deliveryPage, responses);
+    }
+
+
+    /**
+     * 배송 정보 수정
+     * 권한 : 마스터, 허브 관리자(담당 허브), 배송 관리자(담당 배송)
+     */
+    @Transactional
+    public DeliveryQueryResponse updateDeliveryInfo(UUID deliveryId, UpdateDeliveryInfoCommand command, Long updatorId, String role) {
+        Delivery delivery = getDelivery(deliveryId);
+        // 수정 권한: 마스터, 해당 허브 관리자, 해당 배송 담당자만 가능
+        if (!hasUpdatePermission(delivery, updatorId, UserRole.valueOf(role))) {
+            throw new RuntimeException("배송 상태를 수정할 권한이 없습니다. (ROLE: " + role + ")");
+        }
+
+        delivery.update(command.address(), command.recipient(), command.recipientSlackId(), updatorId);
+        return deliveryDomainMapper.toResponse(delivery);
     }
 
     /**

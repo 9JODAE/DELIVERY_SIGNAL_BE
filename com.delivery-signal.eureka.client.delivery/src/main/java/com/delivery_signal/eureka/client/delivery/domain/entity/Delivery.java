@@ -84,6 +84,21 @@ public class Delivery extends BaseEntity {
     }
 
     /**
+     * 배송 정보 업데이트
+     */
+    public void update(String address, String recipient, String recipientSlackId, Long updaterId) {
+        // 배송이 이미 시작되거나 완료된 상태에서는 주소 변경 불가
+        if (!this.currStatus.equals(DeliveryStatus.HUB_WAITING)) {
+            throw new IllegalStateException("배송이 시작되어 주소/수령인 정보를 변경할 수 없습니다.");
+        }
+
+        this.deliveryAddress = address;
+        this.recipient = recipient;
+        this.recipientSlackId = recipientSlackId;
+        super.update(updaterId);
+    }
+
+    /**
      * 배송 상태 업데이트
      */
     public void updateStatus(DeliveryStatus newStatus, Long updatorId) {
