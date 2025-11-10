@@ -1,6 +1,9 @@
 spring:
   profiles:
     active: local
+  config:
+    import:
+      - optional:classpath:secrets.yml
   application:
     name: external-service
 
@@ -26,5 +29,3 @@ eureka:
       defaultZone: http://localhost:19090/eureka/
 
 
-slack:
-  token: xoxb-9866261027956-9866605972180-sBrNbOEkl0zUwY2IrCcYGbcI
