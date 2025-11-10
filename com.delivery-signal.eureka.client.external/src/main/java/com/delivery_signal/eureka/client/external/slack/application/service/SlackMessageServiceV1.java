@@ -3,7 +3,6 @@ package com.delivery_signal.eureka.client.external.slack.application.service;
 import com.delivery_signal.eureka.client.external.ai.application.GeminiAiCallable;
 import com.delivery_signal.eureka.client.external.slack.application.dto.request.CreateSlackMessageRequestDto;
 import com.delivery_signal.eureka.client.external.slack.domain.service.SlackNotifier;
-import com.delivery_signal.eureka.client.external.slack.infrastructure.slack.SlackApiAdapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
