@@ -8,11 +8,8 @@ import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQu
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.dto.RouteRecordQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.mapper.DeliveryDomainMapper;
-import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManager;
-import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManagerType;
 import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryRouteRecords;
 import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryStatus;
-import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryManagerRepository;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRouteRecordsRepository;
 import com.delivery_signal.eureka.client.delivery.application.dto.PagedDeliveryResponse;
 import com.delivery_signal.eureka.client.delivery.common.UserRole;
@@ -21,6 +18,7 @@ import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRepo
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -146,6 +144,7 @@ public class DeliveryService {
     @Transactional
     public DeliveryQueryResponse updateDeliveryInfo(UUID deliveryId, UpdateDeliveryInfoCommand command, Long updatorId, String role) {
         Delivery delivery = getDelivery(deliveryId);
+
         // 수정 권한: 마스터, 해당 허브 관리자, 해당 배송 담당자만 가능
         if (!hasUpdatePermission(delivery, updatorId, UserRole.valueOf(role))) {
             throw new RuntimeException("배송 상태를 수정할 권한이 없습니다. (ROLE: " + role + ")");
@@ -158,6 +157,7 @@ public class DeliveryService {
     /**
      * 배송 상태 업데이트
      * 권한 : 마스터, 허브 관리자(담당 허브), 배송 관리자(담당 배송)
+     * 실질적으로 배송(Delivery) 엔티티의 상태 수정이 가능한 시점은 마지막 목적지 허브까지 배송이 완료된 시점
      */
     @Transactional
     public DeliveryQueryResponse updateDeliveryStatus(UUID deliveryId, UpdateDeliveryStatusCommand command, Long updatorId, String role) {
@@ -169,9 +169,13 @@ public class DeliveryService {
             throw new RuntimeException("배송 상태를 수정할 권한이 없습니다. (ROLE: " + role + ")");
         }
 
+        // 상태 유효성 검사 : 마지막 최종 목적지 허브까지 배송이 완료된 시점(DELIVERING)이 아닐 경우 예외 처리
+        if (!newStatus.equals(DeliveryStatus.DELIVERY_COMPLETED)) {
+            throw new IllegalArgumentException("허용되지 않은 상태 변경입니다: " + newStatus.name());
+        }
+
         delivery.updateStatus(newStatus, updatorId);
 
-        // TODO : 비즈니스 로직 (상태 변경에 따른 추가 작업 필요 시)
         // TODO (확인 필요) : PARTNER_MOVING -> COMPLETED로 변경 시, 주문 서비스에 최종 완료 알림 전송 (AI/SLACK 서비스 feign client)
         return deliveryDomainMapper.toResponse(delivery);
     }
@@ -179,12 +183,14 @@ public class DeliveryService {
     /**
      * 허브 간 이동 경로의 상태 및 실제 정보 기록 (허브 관리자/허브 배송 담당자가 호출)
      * 권한 : 마스터, 허브 관리자(담당 허브), 허브 배송 담당자
+     * 마지막 최종 허브에 도착했을 경우, Delivery 엔티티의 상태를 DELIVERING으로 변경
      */
     @Transactional
     public RouteRecordQueryResponse recordHubMovement(UUID routeId, UpdateRouteRecordCommand command,
         Long updatorId, String role) {
         DeliveryRouteRecords record = getDeliveryRouteRecords(routeId);
-        // 허브 배송 담당자인 경우, 해당 경로의 hubDeliveryManagerId와 일치해야 함
+
+        Delivery delivery = getDelivery(record.getDelivery().getDeliveryId());
 
         if (!hasHubMovementPermission(record, updatorId, UserRole.valueOf(role))) {
             throw new RuntimeException("해당 허브 이동 정보를 기록/수정할 권한이 없습니다.");
@@ -193,8 +199,36 @@ public class DeliveryService {
         DeliveryStatus newStatus = DeliveryStatus.valueOf(command.newStatus());
 
         // 허브 간 이동 경로 상태 기록 (HUB_WAITING, HUB_MOVING 또는 HUB_ARRIVED 상태로만 가능)
-        record.recordMovement(newStatus, command.actualDistance(),
+        record.update(newStatus, command.actualDistance(),
             command.actualTime(), updatorId);
+
+        // 최초 허브 출발 시 (첫번째 시퀀스, HUB_MOVING) : Delivery 상태를 HUB_MOVING으로 변경
+        if (record.getSequence() == 0 && newStatus.equals(DeliveryStatus.HUB_MOVING)) {
+            delivery.updateStatus(newStatus, updatorId);
+        }
+
+        // 최종 허브 도착 시 (마지막 시퀀스, HUB_ARRIVED) : Delivery 상태는 아직 HUB_MOVING 유지
+        // -> 최종 상태 변경(DELIVERING)은 배송 상태 업데이트 API를 통해 업체 배송 담당자가 수행
+        if (newStatus.equals(DeliveryStatus.HUB_ARRIVED)) {
+            // N+1 방지 쿼리 호출 및 LIMIT 1 적용
+            // Pageable 객체 생성: 0번째 페이지의 첫 번째 결과(LIMIT 1)만 요청
+            Pageable limitOne = PageRequest.of(0, 1);
+
+            // 해당 경로 기록이 마지막 경로인지 확인
+
+            List<DeliveryRouteRecords> lastRecordList = deliveryRouteRecordsRepository.findLastRouteRecord(
+                record.getDelivery().getDeliveryId(),
+                limitOne
+            );
+
+            Optional<DeliveryRouteRecords> lastRecordOptional = lastRecordList.stream().findFirst();
+            lastRecordOptional.ifPresent(lastRecord -> {
+                    // 현재 업데이트된 기록의 시퀀스가 마지막 기록의 시퀀스와 같으면 최종 허브에 도착한 것임
+                    if (record.getSequence().equals(lastRecord.getSequence())) {
+                        delivery.updateStatus(DeliveryStatus.DELIVERING, updatorId);
+                    }
+            });
+        }
 
         return deliveryDomainMapper.toResponse(record);
     }
@@ -270,7 +304,7 @@ public class DeliveryService {
 
         if (role == UserRole.DELIVERY_MANAGER) {
             // 배송 담당자일 경우, 해당 경로에 할당된 허브 배송 담당자여야 함
-            // 허브 배송 담당자는 해당 경로에 할당된 담당자 ID와 일치해야 함
+            // 허브 배송 담당자는 해당 경로에 할당된 hubDeliveryManagerId와 일치해야 함
             return record.getHubDeliveryManagerId() != null && record.getHubDeliveryManagerId().equals(currUserId);
         }
         return false;

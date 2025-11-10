@@ -5,6 +5,7 @@ import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRout
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,5 +25,15 @@ public class DeliveryRouteRecordsRepositoryImpl implements DeliveryRouteRecordsR
     @Override
     public Optional<DeliveryRouteRecords> findActiveById(UUID routeId) {
         return jpaRepository.findByRouteIdAndDeletedAtIsNull(routeId);
+    }
+
+    @Override
+    public List<DeliveryRouteRecords> findLastRouteRecord(UUID deliveryId, Pageable pageable) {
+        return jpaRepository.findLastRecordByDeliveryId(deliveryId, pageable);
+    }
+
+    @Override
+    public Optional<DeliveryRouteRecords> findLatestRouteRecord(UUID deliveryId) {
+        return jpaRepository.findLatestRecordByDeliveryId(deliveryId);
     }
 }

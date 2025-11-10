@@ -90,7 +90,7 @@ public class DeliveryRouteRecords extends BaseEntity {
             .build();
     }
 
-    public void recordMovement(DeliveryStatus newStatus, Double actualDistance,
+    public void update(DeliveryStatus newStatus, Double actualDistance,
         Long actualTime, Long updatorId) {
         // 이미 도착 완료된 경로 재기록 방지
         if (this.currStatus.equals(DeliveryStatus.HUB_ARRIVED)) {
