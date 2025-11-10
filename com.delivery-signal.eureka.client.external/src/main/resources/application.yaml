@@ -1,6 +1,9 @@
 spring:
   profiles:
     active: local
+  config:
+    import:
+      - optional:classpath:secrets.yml
   application:
     name: external-service
 
