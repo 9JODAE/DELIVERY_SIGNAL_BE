@@ -1,5 +1,3 @@
-server:
-  port: 19093
 spring:
   profiles:
     active: local
