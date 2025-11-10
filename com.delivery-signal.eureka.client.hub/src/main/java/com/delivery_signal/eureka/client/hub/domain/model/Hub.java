@@ -11,7 +11,6 @@ import com.delivery_signal.eureka.client.hub.domain.vo.Address;
 import com.delivery_signal.eureka.client.hub.domain.vo.Coordinate;
 import com.delivery_signal.eureka.client.hub.domain.vo.Distance;
 import com.delivery_signal.eureka.client.hub.domain.vo.Duration;
-import com.delivery_signal.eureka.client.hub.presentation.dto.request.DeductStockQuantityRequest;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
