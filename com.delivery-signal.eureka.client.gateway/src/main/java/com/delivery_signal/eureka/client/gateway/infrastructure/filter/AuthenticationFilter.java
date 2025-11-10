@@ -73,7 +73,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 		String userId = claims.get("user_id", String.class);
 
 		ServerHttpRequest request = exchange.getRequest().mutate()
-			.header("x-user-id", userId)
+            .header("x-user-id", userId)
 			.build();
 
 		return chain.filter(exchange.mutate().request(request).build());

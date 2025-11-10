@@ -7,8 +7,10 @@ import com.delivery_signal.eureka.client.user.domain.common.exception.ErrorCode;
 import com.delivery_signal.eureka.client.user.domain.common.exception.ServiceException;
 import com.delivery_signal.eureka.client.user.domain.model.User;
 
+import com.delivery_signal.eureka.client.user.domain.model.UserRole;
 import com.delivery_signal.eureka.client.user.presentation.controller.OrderFeignClient;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UserCreateRequestDto;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.UserRoleCheckRequestDto;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UserUpdateApprovalStatusRequestDto;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UserUpdateRequestDto;
 import com.delivery_signal.eureka.client.user.presentation.dto.response.UserResponseDto;
@@ -30,6 +32,10 @@ import java.util.Set;
 public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+
+    // MASTER_TOKEN
+    private final String MASTER_TOKEN = "AAABnvxRVklrnYxKZ0aHgTBcXukeZygoC";
+
     // Feign Client
     private final OrderFeignClient orderFeignClient;
 
@@ -48,11 +54,22 @@ public class UserService {
         return "User -> Order 호출 성공!" + getOrderInfo();
     }
 
+    // User 권한 검증
+    @Transactional
+    public Boolean checkAuthorization(UserRoleCheckRequestDto requestDto) {
+        User user = userRepository.findById(requestDto.userId()).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+        return requestDto.role() == user.getRole();
+    }
 
     // User 생성
     @Transactional
     public UserResponseDto createUser(UserCreateRequestDto requestDto) {
         User user = userMapper.toEntity(requestDto);
+
+        // 사용자 중복 확인
+        if (userRepository.findBySlackId(requestDto.slackId()).isPresent()) {
+            throw new IllegalArgumentException(ErrorCode.USER_USERNAME_DUPLICATED.getMessage());
+        }
 
         userRepository.save(user);
         return userMapper.from(user);

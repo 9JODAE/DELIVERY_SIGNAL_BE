@@ -1,34 +1,39 @@
 package com.delivery_signal.eureka.client.user.presentation.controller;
 
-import com.delivery_signal.eureka.client.user.application.service.AuthService;
+import com.delivery_signal.eureka.client.user.application.service.JwtUtil;
+import com.delivery_signal.eureka.client.user.application.service.UserService;
 import com.delivery_signal.eureka.client.user.presentation.dto.ApiResponse;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.UserCreateRequestDto;
+import com.delivery_signal.eureka.client.user.presentation.dto.response.UserResponseDto;
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/open-api/v1/auth") // gateway: open-api|api/v1/auth/**
+@RequestMapping("/open-api/v1/auth")
+
 public class AuthController {
-    private final AuthService authService;
+    private final UserService userService;
 
-    @GetMapping("/signIn")
-    public ResponseEntity<ApiResponse<?>> createAuthToken(@RequestParam String user_id) {
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(new AuthResponse(authService.createAccessToken(user_id))));
+
+    @PostMapping("")
+    @Operation(summary="회원가입", description="새로운 사용자가 회원가입을 진행합니다")
+    public ResponseEntity<ApiResponse<UserResponseDto>> signUp(@Valid @RequestBody UserCreateRequestDto requestDto) {
+        log.info("회원가입 요청 : username={}", requestDto.username());
+        UserResponseDto responseDto = userService.createUser(requestDto);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
 
     }
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    static class AuthResponse {
-        private String accessToken;
-    }
+    /*
+    @PostMapping("/token")
+    @Operation(summary="로그인", description="사용자가 로그인합니다")
+    */
+//      JwtAuthenticationFilter에서 진행
 }

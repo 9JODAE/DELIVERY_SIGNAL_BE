@@ -3,10 +3,16 @@ package com.delivery_signal.eureka.client.user.application.mapper;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UserCreateRequestDto;
 import com.delivery_signal.eureka.client.user.presentation.dto.response.UserResponseDto;
 import com.delivery_signal.eureka.client.user.domain.model.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapper {
+    private final PasswordEncoder passwordEncoder;
+
+    public UserMapper(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public UserResponseDto from(User user) {
         return new UserResponseDto(
@@ -19,7 +25,7 @@ public class UserMapper {
     public User toEntity(UserCreateRequestDto requestDto) {
         return User.builder()
                 .username(requestDto.username())
-                .password(requestDto.password())
+                .password(passwordEncoder.encode(requestDto.password()))
                 .slackId(requestDto.slackId())
                 .organization(requestDto.organization())
                 .role(requestDto.role())

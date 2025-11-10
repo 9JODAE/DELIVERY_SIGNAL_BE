@@ -3,6 +3,8 @@ package com.delivery_signal.eureka.client.user.presentation.controller;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UserCreateRequestDto;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UserUpdateApprovalStatusRequestDto;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UserUpdateRequestDto;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.UserRoleCheckRequestDto;
+import com.delivery_signal.eureka.client.user.presentation.dto.response.UserAuthorizationResponseDto;
 import com.delivery_signal.eureka.client.user.presentation.dto.response.UserResponseDto;
 import com.delivery_signal.eureka.client.user.domain.model.ApprovalStatus;
 import com.delivery_signal.eureka.client.user.domain.model.UserRole;
@@ -21,50 +23,78 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-//@Tag(name="domain-controller", description = "MASTER의 생성/수정/삭제 + 모든 사용자의 권한별 조회 API")
-@RequestMapping("/v1/users") // gateway: open-api|api/v1/users/**
+//@Tag(name="user-controller", description = "MASTER의 생성/수정/삭제 + 모든 사용자의 권한별 조회 API")
+@RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserService userService;
 
-
     // Feign Client
     @GetMapping("/call")
-    public String callOrderByUser() {
-        return "Gateway 사용 성공";
-        //return userService.callOrder();
+    public String callUserByOrder() {
+        return "Order 어플리케이션에서 User의 /call 호출";
     }
 
-    // 통신 테스트 (Other Service -> User Service)
+    @GetMapping("/authorization")
+    @Operation(summary="다른 애플리케이션의 인가 확인", description="인가를 확인합니다")
+//  JwtAuthorizationFilter에서 구현 -> Gateway에서 구현됨
+    public ResponseEntity<ApiResponse<UserAuthorizationResponseDto>> confirmAuthorization(@RequestHeader("x-user-id") String x_user_id, @RequestBody UserRoleCheckRequestDto requestDto) {
+        // 로그인한 사용자의 권한 확인 아닌 요청 body의 사용자(userId)에 대한 권한 확인
+        Boolean check = userService.checkAuthorization(requestDto);
+        if (!check) {
+            return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.message("권한이 일치하지 않습니다"));
+        }
+        String extraInfo = null;
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(new UserAuthorizationResponseDto(requestDto.userId(),requestDto.role(), extraInfo)));
 
-    // 통신 테스트 (User Service -> Other Service)
+    }
+
+    @GetMapping("/profile")
+    @Operation(summary="사용자의 본인 프로필 조회", description="본인의 정보를 조회합니다")
+    public ResponseEntity<ApiResponse<UserResponseDto>> getProfile(@RequestHeader("x-user-id") String x_user_id) {
+        UserResponseDto responseDto = userService.getUser(Long.parseLong(x_user_id));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
+    }
 
     @PostMapping()
 //    @PreAuthorize("hasRole('MASTER')")
     @Operation(summary="MASTER의 사용자 생성", description="새로운 사용자를 등록합니다")
-    public ResponseEntity<ApiResponse<UserResponseDto>> registerUser(@RequestBody UserCreateRequestDto requestDto) {
+    public ResponseEntity<ApiResponse<UserResponseDto>> registerUser(@RequestHeader("x-user-id") String x_user_id, @RequestBody UserCreateRequestDto requestDto) {
+
+        if (!isMaster(Long.parseLong(x_user_id))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.message("사용자 등록은 MASTER만 가능합니다"));
+        }
         UserResponseDto responseDto = userService.createUser(requestDto);
 
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(responseDto));
     }
 
     @GetMapping("/{userId}")
 //    @PreAuthorize("hasRole('MASTER')")
     @Operation(summary="MASTER의 특정 사용자 조회", description="사용자를 조회합니다")
-    public ResponseEntity<ApiResponse<UserResponseDto>> findUser(@PathVariable("userId") Long userId) {
+    public ResponseEntity<ApiResponse<UserResponseDto>> findUser(@RequestHeader("x-user-id") String x_user_id, @PathVariable("userId") Long userId) {
         /*
+        if (!isMaster(Long.parseLong(x_user_id))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.message("특정 사용자 조회는 MASTER만 가능합니다"));
+        }
+
         UserResponseDto responseDto = userService.getUser(userId);
 
         if (responseDto == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.notFound("사용자가 이미 삭제되었습니다"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.message("사용자가 존재하지 않습니다"));
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
-
-
         */
 
+
+
+
         // dummy data
+        if (!isMaster(Long.parseLong(x_user_id))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.message("특정 사용자 조회는 MASTER만 가능합니다"));
+        }
+
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(new UserResponseDto(
                 2L,
                 "kimhubgwan",
@@ -79,16 +109,28 @@ public class UserController {
 //    @PreAuthorize("hasRole('MASTER')")
     @Operation(summary="MASTER의 사용자 전체 조회 및 검색", description="검색 키워드로 사용자를 조회합니다 (전체 조회 포함)")
     public ResponseEntity<ApiResponse<List<UserResponseDto>>> searchUser(
+            @RequestHeader("x-user-id") String x_user_id,
 //            @Parameter(description = "사용자 이름, 사용자 소속 그룹(허브 또는 업체)명, 권한으로 검색 가능")
             @RequestParam(required = false) String search) {
         /*
+        if (!isMaster(Long.parseLong(x_user_id))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.message("사용자 전체 조회는 MASTER만 가능합니다"));
+        }
+
         List<UserResponseDto> responseDtos = userService.getUsers(search);
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
 
         */
 
+
+
         // dummy data
+
+        if (!isMaster(Long.parseLong(x_user_id))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.message("사용자 전체 조회는 MASTER만 가능합니다"));
+        }
+
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(List.of(
                 new UserResponseDto(1L, "choigoim", "UCHOIGOIM", "delivery-signal", UserRole.MASTER, ApprovalStatus.PENDING),
 
@@ -160,11 +202,16 @@ public class UserController {
     @PatchMapping("/{userId}/approval")
 //    @PreAuthorize("hasAnyRole('MASTER, HUB_MANAGER')")
     @Operation(summary="MASTER, Hub Manager의 사용자 회원가입 승인", description="사용자의 회원가입을 승인합니다")
-    public ResponseEntity<ApiResponse<UserResponseDto>> permitUser(@RequestBody UserUpdateApprovalStatusRequestDto requestDto, @PathVariable("userId") Long userId) {
+    public ResponseEntity<ApiResponse<UserResponseDto>> permitUser(@RequestHeader("x-user-id") String x_user_id, @RequestBody UserUpdateApprovalStatusRequestDto requestDto, @PathVariable("userId") Long userId) {
+
+        if (!(isMaster(Long.parseLong(x_user_id)) || isHubManager(Long.parseLong(x_user_id)))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.message("사용자의 회원가입 승인은 MASTER 또는 HUB_MANAGER만 가능합니다"));
+        }
+
         UserResponseDto responseDto = userService.updateApprovalStatus(userId, requestDto);
 
         if (responseDto == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.notFound("사용자가 이미 삭제되었습니다"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.message("사용자가 존재하지 않습니다"));
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
@@ -175,11 +222,16 @@ public class UserController {
     @PutMapping("/{userId}")
 //    @PreAuthorize("hasRole('MASTER')")
     @Operation(summary="MASTER의 사용자 정보 수정", description="사용자의 정보를 수정합니다")
-    public ResponseEntity<ApiResponse<UserResponseDto>> modifyUserInfo (@RequestBody UserUpdateRequestDto requestDto, @PathVariable("userId") Long userId) {
+    public ResponseEntity<ApiResponse<UserResponseDto>> modifyUserInfo (@RequestHeader("x-user-id") String x_user_id, @RequestBody UserUpdateRequestDto requestDto, @PathVariable("userId") Long userId) {
+
+        if (!isMaster(Long.parseLong(x_user_id))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.message("사용자 정보 수정은 MASTER만 가능합니다"));
+        }
+
         UserResponseDto responseDto = userService.updateUser(userId, requestDto);
 
         if (responseDto == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.notFound("사용자가 이미 삭제되었습니다"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.message("사용자가 존재하지 않습니다"));
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
@@ -188,15 +240,33 @@ public class UserController {
     @DeleteMapping("/{userId}")
 //    @PreAuthorize("hasRole('MASTER')")
     @Operation(summary="MASTER의 사용자 정보 삭제", description="사용자의 정보를 삭제합니다")
-    public ResponseEntity<ApiResponse<UserResponseDto>> deleteUser (@PathVariable("userId") Long userId) {
+    public ResponseEntity<ApiResponse<Void>> deleteUser (@RequestHeader("x-user-id") String x_user_id, @PathVariable("userId") Long userId) {
+
+        if (!isMaster(Long.parseLong(x_user_id))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.message("사용자 정보 삭제는 MASTER만 가능합니다"));
+        }
+
         Boolean deleted = userService.softDeleteUser(userId);
 
         if (!deleted) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.notFound("사용자가 이미 삭제되었습니다"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.message("사용자가 존재하지 않습니다"));
         }
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success());
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
     }
 
+
+
+    // Master 여부 확인
+    private Boolean isMaster(Long userId) {
+        return userService.checkAuthorization(new UserRoleCheckRequestDto(userId, UserRole.MASTER));
+
+    }
+
+    // Hub Manager 여부 확인
+    private Boolean isHubManager(Long userId) {
+        return userService.checkAuthorization(new UserRoleCheckRequestDto(userId, UserRole.HUB_MANAGER));
+
+    }
 
 
 
