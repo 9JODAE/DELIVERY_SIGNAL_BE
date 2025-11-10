@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 
 @Slf4j
@@ -100,6 +101,7 @@ public class UserController {
                 "kimhubgwan",
                 "UKIMHUBGWAN",
                 "서울특별시 센터 허브",
+                UUID.randomUUID(),
                 UserRole.HUB_MANAGER,
                 ApprovalStatus.APPROVED
         )));
@@ -132,69 +134,69 @@ public class UserController {
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(List.of(
-                new UserResponseDto(1L, "choigoim", "UCHOIGOIM", "delivery-signal", UserRole.MASTER, ApprovalStatus.PENDING),
+                new UserResponseDto(1L, "choigoim", "UCHOIGOIM", "delivery-signal", null, UserRole.MASTER, ApprovalStatus.PENDING),
 
                 // 허브 관리자
-                new UserResponseDto(2L, "kimhubgwan", "UKIMHUBGWAN", "서울특별시 센터 허브", UserRole.HUB_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(3L, "leehubgwan", "ULEEHUBGWAN", "세종특별자치시 센터 허브", UserRole.HUB_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(4L, "sohubgwan", "USOHUBGWAN", "경기 남부 센터 허브", UserRole.HUB_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(2L, "kimhubgwan", "UKIMHUBGWAN", "서울특별시 센터 허브", UUID.randomUUID(), UserRole.HUB_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(3L, "leehubgwan", "ULEEHUBGWAN", "세종특별자치시 센터 허브", UUID.randomUUID(), UserRole.HUB_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(4L, "sohubgwan", "USOHUBGWAN", "경기 남부 센터 허브", UUID.randomUUID(), UserRole.HUB_MANAGER, ApprovalStatus.PENDING),
 
                 // 배송 관리자 (허브)
-                new UserResponseDto(5L, "jeonbaehub", "UJEONBAEHUB", "delivery-signal", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(6L, "yubaehub", "UYUBAEHUB", "delivery-signal", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(7L, "minbaehub", "UMINBAEHUB", "delivery-signal", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(8L, "kobaehub", "UKOBAEHUB", "delivery-signal", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(9L, "kimbaehub", "UKIMBAEHUB", "delivery-signal", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(10L, "parkbaehub", "UPARKBAEHUB", "delivery-signal", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(11L, "jinbaehub", "UJINBAEHUB", "delivery-signal", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(12L, "yangbaehub", "UYANGBAEHUB", "delivery-signal", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(13L, "rhabaehub", "URHABAEHUB", "delivery-signal", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(14L, "woobaehub", "UWOOBAEHUB", "delivery-signal", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(5L, "jeonbaehub", "UJEONBAEHUB", "delivery-signal", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(6L, "yubaehub", "UYUBAEHUB", "delivery-signal", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(7L, "minbaehub", "UMINBAEHUB", "delivery-signal", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(8L, "kobaehub", "UKOBAEHUB", "delivery-signal", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(9L, "kimbaehub", "UKIMBAEHUB", "delivery-signal", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(10L, "parkbaehub", "UPARKBAEHUB", "delivery-signal", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(11L, "jinbaehub", "UJINBAEHUB", "delivery-signal", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(12L, "yangbaehub", "UYANGBAEHUB", "delivery-signal", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(13L, "rhabaehub", "URHABAEHUB", "delivery-signal", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(14L, "woobaehub", "UWOOBAEHUB", "delivery-signal", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
 
                 // 업체 배송 관리자 - 서울특별시 센터 허브
-                new UserResponseDto(15L, "nabaecom", "UNABAECOM", "서울특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(16L, "limbaecom", "ULIMBAECOM", "서울특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(17L, "jungbaecom", "UJUNGBAECOM", "서울특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(18L, "hanbaecom", "UHANBAECOM", "서울특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(19L, "ohbaecom", "UOHBAECOM", "서울특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(20L, "seobaecom", "USEOBAECOM", "서울특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(21L, "hwangbaecom", "UHWANGBAECOM", "서울특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(22L, "ahnbaecom", "UAHNBAECOM", "서울특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(23L, "songbaecom", "USONGBAECOM", "서울특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(24L, "hongbaecom", "UHONGBAECOM", "서울특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(15L, "nabaecom", "UNABAECOM", "서울특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(16L, "limbaecom", "ULIMBAECOM", "서울특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(17L, "jungbaecom", "UJUNGBAECOM", "서울특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(18L, "hanbaecom", "UHANBAECOM", "서울특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(19L, "ohbaecom", "UOHBAECOM", "서울특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(20L, "seobaecom", "USEOBAECOM", "서울특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(21L, "hwangbaecom", "UHWANGBAECOM", "서울특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(22L, "ahnbaecom", "UAHNBAECOM", "서울특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(23L, "songbaecom", "USONGBAECOM", "서울특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(24L, "hongbaecom", "UHONGBAECOM", "서울특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
 
                 // 업체 배송 관리자 - 세종특별자치시 센터 허브
-                new UserResponseDto(25L, "simbaecom", "USIMBAECOM", "세종특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(26L, "nobaecom", "UNOBAECOM", "세종특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(27L, "habaecom", "UHABAECOM", "세종특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(28L, "sungbaecom", "USUNGBAECOM", "세종특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(29L, "chabaecom", "UCHABAECOM", "세종특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(30L, "joobaecom", "UJOOBAECOM", "세종특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(31L, "munbaecom", "UMUNBAECOM", "세종특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(32L, "sonbaecom", "USONBAECOM", "세종특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(33L, "yeonbaecom", "UYEONBAECOM", "세종특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(34L, "bangbaecom", "UBANGBAECOM", "세종특별자치시 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(25L, "simbaecom", "USIMBAECOM", "세종특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(26L, "nobaecom", "UNOBAECOM", "세종특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(27L, "habaecom", "UHABAECOM", "세종특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(28L, "sungbaecom", "USUNGBAECOM", "세종특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(29L, "chabaecom", "UCHABAECOM", "세종특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(30L, "joobaecom", "UJOOBAECOM", "세종특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(31L, "munbaecom", "UMUNBAECOM", "세종특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(32L, "sonbaecom", "USONBAECOM", "세종특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(33L, "yeonbaecom", "UYEONBAECOM", "세종특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(34L, "bangbaecom", "UBANGBAECOM", "세종특별자치시 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
 
                 // 업체 배송 관리자 - 경기 남부 센터 허브
-                new UserResponseDto(35L, "jibaecom", "UJIBAECOM", "경기 남부 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(36L, "kibaecom", "UKIBAECOM", "경기 남부 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(37L, "pyobaecom", "UPYOBAECOM", "경기 남부 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(38L, "gubaecom", "UGUBAECOM", "경기 남부 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(39L, "myeongbaecom", "UMYEONGBAECOM", "경기 남부 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(40L, "wangbaecom", "UWANGBAECOM", "경기 남부 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(41L, "dobaecom", "UDOBAECOM", "경기 남부 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(42L, "mabaecom", "UMABAECOM", "경기 남부 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(43L, "jebaecom", "UJEBAECOM", "경기 남부 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(44L, "mobaecom", "UMOBAECOM", "경기 남부 센터 허브", UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(35L, "jibaecom", "UJIBAECOM", "경기 남부 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(36L, "kibaecom", "UKIBAECOM", "경기 남부 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(37L, "pyobaecom", "UPYOBAECOM", "경기 남부 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(38L, "gubaecom", "UGUBAECOM", "경기 남부 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(39L, "myeongbaecom", "UMYEONGBAECOM", "경기 남부 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(40L, "wangbaecom", "UWANGBAECOM", "경기 남부 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(41L, "dobaecom", "UDOBAECOM", "경기 남부 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(42L, "mabaecom", "UMABAECOM", "경기 남부 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(43L, "jebaecom", "UJEBAECOM", "경기 남부 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(44L, "mobaecom", "UMOBAECOM", "경기 남부 센터 허브", UUID.randomUUID(), UserRole.DELIVERY_MANAGER, ApprovalStatus.PENDING),
 
                 // 업체 관리자
-                new UserResponseDto(45L, "yooncomgwan", "UYOONCOMGWAN", "A 업체", UserRole.SUPPLIER_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(46L, "gilcomgwan", "UGILCOMGWAN", "B 업체", UserRole.SUPPLIER_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(47L, "euncomgwan", "UEUNCOMGWAN", "C 업체", UserRole.SUPPLIER_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(48L, "okgwan", "UOKCOMGWAN", "D 업체", UserRole.SUPPLIER_MANAGER, ApprovalStatus.PENDING),
-                new UserResponseDto(49L, "takgwan", "UTAKCOMGWAN", "E 업체", UserRole.SUPPLIER_MANAGER, ApprovalStatus.PENDING)
-
+                new UserResponseDto(45L, "yooncomgwan", "UYOONCOMGWAN", "A 업체", UUID.randomUUID(), UserRole.SUPPLIER_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(46L, "gilcomgwan", "UGILCOMGWAN", "B 업체", UUID.randomUUID(), UserRole.SUPPLIER_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(47L, "euncomgwan", "UEUNCOMGWAN", "C 업체", UUID.randomUUID(), UserRole.SUPPLIER_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(48L, "okgwan", "UOKCOMGWAN", "D 업체", UUID.randomUUID(), UserRole.SUPPLIER_MANAGER, ApprovalStatus.PENDING),
+                new UserResponseDto(49L, "takgwan", "UTAKCOMGWAN", "E 업체", UUID.randomUUID(), UserRole.SUPPLIER_MANAGER, ApprovalStatus.PENDING)
         )));
+
     }
 
 
@@ -202,7 +204,7 @@ public class UserController {
     @PatchMapping("/{userId}/approval")
 //    @PreAuthorize("hasAnyRole('MASTER, HUB_MANAGER')")
     @Operation(summary="MASTER, Hub Manager의 사용자 회원가입 승인", description="사용자의 회원가입을 승인합니다")
-    public ResponseEntity<ApiResponse<UserResponseDto>> permitUser(@RequestHeader("x-user-id") String x_user_id, @RequestBody UserUpdateApprovalStatusRequestDto requestDto, @PathVariable("userId") Long userId) {
+    public ResponseEntity<ApiResponse<Void>> permitUser(@RequestHeader("x-user-id") String x_user_id, @RequestBody UserUpdateApprovalStatusRequestDto requestDto, @PathVariable("userId") Long userId) {
 
         if (!(isMaster(Long.parseLong(x_user_id)) || isHubManager(Long.parseLong(x_user_id)))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.message("사용자의 회원가입 승인은 MASTER 또는 HUB_MANAGER만 가능합니다"));
@@ -214,7 +216,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.message("사용자가 존재하지 않습니다"));
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
 
     }
 

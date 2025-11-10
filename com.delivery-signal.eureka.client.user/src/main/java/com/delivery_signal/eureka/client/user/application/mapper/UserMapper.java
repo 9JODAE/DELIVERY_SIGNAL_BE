@@ -17,7 +17,7 @@ public class UserMapper {
     public UserResponseDto from(User user) {
         return new UserResponseDto(
                 user.getUserId(), user.getUsername(), user.getSlackId(),
-                user.getOrganization(), user.getRole(), user.getApprovalStatus()
+                user.getOrganization(), user.getOrganizationId(), user.getRole(), user.getApprovalStatus()
         );
     }
 
@@ -28,6 +28,7 @@ public class UserMapper {
                 .password(passwordEncoder.encode(requestDto.password()))
                 .slackId(requestDto.slackId())
                 .organization(requestDto.organization())
+                .organizationId(requestDto.organizationId())
                 .role(requestDto.role())
                 .build();
     }

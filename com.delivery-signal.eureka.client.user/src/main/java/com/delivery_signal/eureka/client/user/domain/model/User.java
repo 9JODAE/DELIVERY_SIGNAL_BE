@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -31,7 +33,10 @@ public class User extends BaseEntity {
     private UserRole role;  // MASTER / HUB_MANAGER / DELIVERY_MANAGER / SUPPLIER_MANAGER
 
     @Column(nullable=false)
-    private String organization;
+    private String organization;  // hubId, companyId, deliveryId (UserRole과 비교 필요, MASTER는 organization 없음)
+
+    @Column(nullable = true)
+    private UUID organizationId;  // hubId, companyId, deliveryId (UserRole과 비교 필요, MASTER는 organizationId 없음)
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -42,11 +47,12 @@ public class User extends BaseEntity {
 
 
     @Builder
-    public User(String username, String password, String slackId, String organization, UserRole role) {
+    public User(String username, String password, String slackId, String organization, UUID organizationId, UserRole role) {
         this.username = username;
         this.password = password;
         this.slackId = slackId;
         this.organization = organization;
+        this.organizationId = organizationId;
         this.role = role;
         this.approvalStatus = ApprovalStatus.PENDING;
         this.isPublic = false;

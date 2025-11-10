@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+import java.util.UUID;
+
 public record UserCreateRequestDto(
 
         @NotBlank(message = "이름은 필수 정보입니다")
@@ -27,8 +29,8 @@ public record UserCreateRequestDto(
         @NotBlank(message = "Slack ID는 필수 정보입니다")
         String slackId,
 
-        @NotBlank(message = "소속 업체(또는 허브)명은 필수 정보입니다")
         String organization,
+        UUID organizationId,
 
         @NotNull(message = "사용자의 Role은 필수 정보입니다")
         UserRole role,
@@ -37,9 +39,4 @@ public record UserCreateRequestDto(
         boolean isMaster,
         String masterToken
 
-) {
-//    public UserCreateRequestDto {
-//        isMaster = false;
-//        if (masterToken == null) masterToken = "";
-//    }
-}
+) {}
