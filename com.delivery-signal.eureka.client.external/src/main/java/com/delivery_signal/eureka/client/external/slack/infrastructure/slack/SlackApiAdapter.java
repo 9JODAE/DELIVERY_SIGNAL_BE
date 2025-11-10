@@ -34,14 +34,14 @@ public class SlackApiAdapter implements SlackNotifier {
             ChatPostMessageResponse response = methods.chatPostMessage(request);
             if (response.isOk()) {
                 System.out.println("✅ Slack DM 전송 성공. User ID: " + slackUserId);
-                return slackUserId;
+                return message;
             } else {
                 System.err.println("❌ Slack DM 전송 실패. Error: " + response.getError());
-                return null;
+                return "❌ Slack DM 전송 실패. Error: " + response.getError();
             }
         } catch (Exception e) {
             System.err.println("❌ Slack API 호출 중 오류 발생: " + e.getMessage());
-            return null;
+            return "❌ Slack API 호출 중 오류 발생: " + e.getMessage();
         }
     }
 
