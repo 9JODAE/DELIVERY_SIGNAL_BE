@@ -9,6 +9,7 @@ import com.delivery_signal.eureka.client.external.slack.presentation.dto.CreateS
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.DeleteSlackRecordResponse;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.SlackRecordResponse;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.UpdateSlackRecordResponse;
+import com.delivery_signal.eureka.client.external.slack.presentation.dto.request.CreateSlackMessageRequest;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.request.CreateSlackRecordRequest;
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.request.UpdateSlackRecordRequest;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class SlackRecordControllerV1 {
             @RequestBody CreateSlackRecordRequest request
             ) {
         CreateSlackRecordResponse response = CreateSlackRecordResponse.from(
-                serviceV1.createSlackRecord(request.toDto())
+                serviceV1.createSlackRecord(request.getRecipientId(),request.getMessage())
         );
         return CommonApiResponse.created(response);
     }
@@ -81,11 +82,18 @@ public class SlackRecordControllerV1 {
         return CommonApiResponse.ok(response);
     }
 
-    @PostMapping("/message")
-    public ResponseEntity<CommonApiResponse<String>> sendSlackMessage(
+    @PostMapping("/message/test")
+    public ResponseEntity<CommonApiResponse<String>> sendSlackMessageTest(
             @RequestParam String slackUserId,
             @RequestParam String message){
         return CommonApiResponse.ok(messageServiceV1.slackMessageSend(slackUserId,message));
+    }
+
+    @PostMapping("/message")
+    public ResponseEntity<CommonApiResponse<String>> sendSlackMessage(
+            @RequestBody CreateSlackMessageRequest request
+            ){
+        return CommonApiResponse.ok(messageServiceV1.notificationMessageSend(request.toDto()));
     }
 
 

@@ -4,7 +4,6 @@ import com.delivery_signal.eureka.client.external.slack.application.dto.SlackRec
 import com.delivery_signal.eureka.client.external.slack.application.dto.SlackRecordDeleteDto;
 import com.delivery_signal.eureka.client.external.slack.application.dto.SlackRecordDto;
 import com.delivery_signal.eureka.client.external.slack.application.dto.SlackRecordUpdateDto;
-import com.delivery_signal.eureka.client.external.slack.application.dto.request.CreateSlackRecordRequestDto;
 import com.delivery_signal.eureka.client.external.slack.application.dto.request.UpdateSlackRecordRequestDto;
 import com.delivery_signal.eureka.client.external.slack.domain.model.SlackRecord;
 import com.delivery_signal.eureka.client.external.slack.domain.repository.SlackRecordRepository;
@@ -32,11 +31,12 @@ public class SlackRecordServiceV1 {
 
     /**
      * <p>SlackRecord 생성</p>
-     * @param requestDto 요청 Dto {@link CreateSlackRecordRequestDto}
+     * @param recipientId 수령인 식별자
+     * @param message 메세지 내용
      * @return {@link SlackRecordCreationDto}
      */
-    public SlackRecordCreationDto createSlackRecord(CreateSlackRecordRequestDto requestDto) {
-        SlackRecord slackRecord = SlackRecord.create(requestDto.getRecipientId(), requestDto.getMessage());
+    public SlackRecordCreationDto createSlackRecord(String recipientId, String message) {
+        SlackRecord slackRecord = SlackRecord.create(recipientId, message);
         repository.save(slackRecord);
         return SlackRecordCreationDto.from(slackRecord);
     }
