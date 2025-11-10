@@ -7,7 +7,8 @@ import com.delivery_signal.eureka.client.order.presentation.external.dto.request
 import java.util.List;
 
 public class CreateOrderMapper {
-    public static CreateOrderCommand toCommand(CreateOrderRequestDto dto) {
+
+    public static CreateOrderCommand toCommand(CreateOrderRequestDto dto, Long userId) {
         List<OrderProductCommand> products = dto.getOrderProducts().stream()
                 .map(p -> OrderProductCommand.builder()
                         .productId(p.getProductId())
@@ -16,6 +17,7 @@ public class CreateOrderMapper {
                 .toList();
 
         return CreateOrderCommand.builder()
+                .userId(userId)
                 .supplierCompanyId(dto.getSupplierCompanyId())
                 .receiverCompanyId(dto.getReceiverCompanyId())
                 .requestNote(dto.getRequestNote())

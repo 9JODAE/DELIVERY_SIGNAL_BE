@@ -8,6 +8,7 @@ import com.delivery_signal.eureka.client.order.application.dto.request.CreateDel
 import com.delivery_signal.eureka.client.order.application.dto.response.*;
 import com.delivery_signal.eureka.client.order.application.mapper.OrderQueryMapper;
 import com.delivery_signal.eureka.client.order.application.port.out.*;
+import com.delivery_signal.eureka.client.order.application.validator.OrderPermissionValidator;
 import com.delivery_signal.eureka.client.order.common.NotFoundException;
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
 import com.delivery_signal.eureka.client.order.domain.entity.OrderProduct;
@@ -40,22 +41,26 @@ public class OrderService {
     private final HubQueryPort hubQueryPort;
     private final CompanyQueryPort companyQueryPort;
     private final ProductQueryPort productQueryPort;
+    private final UserQueryPort userQueryPort;
 
     private final OrderDomainService orderDomainService;
     private final OrderQueryMapper orderQueryMapper;
     private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
+    private final OrderPermissionValidator orderPermissionValidator;
 
-    public OrderService(DeliveryCommandPort deliveryCommandPort, HubCommandPort hubCommandPort, HubQueryPort hubQueryPort, CompanyQueryPort companyQueryPort, ProductQueryPort productQueryPort, OrderDomainService orderDomainService, OrderQueryMapper orderQueryMapper, OrderRepository orderRepository, OrderProductRepository orderProductRepository) {
+    public OrderService(DeliveryCommandPort deliveryCommandPort, HubCommandPort hubCommandPort, HubQueryPort hubQueryPort, CompanyQueryPort companyQueryPort, ProductQueryPort productQueryPort, UserQueryPort userQueryPort, OrderDomainService orderDomainService, OrderQueryMapper orderQueryMapper, OrderRepository orderRepository, OrderProductRepository orderProductRepository, OrderPermissionValidator orderPermissionValidator) {
         this.deliveryCommandPort = deliveryCommandPort;
         this.hubCommandPort = hubCommandPort;
         this.hubQueryPort = hubQueryPort;
         this.companyQueryPort = companyQueryPort;
         this.productQueryPort = productQueryPort;
+        this.userQueryPort = userQueryPort;
         this.orderDomainService = orderDomainService;
         this.orderQueryMapper = orderQueryMapper;
         this.orderRepository = orderRepository;
         this.orderProductRepository = orderProductRepository;
+        this.orderPermissionValidator = orderPermissionValidator;
     }
 
 
@@ -67,10 +72,13 @@ public class OrderService {
      */
     public OrderCreateResponseDto createOrderAndSendDelivery(CreateOrderCommand command) {
 
-//        //유저 검증, 유저 쪽 추가되면 리팩토링 예정
-//        if (!userQueryPort.isUserApproved(jwtToken)) {
-//            throw new NotFoundException(jwtToken);
-//        }
+        // 로그인 및 최소 권한 체크
+        orderPermissionValidator.validateCreate(command.getUserId());
+
+        //유저 활성 여부 확인
+        if (!userQueryPort.isUserApproved(command.getUserId())) {
+            throw new NotFoundException(command.getUserId());
+        }
 
         // 상품 ID 리스트
         List<UUID> productIds = command.getProducts().stream()

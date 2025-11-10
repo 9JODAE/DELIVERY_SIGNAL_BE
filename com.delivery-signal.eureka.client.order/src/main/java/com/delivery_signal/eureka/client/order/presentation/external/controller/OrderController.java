@@ -30,10 +30,11 @@ public class OrderController {
 
     @Operation(summary = "주문 생성", description = "새로운 주문을 등록합니다.")
     @PostMapping
-    public ResponseEntity<OrderCreateResponseDto> createOrder(@RequestBody CreateOrderRequestDto requestDto) {
+    public ResponseEntity<OrderCreateResponseDto> createOrder(
+            @RequestBody CreateOrderRequestDto requestDto,
+            @RequestHeader(value = "x-user-id", required = false) Long userId) {
 
-        CreateOrderCommand command = CreateOrderMapper.toCommand(requestDto);
-
+        CreateOrderCommand command = CreateOrderMapper.toCommand(requestDto, userId);
         OrderCreateResponseDto responseDto = orderService.createOrderAndSendDelivery(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }

@@ -4,13 +4,13 @@ import com.delivery_signal.eureka.client.order.application.command.CreateOrderCo
 import com.delivery_signal.eureka.client.order.application.dto.response.OrderCreateResponseDto;
 import com.delivery_signal.eureka.client.order.application.dto.response.OrderSummaryRequestDto;
 import com.delivery_signal.eureka.client.order.application.port.out.*;
+import com.delivery_signal.eureka.client.order.application.validator.OrderPermissionValidator;
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
 import com.delivery_signal.eureka.client.order.domain.entity.OrderProduct;
 import com.delivery_signal.eureka.client.order.domain.repository.OrderRepository;
 import com.delivery_signal.eureka.client.order.domain.service.OrderDomainService;
 import com.delivery_signal.eureka.client.order.domain.vo.company.CompanyInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.delivery.DeliveryCreatedInfo;
-import com.delivery_signal.eureka.client.order.domain.vo.hub.HubStockInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.product.ProductInfo;
 import com.delivery_signal.eureka.client.order.presentation.external.dto.request.CreateOrderRequestDto;
 import com.delivery_signal.eureka.client.order.presentation.mapper.CreateOrderMapper;
@@ -26,7 +26,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 class OrderServiceTest {
@@ -55,14 +56,28 @@ class OrderServiceTest {
     @Mock
     private OrderRepository orderRepository;
 
+    @Mock
+    private UserQueryPort userQueryPort; // 사용자 승인 검증
+
+    @Mock
+    private OrderPermissionValidator orderPermissionValidator; // 권한 검증
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
+    /**
+     * 주문 생성 정상 흐름 확인 + 권한 체크 포함
+     * - userId 기반 권한 검증 호출
+     * - UserQueryPort.isUserApproved 호출
+     * - 상품/업체/재고 조회, 도메인 주문 생성, 배송 생성 정상 동작
+     * - 기존 검증 호출 모두 유지
+     */
     @Test
-    void createOrderAndSendDelivery_success() {
+    void createOrderAndSendDelivery_success_withPermissionCheck() {
         // given
+        Long userId = 123L;
         UUID supplierCompanyId = UUID.randomUUID();
         UUID receiverCompanyId = UUID.randomUUID();
         UUID productId = UUID.randomUUID();
@@ -81,7 +96,14 @@ class OrderServiceTest {
                 ))
                 .build();
 
-        CreateOrderCommand command = CreateOrderMapper.toCommand(requestDto);
+        // userId 포함 Command 생성
+        CreateOrderCommand command = CreateOrderMapper.toCommand(requestDto, userId);
+
+        // 권한 체크 mock
+        doNothing().when(orderPermissionValidator).validateCreate(userId);
+
+        // 유저 승인 여부 mock
+        when(userQueryPort.isUserApproved(userId)).thenReturn(true);
 
         // 상품 조회 mock
         when(productQueryPort.getProducts(anyList()))
@@ -100,7 +122,7 @@ class OrderServiceTest {
         when(companyQueryPort.getCompanyById(receiverCompanyId))
                 .thenReturn(new CompanyInfo(receiverCompanyId, hubId, "서울시 송파구"));
 
-        // 허브 재고 조회 mock (Map<UUID, Integer> 반환)
+        // 허브 재고 조회 mock
         when(hubQueryPort.getStockQuantities(anyList()))
                 .thenReturn(Map.of(productId, 100));
 
@@ -132,6 +154,11 @@ class OrderServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.getMessage()).isEqualTo("주문이 완료되었습니다.");
 
+        // 권한 체크, 유저 승인 호출 확인
+        verify(orderPermissionValidator, times(1)).validateCreate(userId);
+        verify(userQueryPort, times(1)).isUserApproved(userId);
+
+        // 기존 검증 호출 유지
 
         // 상품 조회 호출 확인
         verify(productQueryPort, times(1)).getProducts(anyList());

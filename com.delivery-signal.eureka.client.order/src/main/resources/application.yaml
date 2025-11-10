@@ -40,7 +40,7 @@ server:
 
 internal:
   company:
-    url: http://localhost:9999 #업체, 상품 서비스
+    url: http://localhost:19095 #업체, 상품 서비스
   hub:
     url: http://localhost:19093
   delivery:
