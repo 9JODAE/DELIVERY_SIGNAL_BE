@@ -1,17 +1,21 @@
 package com.delivery_signal.eureka.client.delivery.application.service;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
+import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryStatusCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.mapper.DeliveryDomainMapper;
 import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryRouteRecords;
+import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryStatus;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRouteRecordsRepository;
 import com.delivery_signal.eureka.client.delivery.application.dto.PagedDeliveryResponse;
 import com.delivery_signal.eureka.client.delivery.common.UserRole;
 import com.delivery_signal.eureka.client.delivery.domain.model.Delivery;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRepository;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -127,9 +131,51 @@ public class DeliveryService {
         return PagedDeliveryResponse.from(deliveryPage, responses);
     }
 
+    @Transactional
+    public DeliveryQueryResponse updateDeliveryStatus(UUID deliveryId, UpdateDeliveryStatusCommand command, Long updatorId, String role) {
+        Delivery delivery = getDelivery(deliveryId);
+        DeliveryStatus newStatus = DeliveryStatus.valueOf(command.newStatus());
+
+        // 수정 권한: 마스터, 해당 허브 관리자, 해당 배송 담당자만 가능
+        if (!hasUpdatePermission(delivery, updatorId, UserRole.valueOf(role))) {
+            throw new RuntimeException("배송 상태를 수정할 권한이 없습니다. (ROLE: " + role + ")");
+        }
+
+        delivery.updateStatus(newStatus, updatorId);
+
+        // TODO : 비즈니스 로직 (상태 변경에 따른 추가 작업 필요 시)
+        // TODO (확인 필요) : PARTNER_MOVING -> COMPLETED로 변경 시, 주문 서비스에 최종 완료 알림 전송 (AI/SLACK 서비스 feign client)
+        return deliveryDomainMapper.toResponse(delivery);
+    }
+
     // TODO: Hub 배송 담당자를 할당하는 가상의 로직
     private Long assignInitialHubManager() {
         // TODO:  배송 순번 기준 할당 로직 호출
         return 3L; // 임시 값
+    }
+
+    private Delivery getDelivery(UUID deliveryId) {
+        return deliveryRepository.findActiveById(deliveryId)
+            .orElseThrow(() -> new NoSuchElementException("배송 정보를 찾을 수 없습니다."));
+    }
+
+    private boolean hasUpdatePermission(Delivery delivery, Long updatorId, UserRole role) {
+        // 마스터 관리자, 해당 허브 관리자, 해당 배송 담당자만 가능
+        if (role.equals(UserRole.MASTER)) {
+            return true;
+        }
+
+        // TODO: 허브 관리자는 delivery의 fromHubId/toHubId 중 하나를 관리하는지 확인 (허브 FeignClient 필요)
+        if (role.equals(UserRole.HUB_MANAGER)) {
+            // return hubService.isManagingHub(currUserId, delivery.getFromHubId())
+            //         || hubService.isManagingHub(currUserId, delivery.getToHubId());
+            return true; // 임시 허용
+        }
+
+        if (role.equals(UserRole.DELIVERY_MANAGER)) {
+            return delivery.getDeliveryManagerId().equals(updatorId);
+        }
+
+        return false;
     }
 }

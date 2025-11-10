@@ -7,8 +7,8 @@ public enum DeliveryStatus {
     HUB_WAITING("허브 대기중"),
     HUB_MOVING("허브 이동중"),
     HUB_ARRIVED("목적지 허브 도착"),
-    DELIVERING("업체 배송중"),
-    DELIVERY_COMPLETED("배송 완료"),
+    DELIVERING("업체 배송중"), // 최종 허브에서 업체 전달 완료 상태 (최종허브 -> 업체)
+    DELIVERY_COMPLETED("배송 완료"), // 최종 배송 완료
     ISSUE_REPORTED("이슈/문제 발생");
 
     private final String description;

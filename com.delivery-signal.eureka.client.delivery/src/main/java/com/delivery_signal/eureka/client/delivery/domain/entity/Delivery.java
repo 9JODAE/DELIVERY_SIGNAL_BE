@@ -82,6 +82,21 @@ public class Delivery extends BaseEntity {
             .createdBy(creatorId)
             .build();
     }
+
+    public void updateStatus(DeliveryStatus newStatus, Long updatorId) {
+        if (currStatus.equals(DeliveryStatus.DELIVERY_COMPLETED)) {
+            throw new IllegalStateException("완료된 배송의 상태는 변경할 수 없습니다.");
+        }
+
+        // 최종 허브에서 업체 전달 완료(DELIVERY_COMPLETED)까지는 Delivery 엔티티의 상태로 확인
+        if (this.currStatus.equals(DeliveryStatus.DELIVERING) &&
+            !newStatus.equals(DeliveryStatus.DELIVERY_COMPLETED)) {
+            throw new IllegalStateException("업체 이동 중 상태에서는 완료만 가능합니다.");
+        }
+
+        this.currStatus = newStatus;
+        super.update(updatorId);
+    }
 }
 
 

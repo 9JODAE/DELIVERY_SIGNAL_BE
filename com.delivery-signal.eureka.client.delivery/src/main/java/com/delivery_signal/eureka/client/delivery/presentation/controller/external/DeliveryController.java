@@ -1,18 +1,24 @@
 package com.delivery_signal.eureka.client.delivery.presentation.controller.external;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
+import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryStatusCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.service.DeliveryService;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
 import com.delivery_signal.eureka.client.delivery.application.dto.PagedDeliveryResponse;
+import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryStatusUpdateRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryPresentationMapper;
 import jakarta.validation.Valid;
+import java.util.UUID;
+import org.springframework.cloud.client.serviceregistry.ServiceRegistry;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -39,10 +45,13 @@ public class DeliveryController {
     private static final String USER_ROLE_HEADER = "X-User-Role";
     // 담당 허브 ID
     private static final String USER_HUB_ID_HEADER = "X-User-Hub-Id";
+    private final ServiceRegistry serviceRegistry;
 
-    public DeliveryController(DeliveryService deliveryService, DeliveryPresentationMapper deliveryPresentationMapper) {
+    public DeliveryController(DeliveryService deliveryService, DeliveryPresentationMapper deliveryPresentationMapper,
+        ServiceRegistry serviceRegistry) {
         this.deliveryService = deliveryService;
         this.deliveryPresentationMapper = deliveryPresentationMapper;
+        this.serviceRegistry = serviceRegistry;
     }
 
     // TEST 엔드포인트
@@ -81,4 +90,23 @@ public class DeliveryController {
         PagedDeliveryResponse response = deliveryService.getMyDeliveries(currUserId, role, query);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
     }
+
+    /**
+     * 배송 상태 및 경로 기록 상태 업데이트
+     */
+    @PatchMapping("/{delivery-id}/status")
+    public ResponseEntity<ApiResponse<DeliveryQueryResponse>> updateDeliveryStatus(
+        @PathVariable("delivery-id") UUID deliveryId,
+        @Valid @RequestBody DeliveryStatusUpdateRequest request,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        UpdateDeliveryStatusCommand command = deliveryPresentationMapper.toUpdateDeliveryStatusCommand(
+            request);
+        DeliveryQueryResponse response = deliveryService.updateDeliveryStatus(deliveryId,
+            command, currUserId, role);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+    }
+
+
 }

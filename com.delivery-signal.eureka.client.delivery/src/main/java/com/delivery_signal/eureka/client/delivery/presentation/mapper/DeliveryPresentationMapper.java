@@ -2,7 +2,9 @@ package com.delivery_signal.eureka.client.delivery.presentation.mapper;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.RouteSegmentCommand;
+import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryStatusCommand;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
+import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryStatusUpdateRequest;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -26,6 +28,16 @@ public class DeliveryPresentationMapper {
             .deliveryManagerId(request.deliveryManagerId())
             .build();
 
+    }
+
+    /**
+     * Request DTO -> Application Command
+     */
+    public UpdateDeliveryStatusCommand toUpdateDeliveryStatusCommand(DeliveryStatusUpdateRequest request) {
+        return UpdateDeliveryStatusCommand.builder()
+            .routeId(request.routeId())
+            .newStatus(request.newStatus())
+            .build();
     }
 
     private RouteSegmentCommand toRouteSegmentCommand(DeliveryCreateRequest.RouteSegmentDto dto) {

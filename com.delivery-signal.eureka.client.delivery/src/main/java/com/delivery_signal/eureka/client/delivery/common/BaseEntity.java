@@ -51,6 +51,11 @@ public abstract class BaseEntity {
         return this.deletedAt != null;
     }
 
+    public void update(Long updatorId) {
+        this.updatedAt = java.time.LocalDateTime.now();
+        this.updatedBy = updatorId;
+    }
+
     // 논리적 삭제 처리
     public void softDelete(Long deletedByUserId) {
         this.deletedAt = LocalDateTime.now();
