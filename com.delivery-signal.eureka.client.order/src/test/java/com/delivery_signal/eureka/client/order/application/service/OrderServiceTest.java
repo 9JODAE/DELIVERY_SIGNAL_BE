@@ -1,8 +1,8 @@
 package com.delivery_signal.eureka.client.order.application.service;
 
 import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
+import com.delivery_signal.eureka.client.order.application.command.OrderProductCommand;
 import com.delivery_signal.eureka.client.order.application.dto.response.OrderCreateResponseDto;
-import com.delivery_signal.eureka.client.order.application.dto.response.OrderSummaryRequestDto;
 import com.delivery_signal.eureka.client.order.application.port.out.*;
 import com.delivery_signal.eureka.client.order.application.validator.OrderPermissionValidator;
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
@@ -12,8 +12,6 @@ import com.delivery_signal.eureka.client.order.domain.service.OrderDomainService
 import com.delivery_signal.eureka.client.order.domain.vo.company.CompanyInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.delivery.DeliveryCreatedInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.product.ProductInfo;
-import com.delivery_signal.eureka.client.order.presentation.external.dto.request.CreateOrderRequestDto;
-import com.delivery_signal.eureka.client.order.presentation.mapper.CreateOrderMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -83,21 +81,19 @@ class OrderServiceTest {
         UUID productId = UUID.randomUUID();
         UUID hubId = UUID.randomUUID();
 
-        // requestDto 더미 데이터 세팅
-        CreateOrderRequestDto requestDto = CreateOrderRequestDto.builder()
+        // 직접 Command 생성 (presentation 의존 제거)
+        CreateOrderCommand command = CreateOrderCommand.builder()
+                .userId(userId)
                 .supplierCompanyId(supplierCompanyId)
                 .receiverCompanyId(receiverCompanyId)
                 .requestNote("테스트 주문")
-                .orderProducts(List.of(
-                        OrderSummaryRequestDto.builder()
+                .products(List.of(
+                        OrderProductCommand.builder()
                                 .productId(productId)
                                 .quantity(3)
                                 .build()
                 ))
                 .build();
-
-        // userId 포함 Command 생성
-        CreateOrderCommand command = CreateOrderMapper.toCommand(requestDto, userId);
 
         // 권한 체크 mock
         doNothing().when(orderPermissionValidator).validateCreate(userId);
