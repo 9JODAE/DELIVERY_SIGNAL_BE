@@ -4,16 +4,16 @@ import java.util.UUID;
 
 import com.delivery_signal.eureka.client.hub.application.dto.StockResult;
 
-public record StockResponse(
+public record UpdateStockResponse(
 	UUID stockId,
 	UUID productId,
-	String productName
+	int quantity
 ) {
-	public static StockResponse from(StockResult result) {
-		return new StockResponse(
+	public static UpdateStockResponse from(StockResult result) {
+		return new UpdateStockResponse(
 			result.stockId(),
 			result.productId(),
-			result.productName()
+			result.quantity()
 		);
 	}
 }

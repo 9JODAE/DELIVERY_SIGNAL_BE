@@ -1,7 +1,9 @@
 package com.delivery_signal.eureka.client.hub.application;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -15,12 +17,16 @@ import com.delivery_signal.eureka.client.hub.application.command.SearchHubRouteC
 import com.delivery_signal.eureka.client.hub.application.command.SearchStockCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubRouteCommand;
+import com.delivery_signal.eureka.client.hub.application.command.UpdateStockCommand;
 import com.delivery_signal.eureka.client.hub.application.dto.HubResult;
 import com.delivery_signal.eureka.client.hub.application.dto.HubRouteResult;
+import com.delivery_signal.eureka.client.hub.application.dto.StockResult;
 import com.delivery_signal.eureka.client.hub.domain.mapper.StockSearchCondition;
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
 import com.delivery_signal.eureka.client.hub.domain.model.HubRoute;
 import com.delivery_signal.eureka.client.hub.domain.model.Stock;
+import com.delivery_signal.eureka.client.hub.domain.repository.DistributedLockManager;
+import com.delivery_signal.eureka.client.hub.domain.repository.StockReadRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubQueryRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRouteQueryRepository;
@@ -34,7 +40,9 @@ import com.delivery_signal.eureka.client.hub.domain.mapper.HubSearchCondition;
 import com.delivery_signal.eureka.client.hub.domain.vo.ProductId;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -44,6 +52,11 @@ public class HubService {
 	private final HubQueryRepository hubQueryRepository;
 	private final HubRouteQueryRepository hubRouteQueryRepository;
 	private final StockQueryRepository stockQueryRepository;
+	private final StockReadRepository getStockQuantitiesRepository;
+
+	private final DistributedLockManager distributedLockManager;
+
+	private static final String STOCK_LOCK_PREFIX = "stock:";
 
 	/**
 	 * 허브 생성
@@ -232,5 +245,42 @@ public class HubService {
 		);
 
 		return stockQueryRepository.searchStocks(condition);
+	}
+
+	/**
+	 * 재고 수량 조회 (외부 서비스용)
+	 * @param productIds 상품 아이디 List
+	 * @return Map<UUID, Integer> 상품 아이디별 수량 Map
+	 */
+	public Map<UUID, Integer> getStockQuantities(List<UUID> productIds) {
+		return getStockQuantitiesRepository.getStocks(productIds).stream()
+			.collect(Collectors.toMap(
+				stock -> stock.getProductId().getValue(),
+				Stock::getQuantity
+			));
+	}
+
+	/**
+	 * 재고 수정
+	 * @param command 재고 수정 커맨드
+	 * @return 수정된 재고 결과
+	 */
+	public StockResult updateStock(UpdateStockCommand command) {
+		String lockKey = STOCK_LOCK_PREFIX + command.stockId().toString();
+
+		Stock stock = distributedLockManager.executeWithLock(lockKey, () -> {
+			Hub hub = getHubWithStocksOrThrow(command.hubId());
+			return hub.updateStockQuantity(command.stockId(), command.quantity());
+		});
+
+		log.info("재고 수정 완료. hubId={}, stockId={}, quantity={}",
+			command.hubId(), command.stockId(), command.quantity());
+
+		return StockResult.from(stock);
+	}
+
+	private Hub getHubWithStocksOrThrow(UUID hubId) {
+		return hubRepository.findByIdWithStocks(hubId)
+			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
 	}
 }
