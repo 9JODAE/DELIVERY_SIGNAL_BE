@@ -131,6 +131,10 @@ public class DeliveryService {
         return PagedDeliveryResponse.from(deliveryPage, responses);
     }
 
+    /**
+     * 배송 상태 업데이트
+     * 권한 : 마스터, 허브 관리자(담당 허브), 배송 관리자(담당 배송)
+     */
     @Transactional
     public DeliveryQueryResponse updateDeliveryStatus(UUID deliveryId, UpdateDeliveryStatusCommand command, Long updatorId, String role) {
         Delivery delivery = getDelivery(deliveryId);
@@ -148,6 +152,24 @@ public class DeliveryService {
         return deliveryDomainMapper.toResponse(delivery);
     }
 
+    /**
+     * 배송 논리적 삭제
+     */
+    @Transactional
+    public void softDeleteDelivery(UUID deliveryId, Long currUserId, String role) {
+        Delivery delivery = getDelivery(deliveryId);
+
+        if (delivery.isDeleted()) {
+            throw new RuntimeException("이미 삭제된 배송 정보입니다.");
+        }
+
+        if (!hasDeletePermission(delivery, currUserId, UserRole.valueOf(role))) {
+            throw new RuntimeException("배송 정보를 삭제할 권한이 없습니다. (ROLE: " + role + ")");
+        }
+
+        delivery.softDelete(currUserId);
+    }
+
     // TODO: Hub 배송 담당자를 할당하는 가상의 로직
     private Long assignInitialHubManager() {
         // TODO:  배송 순번 기준 할당 로직 호출
@@ -159,8 +181,10 @@ public class DeliveryService {
             .orElseThrow(() -> new NoSuchElementException("배송 정보를 찾을 수 없습니다."));
     }
 
+    /**
+     * 배송 업데이트 권한: 마스터 관리자, 해당 허브 관리자, 해당 배송 담당자만 가능
+     */
     private boolean hasUpdatePermission(Delivery delivery, Long updatorId, UserRole role) {
-        // 마스터 관리자, 해당 허브 관리자, 해당 배송 담당자만 가능
         if (role.equals(UserRole.MASTER)) {
             return true;
         }
@@ -176,6 +200,23 @@ public class DeliveryService {
             return delivery.getDeliveryManagerId().equals(updatorId);
         }
 
+        return false;
+    }
+
+    /**
+     * 배송 삭제 권한: 마스터 관리자, 허브 관리자(담당 허브)
+     */
+    private boolean hasDeletePermission(Delivery delivery, Long deletorId, UserRole role) {
+        if (role.equals(UserRole.MASTER)) {
+            return true;
+        }
+
+        // TODO: 허브 관리자는 delivery의 fromHubId/toHubId 중 하나를 관리하는지 확인 (허브 FeignClient 필요)
+        if (role.equals(UserRole.HUB_MANAGER)) {
+            // return hubService.isManagingHub(currUserId, delivery.getFromHubId())
+            //         || hubService.isManagingHub(currUserId, delivery.getToHubId());
+            return true; // 임시 허용
+        }
         return false;
     }
 }

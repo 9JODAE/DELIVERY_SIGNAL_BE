@@ -83,6 +83,9 @@ public class Delivery extends BaseEntity {
             .build();
     }
 
+    /**
+     * 배송 상태 업데이트
+     */
     public void updateStatus(DeliveryStatus newStatus, Long updatorId) {
         if (currStatus.equals(DeliveryStatus.DELIVERY_COMPLETED)) {
             throw new IllegalStateException("완료된 배송의 상태는 변경할 수 없습니다.");
@@ -96,6 +99,18 @@ public class Delivery extends BaseEntity {
 
         this.currStatus = newStatus;
         super.update(updatorId);
+    }
+
+    /**
+     * 논리적 삭제
+     */
+    public void softDelete(Long deleterId) {
+        // 삭제 전 조건 확인 (요구사항: 배송이 시작된 상태는 삭제 불가)
+        if (!this.currStatus.equals(DeliveryStatus.HUB_WAITING)) {
+            throw new IllegalStateException("배송이 시작된(" + this.currStatus.name() + ") 상태에서는 삭제할 수 없습니다.");
+        }
+
+        super.markDeleted(deleterId);
     }
 }
 

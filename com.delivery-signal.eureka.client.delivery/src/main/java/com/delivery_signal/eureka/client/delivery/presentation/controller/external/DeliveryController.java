@@ -16,6 +16,7 @@ import org.springframework.cloud.client.serviceregistry.ServiceRegistry;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -108,5 +109,16 @@ public class DeliveryController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
     }
 
-
+    /**
+     * 배송 삭제(논리적)
+     */
+    @DeleteMapping("/{delivery-id}")
+    public ResponseEntity<ApiResponse<Void>> deleteDelivery(
+        @PathVariable("delivery-id") UUID deliveryId,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        deliveryService.softDeleteDelivery(deliveryId, currUserId, role);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }
