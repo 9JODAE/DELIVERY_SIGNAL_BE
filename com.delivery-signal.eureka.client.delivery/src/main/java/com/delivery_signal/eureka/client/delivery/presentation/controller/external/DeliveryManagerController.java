@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.delivery.presentation.controller;
+package com.delivery_signal.eureka.client.delivery.presentation.controller.external;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryManagerCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateManagerCommand;
@@ -9,6 +9,7 @@ import com.delivery_signal.eureka.client.delivery.presentation.dto.request.Deliv
 import com.delivery_signal.eureka.client.delivery.presentation.dto.response.DeliveryManagerResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryManagerMapper;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,8 +22,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+// TODO: 추후 /api/v1/... 로 바꿀 예정
 @RestController
-@RequestMapping("/v1/managers")
+@RequestMapping("/open-api/v1/managers")
 public class DeliveryManagerController {
 
     private final DeliveryManagerService deliveryManagerService;
@@ -31,7 +33,7 @@ public class DeliveryManagerController {
     // API Gateway에서 인증 후, USER ID와 ROLE을 헤더에 담아 전달
     private static final String USER_ID_HEADER = "X-User-Id";
     private static final String USER_ROLE_HEADER = "X-User-Role";
-    // 담당 허브 ID
+    // 허브 관리자의 담당 허브 ID
     private static final String USER_HUB_ID_HEADER = "X-User-Hub-Id";
 
     public DeliveryManagerController(DeliveryManagerService deliveryManagerService,
@@ -41,14 +43,16 @@ public class DeliveryManagerController {
     }
 
     /**
-     * 배송 생성
+     * 배송 생성 (권한: MASTER, HUB_MANAGER)
      * order-service에서 통신하여 자동 생성
+     * userHubId는 role이 마스터 관리자일 경우 NULL, 허브 관리자일 경우에는 ID를 가짐
      */
     @PostMapping
     public ResponseEntity<ApiResponse<DeliveryManagerResponse>> registerManager(
         @Valid @RequestBody DeliveryManagerRegisterRequest request,
         @RequestHeader(USER_ID_HEADER) Long currUserId,
-        @RequestHeader(USER_ROLE_HEADER) String role
+        @RequestHeader(USER_ROLE_HEADER) String role,
+        @RequestHeader(value = USER_HUB_ID_HEADER, required = false) UUID userHubId
     ) {
         // TODO: Role 추후에 ENUM으로 수정
         // TODO: 권한 체크 -> 마스터 관리자 또는 허브 관리자 (담당 허브) 로직 추가 필요
@@ -62,7 +66,7 @@ public class DeliveryManagerController {
             .build();
         // Service 호출 및 Application 쿼리 리스폰스 반환
         ManagerQueryResponse response = deliveryManagerService.registerManager(currUserId,
-            command, role);
+            command, role, userHubId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(deliveryManagerMapper.toResponse(response)));
     }
 
@@ -101,7 +105,6 @@ public class DeliveryManagerController {
             currUserId, role);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(deliveryManagerMapper.toResponse(response)));
     }
-
 
     @DeleteMapping("/{user-id}")
     public ResponseEntity<Void> deleteManager(

@@ -61,4 +61,8 @@ public abstract class BaseEntity {
         this.deletedAt = null;
         this.deletedBy = null;
     }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
 }

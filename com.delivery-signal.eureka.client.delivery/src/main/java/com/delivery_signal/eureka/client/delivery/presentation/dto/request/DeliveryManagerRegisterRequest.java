@@ -1,7 +1,7 @@
 package com.delivery_signal.eureka.client.delivery.presentation.dto.request;
 
 
-import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryManagerType;
+import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryManagerType;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
