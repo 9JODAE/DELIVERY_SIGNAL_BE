@@ -1,6 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.infrastructure.repository;
 
-import com.delivery_signal.eureka.client.delivery.domain.model.Delivery;
+import com.delivery_signal.eureka.client.delivery.domain.entity.Delivery;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRepository;
 import java.util.List;
 import java.util.Optional;

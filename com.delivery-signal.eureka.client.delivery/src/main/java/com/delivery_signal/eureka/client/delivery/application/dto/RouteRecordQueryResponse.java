@@ -1,6 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.application.dto;
 
-import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryStatus;
+import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryStatus;
 import java.util.UUID;
 import lombok.Builder;
 

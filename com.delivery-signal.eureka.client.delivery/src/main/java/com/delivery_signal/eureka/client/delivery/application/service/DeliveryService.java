@@ -8,12 +8,12 @@ import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQu
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.dto.RouteRecordQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.mapper.DeliveryDomainMapper;
-import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryRouteRecords;
-import com.delivery_signal.eureka.client.delivery.domain.model.DeliveryStatus;
+import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryRouteRecords;
+import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryStatus;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRouteRecordsRepository;
 import com.delivery_signal.eureka.client.delivery.application.dto.PagedDeliveryResponse;
 import com.delivery_signal.eureka.client.delivery.common.UserRole;
-import com.delivery_signal.eureka.client.delivery.domain.model.Delivery;
+import com.delivery_signal.eureka.client.delivery.domain.entity.Delivery;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRepository;
 import java.util.List;
 import java.util.NoSuchElementException;
