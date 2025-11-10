@@ -1,0 +1,14 @@
+# 공용 템플릿 Dockerfile
+# $SERVICE_NAME 환경변수로 JAR 이름 지정
+
+FROM eclipse-temurin:17-jdk-jammy
+
+ARG SERVICE_NAME
+WORKDIR /app
+
+# 빌드 결과 JAR 복사
+COPY build/libs/${SERVICE_NAME}-*.jar app.jar
+
+EXPOSE 0
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

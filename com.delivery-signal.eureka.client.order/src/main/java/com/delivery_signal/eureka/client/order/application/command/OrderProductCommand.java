@@ -14,5 +14,4 @@ import java.util.UUID;
 public class OrderProductCommand {
     private UUID productId;    // 상품 UUID
     private Integer quantity;        // 수량
-    private String requestNote;  // 요청사항
 }

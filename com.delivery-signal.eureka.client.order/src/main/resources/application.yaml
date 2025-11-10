@@ -2,10 +2,10 @@ spring:
   application:
     name: order-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/orderTest
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB}
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: 1111
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -40,11 +40,9 @@ server:
 
 internal:
   company:
-    url: http://localhost:9999 #임시
+    url: http://localhost:9999 #업체, 상품 서비스
   hub:
     url: http://localhost:19093
-  product:
-    url: http://localhost:9998 #임시
   delivery:
     url: http://localhost:19091
   user:

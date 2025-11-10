@@ -3,10 +3,7 @@ package com.delivery_signal.eureka.client.order.application.service;
 import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
 import com.delivery_signal.eureka.client.order.application.dto.response.OrderCreateResponseDto;
 import com.delivery_signal.eureka.client.order.application.dto.response.OrderSummaryRequestDto;
-import com.delivery_signal.eureka.client.order.application.port.out.CompanyQueryPort;
-import com.delivery_signal.eureka.client.order.application.port.out.DeliveryCommandPort;
-import com.delivery_signal.eureka.client.order.application.port.out.HubQueryPort;
-import com.delivery_signal.eureka.client.order.application.port.out.ProductQueryPort;
+import com.delivery_signal.eureka.client.order.application.port.out.*;
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
 import com.delivery_signal.eureka.client.order.domain.entity.OrderProduct;
 import com.delivery_signal.eureka.client.order.domain.repository.OrderRepository;
@@ -24,8 +21,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,6 +45,9 @@ class OrderServiceTest {
 
     @Mock
     private DeliveryCommandPort deliveryCommandPort;
+
+    @Mock
+    private HubCommandPort hubCommandPort;
 
     @Mock
     private OrderDomainService orderDomainService;
@@ -81,9 +81,9 @@ class OrderServiceTest {
                 ))
                 .build();
 
-
         CreateOrderCommand command = CreateOrderMapper.toCommand(requestDto);
 
+        // 상품 조회 mock
         when(productQueryPort.getProducts(anyList()))
                 .thenReturn(List.of(
                         ProductInfo.builder()
@@ -94,28 +94,17 @@ class OrderServiceTest {
                                 .build()
                 ));
 
+        // 공급/수령 업체 조회 mock
         when(companyQueryPort.getCompanyById(supplierCompanyId))
-                .thenReturn(new CompanyInfo(
-                        supplierCompanyId,
-                        hubId,
-                        "서울시 강남구"
-                ));
-
+                .thenReturn(new CompanyInfo(supplierCompanyId, hubId, "서울시 강남구"));
         when(companyQueryPort.getCompanyById(receiverCompanyId))
-                .thenReturn(new CompanyInfo(
-                        receiverCompanyId,
-                        hubId,
-                        "서울시 송파구"
-                ));
-        when(hubQueryPort.getStockQuantities(Collections.singletonList(any(UUID.class))))
-                .thenReturn(List.of(
-                        HubStockInfo.builder()
-                                .productId(productId)
-                                .stockQuantity(100)
-                                .build()
-                ));
+                .thenReturn(new CompanyInfo(receiverCompanyId, hubId, "서울시 송파구"));
 
+        // 허브 재고 조회 mock (Map<UUID, Integer> 반환)
+        when(hubQueryPort.getStockQuantities(anyList()))
+                .thenReturn(Map.of(productId, 100));
 
+        // 도메인 주문 생성 mock
         when(orderDomainService.createOrder(any(), any(), any(), anyList(), any()))
                 .thenReturn(Order.builder()
                         .supplierCompanyId(supplierCompanyId)
@@ -130,7 +119,7 @@ class OrderServiceTest {
                         .build()
                 );
 
-
+        // 배송 생성 mock
         when(deliveryCommandPort.createDelivery(any()))
                 .thenReturn(DeliveryCreatedInfo.builder()
                         .message("배송 요청 완료")
@@ -143,10 +132,18 @@ class OrderServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.getMessage()).isEqualTo("주문이 완료되었습니다.");
 
-        // 동작 검증
+
+        // 상품 조회 호출 확인
         verify(productQueryPort, times(1)).getProducts(anyList());
+        // 공급/수령 업체 조회 호출 확인
         verify(companyQueryPort, times(2)).getCompanyById(any());
+        // 주문 저장 호출 확인
         verify(orderRepository, times(1)).save(any());
+        // 배송 생성 호출 확인
         verify(deliveryCommandPort, times(1)).createDelivery(any());
+        // 허브 재고 조회 호출 확인
+        verify(hubQueryPort, times(1)).getStockQuantities(anyList());
+        // 허브 재고 차감 호출 확인
+        verify(hubCommandPort, times(1)).decreaseStock(command.getProducts());
     }
 }
