@@ -16,10 +16,10 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/v1/orders/external")
+@RequestMapping("/open-api/v1/orders")
 @Tag(name = "내부 통신용 API", description = """
         게이트웨이 기준 호출 경로 예시:
-        - 주문 조회 (배송 서비스용): **GET /api/v1/orders/external/{order-id}**
+        - 주문 조회 (배송 서비스용): **GET /open-api/v1/orders/{order-id}**
         """)
 @RequiredArgsConstructor
 public class OrderInternalController {
