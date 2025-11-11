@@ -4,9 +4,10 @@ import com.delivery_signal.eureka.client.order.application.command.DeleteOrderCo
 import java.util.UUID;
 
 public class OrderDeleteMapper {
-    public static DeleteOrderCommand toCommand(UUID orderId) {
+    public static DeleteOrderCommand toCommand(UUID orderId, Long userId) {
         return DeleteOrderCommand.builder()
                 .orderId(orderId)
+                .userId(userId)
                 .build();
     }
 }

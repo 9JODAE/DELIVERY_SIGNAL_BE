@@ -174,9 +174,18 @@ public class OrderService {
      * @return
      */
     @Transactional(readOnly = true)
-    public OrderDetailResult getOrderById(UUID orderId) {
+    public OrderDetailResult getOrderById(UUID orderId, Long userId) {
         Order order = orderQueryPort.findByOrderId(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        // 권한 검증: MASTER_ADMIN / HUB_ADMIN(자기 허브) / COMPANY_MANAGER(본인 주문)
+        orderPermissionValidator.validateRead(
+                userId,
+                order.getDepartureHubId(), // HUB_ADMIN은 자기 허브 체크용
+                order.getCreatedBy()       // COMPANY_MANAGER는 본인 주문 체크용
+        );
+
+
         return orderQueryMapper.toDetailDto(order); // Application Layer 내 Mapper 사용
     }
 
@@ -186,8 +195,12 @@ public class OrderService {
      * @return
      */
     @Transactional(readOnly = true)
-    public List<OrderListResult> getAllOrders() {
+    public List<OrderListResult> getAllOrders(Long userId) {
         List<Order> orders = orderQueryPort.findAllWithOrderProducts();
+
+        // null을 전달하면 validateReadByHub에서 MASTER_ADMIN만 통과시키도록 설계되어 있음
+        orderPermissionValidator.validateReadByHub(userId, null);
+
         return orderQueryMapper.toListDtos(orders);
     }
 
@@ -219,14 +232,15 @@ public class OrderService {
 
     /**
      * 주문 수정
-     *
-     * @param orderId
      * @param command
      * @return
      */
-    public OrderUpdateResult updateOrder(UUID orderId, UpdateOrderCommand command) {
-        Order order = orderQueryPort.findByOrderId(orderId)
-                .orElseThrow(() -> new OrderNotFoundException(orderId));
+    public OrderUpdateResult updateOrder(UpdateOrderCommand command) {
+        Order order = orderQueryPort.findByOrderId(command.getOrderId())
+                .orElseThrow(() -> new OrderNotFoundException(command.getOrderId()));
+
+        // 권한 검증: MASTER_ADMIN 또는 HUB_ADMIN(자기 허브)
+        orderPermissionValidator.validateUpdate(command.getUserId(), order.getDepartureHubId());
 
         order.updateRequestNote(command.getRequestNote());
 
@@ -290,6 +304,9 @@ public class OrderService {
     public OrderDeleteResult deleteOrder(DeleteOrderCommand command) {
         Order order = orderQueryPort.findByOrderId(command.getOrderId())
                 .orElseThrow(() -> new OrderNotFoundException(command.getOrderId()));
+
+        // 권한검증: MASTER_ADMIN 또는 HUB_ADMIN(자기 허브)
+        orderPermissionValidator.validateDelete(command.getUserId(), order.getDepartureHubId());
 
         List<OrderProduct> orderProducts = orderProductRepository.findAllByOrderId(order.getId());
         LocalDateTime now = LocalDateTime.now();
