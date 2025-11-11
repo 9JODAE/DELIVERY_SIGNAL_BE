@@ -39,17 +39,19 @@ public class DeliveryService {
     private final DeliveryRepository deliveryRepository;
     private final DeliveryRouteRecordsRepository deliveryRouteRecordsRepository;
     private final DeliveryQueryRepository deliveryQueryRepository;
+    private final UserServiceClient userServiceClient;
     private final OrderServiceClient orderServiceClient;
     private final DeliveryDomainMapper deliveryDomainMapper;
 
     public DeliveryService(DeliveryRepository deliveryRepository,
-        DeliveryRouteRecordsRepository deliveryRouteRecordsRepository,
         DeliveryQueryRepository deliveryQueryRepository,
+        DeliveryRouteRecordsRepository deliveryRouteRecordsRepository, UserServiceClient userServiceClient,
         OrderServiceClient orderServiceClient,
         DeliveryDomainMapper deliveryDomainMapper) {
         this.deliveryRepository = deliveryRepository;
         this.deliveryRouteRecordsRepository = deliveryRouteRecordsRepository;
         this.deliveryQueryRepository = deliveryQueryRepository;
+        this.userServiceClient = userServiceClient;
         this.orderServiceClient = orderServiceClient;
         this.deliveryDomainMapper = deliveryDomainMapper;
     }
@@ -287,6 +289,7 @@ public class DeliveryService {
 
         delivery.softDelete(currUserId);
     }
+
 
     /**
      * 배송 경로 이력 조회
