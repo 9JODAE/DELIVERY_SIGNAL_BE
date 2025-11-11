@@ -2,8 +2,7 @@ package com.delivery_signal.eureka.client.order.infrastructure.client.hub;
 
 import com.delivery_signal.eureka.client.order.infrastructure.client.hub.dto.StockUpdateRequestDto;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -26,4 +25,7 @@ public interface HubClient {
 
     @PostMapping("/open-api/v1/hubs/stocks/restore")
     void restoreStock(@RequestBody List<StockUpdateRequestDto> requests);
+
+    @GetMapping("/open-api/v1/hubs/{hubId}")
+    boolean existsById(@RequestParam("hubId") UUID uuid);
 }

@@ -17,13 +17,16 @@ import com.delivery_signal.eureka.client.order.domain.repository.OrderProductRep
 import com.delivery_signal.eureka.client.order.domain.repository.OrderRepository;
 import com.delivery_signal.eureka.client.order.domain.service.OrderDomainService;
 import com.delivery_signal.eureka.client.order.domain.vo.company.CompanyInfo;
+import com.delivery_signal.eureka.client.order.domain.vo.company.OrderCompanyInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.delivery.DeliveryCreatedInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.product.ProductInfo;
+import com.delivery_signal.eureka.client.order.domain.vo.user.UserAuthorizationInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -185,6 +188,40 @@ public class OrderService {
         List<Order> orders = orderRepository.findAllWithOrderProducts();
         return orderQueryMapper.toListDtos(orders);
     }
+
+    /**
+     * 허브별 주문 조회
+     */
+    @Transactional(readOnly = true)
+    public List<OrderListResponseDto> getOrdersByHubId(UUID hubId, Long userId) {
+
+        // 1. 허브 존재 여부 확인
+        if (!hubQueryPort.existsByHubId(hubId)) {
+            throw new NotFoundException("허브", hubId);
+        }
+
+        // 2. 사용자 정보조회 및 권한체크
+        UserAuthorizationInfo userInfo = userQueryPort.getUserAuthorizationInfo(userId);
+        if (userInfo == null) {
+            throw new NotFoundException(userId);
+        }
+        orderPermissionValidator.validateReadByHub(userId, hubId);
+
+        // 3. 허브에 소속된 업체 조회
+        OrderCompanyInfo companyInfo = companyQueryPort.getCompanyByHubId(hubId);
+        if (companyInfo == null) {
+            log.info("허브 {} 에 소속된 업체가 없습니다.", hubId);
+            return Collections.emptyList();
+        }
+
+        // 4. 해당 허브의 주문 조회
+        List<Order> orders = orderDomainService.getOrdersByHub(hubId);
+
+        // 6. DTO 변환 및 반환
+        return orderQueryMapper.toListDtos(orders);
+    }
+
+
 
     /**
      * 주문 수정
