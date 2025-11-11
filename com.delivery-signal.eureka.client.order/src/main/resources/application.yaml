@@ -1,11 +1,12 @@
 spring:
   application:
     name: order-service
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB}
+    url: jdbc:postgresql://localhost:5432/delivery_signal
     driver-class-name: org.postgresql.Driver
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    username: postgres
+    password: 1234
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -33,14 +34,14 @@ eureka:
       defaultZone: http://localhost:19090/eureka/
 
 gateway:
-  base-url: http://gateway-service
+  base-url: http://localhost:80
 
 server:
   port: 19099
 
 internal:
   company:
-    url: http://localhost:9999 #업체, 상품 서비스
+    url: http://localhost:19095
   hub:
     url: http://localhost:19093
   delivery:
@@ -53,8 +54,3 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui
-
-
-
-
-

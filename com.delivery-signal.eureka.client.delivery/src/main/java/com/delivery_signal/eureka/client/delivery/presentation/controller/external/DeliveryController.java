@@ -1,18 +1,28 @@
 package com.delivery_signal.eureka.client.delivery.presentation.controller.external;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
+import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryInfoCommand;
+import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryStatusCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
+import com.delivery_signal.eureka.client.delivery.application.dto.RouteRecordQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.service.DeliveryService;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
 import com.delivery_signal.eureka.client.delivery.application.dto.PagedDeliveryResponse;
+import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryInfoUpdateRequest;
+import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryStatusUpdateRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryPresentationMapper;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -79,6 +89,66 @@ public class DeliveryController {
 
         DeliveryListQuery query = DeliveryListQuery.of(page, size, sortBy, sortDirection);
         PagedDeliveryResponse response = deliveryService.getMyDeliveries(currUserId, role, query);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+    }
+
+    @PatchMapping("/{delivery-id}")
+    public ResponseEntity<ApiResponse<DeliveryQueryResponse>> updateDeliveryInfo(
+        @PathVariable("delivery-id") UUID deliveryId,
+        @Valid @RequestBody DeliveryInfoUpdateRequest request,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        UpdateDeliveryInfoCommand command = deliveryPresentationMapper.toUpdateDeliveryInfoCommand(
+            request);
+        DeliveryQueryResponse response = deliveryService.updateDeliveryInfo(deliveryId, command,
+            currUserId, role);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+    }
+
+    /**
+     * 배송 상태 및 경로 기록 상태 업데이트
+     */
+    @PatchMapping("/{delivery-id}/status")
+    public ResponseEntity<ApiResponse<DeliveryQueryResponse>> updateDeliveryStatus(
+        @PathVariable("delivery-id") UUID deliveryId,
+        @Valid @RequestBody DeliveryStatusUpdateRequest request,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        UpdateDeliveryStatusCommand command = deliveryPresentationMapper.toUpdateDeliveryStatusCommand(
+            request);
+        DeliveryQueryResponse response = deliveryService.updateDeliveryStatus(deliveryId,
+            command, currUserId, role);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+    }
+
+
+
+    /**
+     * 배송 삭제(논리적)
+     */
+    @DeleteMapping("/{delivery-id}")
+    public ResponseEntity<ApiResponse<Void>> deleteDelivery(
+        @PathVariable("delivery-id") UUID deliveryId,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        deliveryService.softDeleteDelivery(deliveryId, currUserId, role);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
+    }
+
+    /**
+     * 특정 배송의 경로 이력 조회
+     */
+    @GetMapping("/{delivery-id}/routes")
+    public ResponseEntity<ApiResponse<List<RouteRecordQueryResponse>>> getDeliveryRoutes(
+        @PathVariable("delivery-id") UUID deliveryId,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        List<RouteRecordQueryResponse> response = deliveryService.getDeliveryRoutes(deliveryId,
+            currUserId, role);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
     }
 }

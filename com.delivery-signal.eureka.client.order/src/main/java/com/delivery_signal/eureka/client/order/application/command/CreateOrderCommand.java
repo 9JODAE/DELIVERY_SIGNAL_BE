@@ -13,6 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateOrderCommand {
+    private Long userId;
     private UUID supplierCompanyId;
     private UUID receiverCompanyId;
     private String requestNote;
