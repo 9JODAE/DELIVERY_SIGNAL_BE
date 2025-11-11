@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/v1/orders")
+@RequestMapping("/api/v1/orders")
 @Tag(name = "Order API", description = "주문 관련 API")
 @RequiredArgsConstructor
 public class OrderController {
@@ -52,6 +52,16 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<List<OrderListResponseDto>> getAllOrders() {
         List<OrderListResponseDto> responseDto = orderService.getAllOrders();
+        return ResponseEntity.ok(responseDto);
+    }
+
+    // 전체 조회 (Read all)
+    @Operation(summary = "허브별 주문 조회", description = "관리자, 허브 담당자용")
+    @GetMapping("/{hubId}")
+    public ResponseEntity<List<OrderListResponseDto>> getAllOrdersByHubId(
+            @PathVariable UUID hubId,
+            @RequestHeader(value = "x-user-id", required = false) Long userId) {
+        List<OrderListResponseDto> responseDto = orderService.getOrdersByHubId(hubId, userId);
         return ResponseEntity.ok(responseDto);
     }
 

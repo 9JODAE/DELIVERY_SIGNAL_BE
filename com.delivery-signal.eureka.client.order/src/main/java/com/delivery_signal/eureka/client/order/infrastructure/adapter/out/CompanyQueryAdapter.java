@@ -11,21 +11,20 @@ import java.util.UUID;
 
 @Component
 public class CompanyQueryAdapter implements CompanyQueryPort {
+
     private final CompanyClient companyClient;
 
     public CompanyQueryAdapter(CompanyClient companyClient) {
         this.companyClient = companyClient;
     }
 
+    // 주문 시 업체 정보 조회
     @Override
     public CompanyInfo getCompanyById(UUID companyId) {
         try {
-            // Feign이 이미 CompanyInfo로 역직렬화
-            return companyClient.getCompanyById(companyId);
+            return companyClient.getCompanyById(companyId); // 그대로 반환
         } catch (FeignException.NotFound e) {
-            // Infra 예외 → Application 친화적 예외 변환
             throw new NotFoundException("업체", companyId);
         }
     }
-
 }
