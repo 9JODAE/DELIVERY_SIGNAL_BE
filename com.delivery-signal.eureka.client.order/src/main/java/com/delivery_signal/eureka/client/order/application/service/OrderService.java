@@ -1,10 +1,6 @@
 package com.delivery_signal.eureka.client.order.application.service;
 
-import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
-import com.delivery_signal.eureka.client.order.application.command.DeleteOrderCommand;
-import com.delivery_signal.eureka.client.order.application.command.OrderProductCommand;
-import com.delivery_signal.eureka.client.order.application.command.UpdateOrderCommand;
-import com.delivery_signal.eureka.client.order.application.command.CreateDeliveryCommand;
+import com.delivery_signal.eureka.client.order.application.command.*;
 import com.delivery_signal.eureka.client.order.application.mapper.OrderQueryMapper;
 import com.delivery_signal.eureka.client.order.application.port.out.*;
 import com.delivery_signal.eureka.client.order.application.result.*;
@@ -12,10 +8,11 @@ import com.delivery_signal.eureka.client.order.application.validator.OrderPermis
 import com.delivery_signal.eureka.client.order.common.NotFoundException;
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
 import com.delivery_signal.eureka.client.order.domain.entity.OrderProduct;
+import com.delivery_signal.eureka.client.order.domain.exception.InvalidOrderStateException;
 import com.delivery_signal.eureka.client.order.domain.exception.OrderNotFoundException;
 import com.delivery_signal.eureka.client.order.domain.repository.OrderProductRepository;
-import com.delivery_signal.eureka.client.order.domain.repository.OrderRepository;
 import com.delivery_signal.eureka.client.order.domain.service.OrderDomainService;
+import com.delivery_signal.eureka.client.order.domain.vo.OrderStatus;
 import com.delivery_signal.eureka.client.order.domain.vo.company.CompanyInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.delivery.DeliveryCreatedInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.product.ProductInfo;
@@ -34,32 +31,32 @@ import java.util.UUID;
 @Transactional
 public class OrderService {
 
-    //요청으로 인해 외부 msa의 쓰기사용
     private final DeliveryCommandPort deliveryCommandPort;
     private final HubCommandPort hubCommandPort;
+    private final OrderCommandPort orderCommandPort;
 
-    //요청으로 인해 외부 msa의 읽기사용
     private final HubQueryPort hubQueryPort;
     private final CompanyQueryPort companyQueryPort;
     private final ProductQueryPort productQueryPort;
     private final UserQueryPort userQueryPort;
+    private final OrderQueryPort orderQueryPort;
 
     private final OrderDomainService orderDomainService;
     private final OrderQueryMapper orderQueryMapper;
-    private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
     private final OrderPermissionValidator orderPermissionValidator;
 
-    public OrderService(DeliveryCommandPort deliveryCommandPort, HubCommandPort hubCommandPort, HubQueryPort hubQueryPort, CompanyQueryPort companyQueryPort, ProductQueryPort productQueryPort, UserQueryPort userQueryPort, OrderDomainService orderDomainService, OrderQueryMapper orderQueryMapper, OrderRepository orderRepository, OrderProductRepository orderProductRepository, OrderPermissionValidator orderPermissionValidator) {
+    public OrderService(DeliveryCommandPort deliveryCommandPort, HubCommandPort hubCommandPort, OrderCommandPort orderCommandPort, HubQueryPort hubQueryPort, CompanyQueryPort companyQueryPort, ProductQueryPort productQueryPort, UserQueryPort userQueryPort, OrderQueryPort orderQueryPort, OrderDomainService orderDomainService, OrderQueryMapper orderQueryMapper, OrderProductRepository orderProductRepository, OrderPermissionValidator orderPermissionValidator) {
         this.deliveryCommandPort = deliveryCommandPort;
         this.hubCommandPort = hubCommandPort;
+        this.orderCommandPort = orderCommandPort;
         this.hubQueryPort = hubQueryPort;
         this.companyQueryPort = companyQueryPort;
         this.productQueryPort = productQueryPort;
         this.userQueryPort = userQueryPort;
+        this.orderQueryPort = orderQueryPort;
         this.orderDomainService = orderDomainService;
         this.orderQueryMapper = orderQueryMapper;
-        this.orderRepository = orderRepository;
         this.orderProductRepository = orderProductRepository;
         this.orderPermissionValidator = orderPermissionValidator;
     }
@@ -142,7 +139,7 @@ public class OrderService {
         );
 
         // 주문 저장
-        orderRepository.save(order);
+        orderCommandPort.save(order);
 
         // 허브 재고 차감 요청
         hubCommandPort.deductStocks(order.getDepartureHubId(), command.getProducts());
@@ -177,9 +174,18 @@ public class OrderService {
      * @return
      */
     @Transactional(readOnly = true)
-    public OrderDetailResult getOrderById(UUID orderId) {
-        Order order = orderRepository.findByOrderId(orderId)
+    public OrderDetailResult getOrderById(UUID orderId, Long userId) {
+        Order order = orderQueryPort.findByOrderId(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        // 권한 검증: MASTER_ADMIN / HUB_ADMIN(자기 허브) / COMPANY_MANAGER(본인 주문)
+        orderPermissionValidator.validateRead(
+                userId,
+                order.getDepartureHubId(), // HUB_ADMIN은 자기 허브 체크용
+                order.getCreatedBy()       // COMPANY_MANAGER는 본인 주문 체크용
+        );
+
+
         return orderQueryMapper.toDetailDto(order); // Application Layer 내 Mapper 사용
     }
 
@@ -189,8 +195,12 @@ public class OrderService {
      * @return
      */
     @Transactional(readOnly = true)
-    public List<OrderListResult> getAllOrders() {
-        List<Order> orders = orderRepository.findAllWithOrderProducts();
+    public List<OrderListResult> getAllOrders(Long userId) {
+        List<Order> orders = orderQueryPort.findAllWithOrderProducts();
+
+        // null을 전달하면 validateReadByHub에서 MASTER_ADMIN만 통과시키도록 설계되어 있음
+        orderPermissionValidator.validateReadByHub(userId, null);
+
         return orderQueryMapper.toListDtos(orders);
     }
 
@@ -220,17 +230,17 @@ public class OrderService {
     }
 
 
-
     /**
      * 주문 수정
-     *
-     * @param orderId
      * @param command
      * @return
      */
-    public OrderUpdateResult updateOrder(UUID orderId, UpdateOrderCommand command) {
-        Order order = orderRepository.findByOrderId(orderId)
-                .orElseThrow(() -> new OrderNotFoundException(orderId));
+    public OrderUpdateResult updateOrder(UpdateOrderCommand command) {
+        Order order = orderQueryPort.findByOrderId(command.getOrderId())
+                .orElseThrow(() -> new OrderNotFoundException(command.getOrderId()));
+
+        // 권한 검증: MASTER_ADMIN 또는 HUB_ADMIN(자기 허브)
+        orderPermissionValidator.validateUpdate(command.getUserId(), order.getDepartureHubId());
 
         order.updateRequestNote(command.getRequestNote());
 
@@ -248,6 +258,43 @@ public class OrderService {
                 .build();
     }
 
+    @Transactional
+    public OrderCancelResult cancelOrder(OrderCancelCommand command) {
+
+        Order order = orderQueryPort.findByOrderId(command.getOrderId())
+                .orElseThrow(() -> new OrderNotFoundException(command.getOrderId()));
+
+        // 이미 삭제된 주문 체크 (데이터 정합성)
+        if (order.getDeletedAt() != null) {
+            throw new InvalidOrderStateException("삭제된 주문은 취소할 수 없습니다.");
+        }
+
+        // 이미 취소된 주문 체크
+        if (order.getStatus() == OrderStatus.CANCELED) {
+            throw new InvalidOrderStateException("이미 취소된 주문입니다.");
+        }
+
+        // 배송 취소 요청
+        if (order.getDeliveryId() != null) {
+            deliveryCommandPort.cancelDelivery(order.getDeliveryId());
+        }
+
+        // 주문 취소 처리 (도메인 로직)
+        order.cancel();
+
+        // 저장
+        orderCommandPort.save(order);
+
+        // 결과 반환
+        return OrderCancelResult.builder()
+                .orderId(order.getId())
+                .deliveryId(order.getDeliveryId())
+                .message("주문 및 배송이 정상적으로 취소되었습니다.")
+                .build();
+    }
+
+
+
     /**
      * 주문 삭제
      *
@@ -255,8 +302,11 @@ public class OrderService {
      * @return
      */
     public OrderDeleteResult deleteOrder(DeleteOrderCommand command) {
-        Order order = orderRepository.findByOrderId(command.getOrderId())
+        Order order = orderQueryPort.findByOrderId(command.getOrderId())
                 .orElseThrow(() -> new OrderNotFoundException(command.getOrderId()));
+
+        // 권한검증: MASTER_ADMIN 또는 HUB_ADMIN(자기 허브)
+        orderPermissionValidator.validateDelete(command.getUserId(), order.getDepartureHubId());
 
         List<OrderProduct> orderProducts = orderProductRepository.findAllByOrderId(order.getId());
         LocalDateTime now = LocalDateTime.now();
@@ -264,7 +314,7 @@ public class OrderService {
         orderProducts.forEach(p -> p.markAsDeleted(now));
         order.markAsDeleted(now);
 
-        orderRepository.save(order);
+        orderCommandPort.save(order);
         orderProductRepository.saveAll(orderProducts);
 
         return OrderDeleteResult.builder()

@@ -5,16 +5,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderCreateResult {
+public class OrderCancelResult {
     private UUID orderId;
-    private Long createBy;
-    private LocalDateTime createAt;
+    private UUID deliveryId;
+    private String orderStatus;
     private String message;
 }

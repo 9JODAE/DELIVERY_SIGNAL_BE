@@ -5,8 +5,10 @@ import com.delivery_signal.eureka.client.order.presentation.external.dto.request
 import java.util.UUID;
 
 public class UpdateOrderMapper {
-    public static UpdateOrderCommand toCommand(UUID orderId, UpdateOrderRequestDto dto) {
+    public static UpdateOrderCommand toCommand(UUID orderId, UpdateOrderRequestDto dto, Long userId) {
         return UpdateOrderCommand.builder()
+                .userId(userId)
+                .orderId(orderId)
                 .productId(dto.getProductId())
                 .transferQuantity(dto.getTransferQuantity())
                 .requestNote(dto.getRequestNote())
