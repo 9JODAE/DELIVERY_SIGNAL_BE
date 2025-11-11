@@ -23,12 +23,13 @@ import com.delivery_signal.eureka.client.hub.application.command.UpdateHubComman
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateStockCommand;
 import com.delivery_signal.eureka.client.hub.application.dto.HubResult;
-import com.delivery_signal.eureka.client.hub.application.dto.HubRouteResult;
+import com.delivery_signal.eureka.client.hub.application.dto.HubRouteDetailResult;
 import com.delivery_signal.eureka.client.hub.application.dto.StockResult;
 import com.delivery_signal.eureka.client.hub.domain.mapper.StockSearchCondition;
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
 import com.delivery_signal.eureka.client.hub.domain.model.HubRoute;
 import com.delivery_signal.eureka.client.hub.domain.model.Stock;
+import com.delivery_signal.eureka.client.hub.domain.repository.HubRouteReadRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.StockReadRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubQueryRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRepository;
@@ -54,6 +55,7 @@ public class HubService {
 	private final HubRepository hubRepository;
 	private final HubQueryRepository hubQueryRepository;
 	private final HubRouteQueryRepository hubRouteQueryRepository;
+	private final HubRouteReadRepository hubRouteReadRepository;
 	private final StockQueryRepository stockQueryRepository;
 	private final StockReadRepository stockReadRepository;
 
@@ -131,7 +133,7 @@ public class HubService {
 		hub.delete(1L); // TODO 유저 서비스 개발 완료 시 변경
 	}
 
-	private Hub getHubOrThrow(UUID hubId) {
+	public Hub getHubOrThrow(UUID hubId) {
 		return hubRepository.findById(hubId)
 			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
 	}
@@ -158,7 +160,7 @@ public class HubService {
 	 * @return Page<HubRouteResult> 허브 경로 검색 결과
 	 */
 	@Transactional(readOnly = true)
-	public Page<HubRouteResult> searchHubRoutes(SearchHubRouteCommand command) {
+	public Page<HubRouteDetailResult> searchHubRoutes(SearchHubRouteCommand command) {
 		HubRouteSearchCondition condition = HubRouteSearchCondition.of(
 			command.departureHubName(),
 			command.arrivalHubName(),
@@ -168,7 +170,7 @@ public class HubService {
 			command.direction()
 		);
 		return hubRouteQueryRepository.searchHubRoutes(condition)
-			.map(HubRouteResult::from);
+			.map(HubRouteDetailResult::from);
 	}
 
 	/**
@@ -178,10 +180,10 @@ public class HubService {
 	 * @return 허브 이동정보 조회 결과
 	 */
 	@Transactional(readOnly = true)
-	public HubRouteResult getHubRoute(UUID hubId, UUID hubRouteId) {
+	public HubRouteDetailResult getHubRoute(UUID hubId, UUID hubRouteId) {
 		Hub hub = getHubWithRoutesOrThrow(hubId);
 		HubRoute route = hub.getHubRoute(hubRouteId);
-		return HubRouteResult.from(route);
+		return HubRouteDetailResult.from(route);
 	}
 
 	/**
@@ -191,12 +193,12 @@ public class HubService {
 	 * @param command 허브 이동정보 수정 커맨드
 	 * @return 수정된 허브 이동정보 결과
 	 */
-	public HubRouteResult updateHubRoute(UUID hubId, UUID hubRouteId, UpdateHubRouteCommand command) {
+	public HubRouteDetailResult updateHubRoute(UUID hubId, UUID hubRouteId, UpdateHubRouteCommand command) {
 		Hub hub = getHubWithRoutesOrThrow(hubId);
 		Distance distance = Distance.of(command.distance());
 		Duration transitTime = Duration.of(command.transitTime());
 		HubRoute route = hub.updateHubRoute(hubRouteId, distance, transitTime);
-		return HubRouteResult.from(route);
+		return HubRouteDetailResult.from(route);
 	}
 
 	/**
@@ -213,6 +215,38 @@ public class HubService {
 		return hubRepository.findByIdWithRoutes(hubId)
 			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
 	}
+
+	/**
+	 * 모든 허브 이동정보 조회
+	 * @return List<HubRoute> 모든 허브 이동정보 리스트
+	 */
+	@Transactional(readOnly = true)
+	public List<HubRoute> getRoutes() {
+		return hubRouteReadRepository.getRoutes();
+	}
+
+	/**
+	 * 특정 허브 이동정보 조회
+	 * @param routeIds 허브 이동정보 아이디 리스트
+	 * @return List<HubRoute> 순서가 보장된 허브 이동정보 리스트
+	 */
+	@Transactional(readOnly = true)
+	public List<HubRoute> getRoutes(List<UUID> routeIds) {
+		List<HubRoute> routes = hubRouteReadRepository.getRoutes(routeIds);
+
+		if (routeIds.size() != routes.size()) {
+			throw new IllegalArgumentException("일부 허브 이동정보를 찾을 수 없습니다.");
+		}
+
+		Map<UUID, HubRoute> routeMap = routes.stream()
+			.collect(Collectors.toMap(HubRoute::getHubRouteId, route -> route));
+
+		return routeIds.stream()
+			.map(routeMap::get)
+			.collect(Collectors.toList());
+	}
+
+
 
 	/**
 	 * 재고 생성
