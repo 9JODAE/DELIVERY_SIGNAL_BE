@@ -7,7 +7,7 @@ import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeli
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateRouteRecordCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
-import com.delivery_signal.eureka.client.delivery.application.dto.DeliverySearchCondition;
+import com.delivery_signal.eureka.client.delivery.domain.vo.DeliverySearchCondition;
 import com.delivery_signal.eureka.client.delivery.application.dto.RouteRecordQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.mapper.DeliveryDomainMapper;
 import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryRouteRecords;

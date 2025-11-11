@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.delivery.application.dto;
+package com.delivery_signal.eureka.client.delivery.domain.vo;
 
 import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryStatus;
 import java.util.UUID;

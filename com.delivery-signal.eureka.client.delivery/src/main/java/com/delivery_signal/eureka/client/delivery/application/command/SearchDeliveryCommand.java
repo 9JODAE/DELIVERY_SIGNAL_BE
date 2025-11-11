@@ -10,8 +10,8 @@ public record SearchDeliveryCommand(
     DeliveryStatus status // 배송 상태
 ) {
 
-    public static SearchDeliveryCommand of(DeliveryStatus status, UUID hubId, UUID companyId,
+    public static SearchDeliveryCommand of(String status, UUID hubId, UUID companyId,
         Long deliveryManagerId) {
-        return new SearchDeliveryCommand(hubId, companyId, deliveryManagerId, status);
+        return new SearchDeliveryCommand(hubId, companyId, deliveryManagerId, DeliveryStatus.valueOf(status));
     }
 }

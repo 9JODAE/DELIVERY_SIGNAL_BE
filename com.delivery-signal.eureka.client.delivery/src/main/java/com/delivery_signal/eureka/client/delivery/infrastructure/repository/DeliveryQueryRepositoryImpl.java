@@ -1,6 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.infrastructure.repository;
 
-import com.delivery_signal.eureka.client.delivery.application.dto.DeliverySearchCondition;
+import com.delivery_signal.eureka.client.delivery.domain.vo.DeliverySearchCondition;
 import com.delivery_signal.eureka.client.delivery.common.UserRole;
 import com.delivery_signal.eureka.client.delivery.domain.entity.Delivery;
 import com.delivery_signal.eureka.client.delivery.domain.entity.QDelivery;

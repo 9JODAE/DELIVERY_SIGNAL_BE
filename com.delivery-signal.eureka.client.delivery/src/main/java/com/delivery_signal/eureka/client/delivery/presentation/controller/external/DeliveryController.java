@@ -6,9 +6,7 @@ import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeli
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryStatusCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
-import com.delivery_signal.eureka.client.delivery.application.dto.RouteRecordQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.service.DeliveryService;
-import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryStatus;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
 import com.delivery_signal.eureka.client.delivery.application.dto.PagedDeliveryResponse;
@@ -16,7 +14,6 @@ import com.delivery_signal.eureka.client.delivery.presentation.dto.request.Deliv
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryStatusUpdateRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryPresentationMapper;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -140,7 +137,7 @@ public class DeliveryController {
         @RequestParam(required = false) UUID hubId,
         @RequestParam(required = false) UUID companyId,
         @RequestParam(required = false) Long deliveryManagerId,
-        @RequestParam(required = false) DeliveryStatus status,
+        @RequestParam(required = false) String status,
         @RequestParam(name = "page", defaultValue = "1") int page,
         @RequestParam(name = "size", defaultValue = "10") int size,
         @RequestParam(name = "sort-by", defaultValue = "createdAt") String sortBy,
