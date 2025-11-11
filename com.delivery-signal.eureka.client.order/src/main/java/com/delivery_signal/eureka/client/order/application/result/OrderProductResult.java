@@ -17,7 +17,7 @@ public class OrderProductResult {
     private UUID orderId;
     private String productName;
     private BigDecimal productPriceAtOrder;
-    private int quantity;
+    private Integer quantity;
 
     // Entity -> DTO 변환용 정적 팩토리 메서드
     public static OrderProductResult from(OrderProduct orderProduct) {
