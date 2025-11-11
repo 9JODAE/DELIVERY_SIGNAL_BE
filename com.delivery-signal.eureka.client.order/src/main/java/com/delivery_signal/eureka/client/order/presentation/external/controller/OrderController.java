@@ -2,6 +2,7 @@ package com.delivery_signal.eureka.client.order.presentation.external.controller
 
 import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
 import com.delivery_signal.eureka.client.order.application.command.DeleteOrderCommand;
+import com.delivery_signal.eureka.client.order.application.command.OrderCancelCommand;
 import com.delivery_signal.eureka.client.order.application.command.UpdateOrderCommand;
 import com.delivery_signal.eureka.client.order.application.result.*;
 import com.delivery_signal.eureka.client.order.application.service.OrderService;
@@ -9,6 +10,7 @@ import com.delivery_signal.eureka.client.order.presentation.external.dto.request
 import com.delivery_signal.eureka.client.order.presentation.external.dto.request.UpdateOrderRequestDto;
 import com.delivery_signal.eureka.client.order.presentation.external.dto.response.*;
 import com.delivery_signal.eureka.client.order.presentation.external.mapper.command.CreateOrderMapper;
+import com.delivery_signal.eureka.client.order.presentation.external.mapper.command.OrderCancelMapper;
 import com.delivery_signal.eureka.client.order.presentation.external.mapper.command.OrderDeleteMapper;
 import com.delivery_signal.eureka.client.order.presentation.external.mapper.response.OrderResponseMapper;
 import com.delivery_signal.eureka.client.order.presentation.external.mapper.command.UpdateOrderMapper;
@@ -98,4 +100,17 @@ public class OrderController {
         OrderDeleteResponseDto responseDto = OrderResponseMapper.toDeleteResponse(result);
         return ResponseEntity.ok(responseDto);
     }
+
+    @Operation(summary = "주문 취소", description = "주문 및 연관된 배송을 취소합니다.")
+    @PostMapping("/{orderId}/cancel")
+    public ResponseEntity<OrderCancelResponseDto> cancelOrder(
+            @PathVariable UUID orderId,
+            @RequestHeader(value = "x-user-id", required = false) Long userId) {
+
+        OrderCancelCommand command = OrderCancelMapper.toCommand(orderId, userId);
+        OrderCancelResult result = orderService.cancelOrder(command);
+        OrderCancelResponseDto response = OrderResponseMapper.toCancelResponse(result);
+        return ResponseEntity.ok(response);
+    }
+
 }

@@ -8,6 +8,8 @@ import com.delivery_signal.eureka.client.order.infrastructure.client.delivery.dt
 import com.delivery_signal.eureka.client.order.application.result.OrderForDeliveryResult;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import feign.FeignException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -15,6 +17,7 @@ import java.util.UUID;
 
 import static com.delivery_signal.eureka.client.order.domain.entity.QOrder.order;
 
+@Slf4j
 @Component
 public class DeliveryCommandAdapter implements DeliveryCommandPort {
 
@@ -55,6 +58,25 @@ public class DeliveryCommandAdapter implements DeliveryCommandPort {
                 .toHubId(appRequest.getToHubId())
                 .build();
 
-        return deliveryClient.createDelivery(infraRequest); // 실제 외부 API 호출
+        return deliveryClient.createDelivery(infraRequest);
     }
+
+    @Override
+    public void cancelDelivery(UUID deliveryId) {
+        try {
+            // TODO: 현재 사용자 정보 주입 방식에 따라 수정 가능
+            Long systemUserId = 0L; // 시스템 사용자 (ex: 주문 서비스 내부 호출)
+            String systemRole = "MASTER"; // 기본 관리자 권한
+
+            deliveryClient.cancelDelivery(deliveryId, systemUserId, systemRole);
+            log.info("배송 취소 요청 완료: {}", deliveryId);
+
+        } catch (FeignException.NotFound e) {
+            log.warn("배송이 존재하지 않거나 이미 취소됨: {}", deliveryId);
+        } catch (FeignException e) {
+            log.error("배송 취소 요청 실패: {}", e.contentUTF8(), e);
+            throw new RuntimeException("배송 취소 요청 실패", e);
+        }
+    }
+
 }

@@ -66,6 +66,15 @@ public class OrderResponseMapper {
                 .build();
     }
 
+    public static OrderCancelResponseDto toCancelResponse(OrderCancelResult result) {
+        return OrderCancelResponseDto.builder()
+                .orderId(result.getOrderId())
+                .deliveryId(result.getDeliveryId())
+                .orderStatus(result.getOrderStatus())
+                .message(result.getMessage())
+                .build();
+    }
+
     public static OrderDeleteResponseDto toDeleteResponse(OrderDeleteResult result) {
         return OrderDeleteResponseDto.builder()
                 .orderId(result.getOrderId())
