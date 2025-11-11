@@ -116,7 +116,7 @@ public class OrderService {
         UUID deliveryId = UUID.randomUUID();
         List<OrderProduct> orderProducts = productInfos.stream()
                 .map(info -> {
-                    int quantity = command.getProducts().stream()
+                    Integer quantity = command.getProducts().stream()
                             .filter(p -> p.getProductId().equals(info.getProductId()))
                             .findFirst()
                             .map(OrderProductCommand::getQuantity)

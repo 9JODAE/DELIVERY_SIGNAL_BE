@@ -13,7 +13,7 @@ import java.util.UUID;
 public class OrderProductResponseDto {
     private UUID productId;
     private String productName;
-    private int quantity;
+    private Integer quantity;
     private BigDecimal price;
 }
 
