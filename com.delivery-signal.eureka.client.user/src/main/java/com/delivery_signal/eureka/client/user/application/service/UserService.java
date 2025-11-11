@@ -1,14 +1,13 @@
 package com.delivery_signal.eureka.client.user.application.service;
 
-import com.delivery_signal.eureka.client.user.application.command.CheckUserRoleCommand;
-import com.delivery_signal.eureka.client.user.application.command.CreateUserCommand;
-import com.delivery_signal.eureka.client.user.application.dto.UserResult;
 import com.delivery_signal.eureka.client.user.application.dto.UserRoleType;
 import com.delivery_signal.eureka.client.user.application.port.out.OrderQueryPort;
 import com.delivery_signal.eureka.client.user.presentation.mapper.UserMapper;
 import com.delivery_signal.eureka.client.user.application.exception.ErrorCode;
 import com.delivery_signal.eureka.client.user.application.exception.ServiceException;
 
+import com.delivery_signal.eureka.client.user.presentation.dto.request.CreateUserRequest;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.CheckUserRoleRequest;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UpdateUserApprovalStatusRequest;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UpdateUserRequest;
 import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserResponse;
@@ -63,21 +62,21 @@ public class UserService {
 
     // User 권한 검증
     @Transactional
-    public Boolean checkAuthorization(CheckUserRoleCommand command) {
-        User user = userRepository.findById(command.userId()).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+    public Boolean checkAuthorization(CheckUserRoleRequest requestDto) {
+        User user = userRepository.findById(requestDto.userId()).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
         UserRoleType userRole = UserRoleType.from(user.getRole());
-        UserRoleType userRoleType = command.role();
+        UserRoleType userRoleType = requestDto.role();
 
         return userRole.equals(userRoleType);
     }
 
     // User 생성
     @Transactional
-    public GetUserResponse createUser(CreateUserCommand command) {
-        UserResult userResult = userMapper.toUserResultDto(command);
+    public GetUserResponse createUser(CreateUserRequest requestDto) {
+        User user = userMapper.toEntity(requestDto);
 
         // 사용자 중복 확인
-        if (userRepository.findBySlackId(command.slackId()).isPresent()) {
+        if (userRepository.findBySlackId(requestDto.slackId()).isPresent()) {
             throw new IllegalArgumentException(ErrorCode.USER_USERNAME_DUPLICATED.getMessage());
         }
         // Master인 경우 approved로 넣기 로직 추가 필요!

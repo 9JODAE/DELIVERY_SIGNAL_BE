@@ -1,6 +1,5 @@
 package com.delivery_signal.eureka.client.user.presentation.dto.request;
 
-import com.delivery_signal.eureka.client.user.application.dto.UserRoleType;
 import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -35,7 +34,7 @@ public record CreateUserRequest(
         UUID organizationId,
 
         @NotNull(message = "사용자의 Role은 필수 정보입니다")
-        UserRoleType role,
+        UserRole role,
 
         // Master 회원 가입
         boolean isMaster,

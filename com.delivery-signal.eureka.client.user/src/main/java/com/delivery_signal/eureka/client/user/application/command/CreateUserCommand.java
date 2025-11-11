@@ -1,6 +1,5 @@
 package com.delivery_signal.eureka.client.user.application.command;
 
-import com.delivery_signal.eureka.client.user.application.dto.UserRoleType;
 import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
 
 import java.util.UUID;
@@ -11,7 +10,7 @@ public record CreateUserCommand (
         String slackId,
         String organization,
         UUID organizationId,
-        UserRoleType role,
+        UserRole role,
         boolean isMaster,
         String masterToken
 ){
@@ -21,7 +20,7 @@ public record CreateUserCommand (
         String slackId,
         String organization,
         UUID organizationId,
-        UserRoleType role,
+        UserRole role,
         boolean isMaster,
         String masterToken
 ) {
