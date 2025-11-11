@@ -20,7 +20,7 @@ spring:
         format_sql: false
         show_sql: false
         use_sql_comments: false
-        database-platform: org.hibernate.spatial.dialect.PostgreSQLDialect
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
         default_schema: hub
 
   data:
