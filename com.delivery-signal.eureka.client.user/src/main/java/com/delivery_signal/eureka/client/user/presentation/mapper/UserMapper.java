@@ -1,6 +1,8 @@
 package com.delivery_signal.eureka.client.user.presentation.mapper;
 
+import com.delivery_signal.eureka.client.user.application.command.CreateUserCommand;
 import com.delivery_signal.eureka.client.user.application.dto.ApprovalStatusType;
+import com.delivery_signal.eureka.client.user.application.dto.UserResult;
 import com.delivery_signal.eureka.client.user.application.dto.UserRoleType;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.CreateUserRequest;
 import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserResponse;
@@ -31,7 +33,21 @@ public class UserMapper {
                 .slackId(requestDto.slackId())
                 .organization(requestDto.organization())
                 .organizationId(requestDto.organizationId())
-                .role(requestDto.role())
+                .role(requestDto.role().toDomain())
                 .build();
+    }
+
+    public UserResult toUserResultDto(CreateUserCommand command) {
+        return new UserResult(
+                null, command.username(), passwordEncoder.encode(command.password()), command.slackId(),
+                command.organization(), command.organizationId(), command.role().toDomain()
+        );
+    }
+
+    public UserResult toUserResultDto(Long userId, CreateUserCommand command) {
+        return new UserResult(
+                userId, command.username(), passwordEncoder.encode(command.password()), command.slackId(),
+                command.organization(), command.organizationId(), command.role().toDomain()
+        );
     }
 }
