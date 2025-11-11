@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.user.domain.model;
+package com.delivery_signal.eureka.client.user.domain.entity;
 
 public enum ApprovalStatus {
     PENDING("PENDING"),    // 대기

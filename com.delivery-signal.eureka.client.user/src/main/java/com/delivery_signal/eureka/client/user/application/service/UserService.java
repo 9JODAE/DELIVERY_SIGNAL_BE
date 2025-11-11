@@ -1,24 +1,24 @@
 package com.delivery_signal.eureka.client.user.application.service;
 
-import com.delivery_signal.eureka.client.user.application.mapper.UserMapper;
+import com.delivery_signal.eureka.client.user.application.dto.UserRoleType;
+import com.delivery_signal.eureka.client.user.application.port.out.OrderQueryPort;
+import com.delivery_signal.eureka.client.user.presentation.mapper.UserMapper;
+import com.delivery_signal.eureka.client.user.application.exception.ErrorCode;
+import com.delivery_signal.eureka.client.user.application.exception.ServiceException;
 
-import com.delivery_signal.eureka.client.user.domain.model.ApprovalStatus;
-import com.delivery_signal.eureka.client.user.domain.common.exception.ErrorCode;
-import com.delivery_signal.eureka.client.user.domain.common.exception.ServiceException;
-import com.delivery_signal.eureka.client.user.domain.model.User;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.CreateUserRequest;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.CheckUserRoleRequest;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.UpdateUserApprovalStatusRequest;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.UpdateUserRequest;
+import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserResponse;
 
-import com.delivery_signal.eureka.client.user.domain.model.UserRole;
-import com.delivery_signal.eureka.client.user.presentation.controller.OrderFeignClient;
-import com.delivery_signal.eureka.client.user.presentation.dto.request.UserCreateRequestDto;
-import com.delivery_signal.eureka.client.user.presentation.dto.request.UserRoleCheckRequestDto;
-import com.delivery_signal.eureka.client.user.presentation.dto.request.UserUpdateApprovalStatusRequestDto;
-import com.delivery_signal.eureka.client.user.presentation.dto.request.UserUpdateRequestDto;
-import com.delivery_signal.eureka.client.user.presentation.dto.response.UserResponseDto;
-
+import com.delivery_signal.eureka.client.user.domain.entity.ApprovalStatus;
+import com.delivery_signal.eureka.client.user.domain.entity.User;
 import com.delivery_signal.eureka.client.user.domain.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -32,44 +32,54 @@ import java.util.Set;
 public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final OrderQueryPort orderQueryPort;
 
     // MASTER_TOKEN
-    private final String MASTER_TOKEN = "AAABnvxRVklrnYxKZ0aHgTBcXukeZygoC";
+    @Value("${master.token}")
+    private String MASTER_TOKEN;
+
 
     // Feign Client
-    private final OrderFeignClient orderFeignClient;
+//    private final OrderFeignClient orderFeignClient;
 
     // 통신 테스트 (Other Service -> User Service)
 
     // 통신 테스트 (User Service -> Other Service)
 
+//    public String getOrderInfo() {
+//        return orderFeignClient.getOrder();
+//    }
 
-
-    public String getOrderInfo() {
-        return orderFeignClient.getOrder();
-    }
+//    @Transactional
+//    public String callOrder() {
+//        return "User -> Order 호출 성공!" + getOrderInfo();
+//    }
 
     @Transactional
     public String callOrder() {
-        return "User -> Order 호출 성공!" + getOrderInfo();
+        return "User -> Order 호출 성공!" + orderQueryPort.getOrder();
     }
 
     // User 권한 검증
     @Transactional
-    public Boolean checkAuthorization(UserRoleCheckRequestDto requestDto) {
+    public Boolean checkAuthorization(CheckUserRoleRequest requestDto) {
         User user = userRepository.findById(requestDto.userId()).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
-        return requestDto.role() == user.getRole();
+        UserRoleType userRole = UserRoleType.from(user.getRole());
+        UserRoleType userRoleType = requestDto.role();
+
+        return userRole.equals(userRoleType);
     }
 
     // User 생성
     @Transactional
-    public UserResponseDto createUser(UserCreateRequestDto requestDto) {
+    public GetUserResponse createUser(CreateUserRequest requestDto) {
         User user = userMapper.toEntity(requestDto);
 
         // 사용자 중복 확인
         if (userRepository.findBySlackId(requestDto.slackId()).isPresent()) {
             throw new IllegalArgumentException(ErrorCode.USER_USERNAME_DUPLICATED.getMessage());
         }
+        // Master인 경우 approved로 넣기 로직 추가 필요!
 
         userRepository.save(user);
         return userMapper.from(user);
@@ -77,7 +87,7 @@ public class UserService {
 
     // 특정 User 조회
     @Transactional
-    public UserResponseDto getUser(Long userId) {
+    public GetUserResponse getUser(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
 
         if (user.isDeleted()) {
@@ -90,10 +100,10 @@ public class UserService {
 
     // User 목록 조회 및 검색
     @Transactional
-    public List<UserResponseDto> getUsers(String search) {
+    public List<GetUserResponse> getUsers(String search) {
         List<String> keywords = validSearchKeywords(search);
         Set<Long> presented = new HashSet<>();
-        List<UserResponseDto> responseDtos;
+        List<GetUserResponse> responseDtos;
 
         if (keywords == null) {
             responseDtos = userRepository.findAll().stream().map(userMapper::from).toList();
@@ -121,7 +131,7 @@ public class UserService {
 
     // 회원가입 승인 상태 조정
     @Transactional
-    public UserResponseDto updateApprovalStatus(Long userId, UserUpdateApprovalStatusRequestDto requestDto) {
+    public GetUserResponse updateApprovalStatus(Long userId, UpdateUserApprovalStatusRequest requestDto) {
 
         User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
 
@@ -137,7 +147,7 @@ public class UserService {
 
 
     @Transactional
-    public UserResponseDto updateUser(Long userId, UserUpdateRequestDto requestDto) {
+    public GetUserResponse updateUser(Long userId, UpdateUserRequest requestDto) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
 
         if (user.isDeleted()) {
@@ -191,7 +201,7 @@ public class UserService {
 
     
     
-    private void addIfNotPresented(User user,Set<Long> presented, List<UserResponseDto> responseDtos) {
+    private void addIfNotPresented(User user,Set<Long> presented, List<GetUserResponse> responseDtos) {
 
         if (!user.isDeleted()) {
             if (presented.add(user.getUserId())) {

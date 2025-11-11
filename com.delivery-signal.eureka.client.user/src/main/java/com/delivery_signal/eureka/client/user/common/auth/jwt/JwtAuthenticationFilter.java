@@ -1,11 +1,10 @@
-package com.delivery_signal.eureka.client.user.infrastructure.filter;
+package com.delivery_signal.eureka.client.user.common.auth.jwt;
 
-import com.delivery_signal.eureka.client.user.application.service.JwtUtil;
-import com.delivery_signal.eureka.client.user.application.service.UserDetailsImpl;
-import com.delivery_signal.eureka.client.user.domain.model.ApprovalStatus;
-import com.delivery_signal.eureka.client.user.domain.model.User;
-import com.delivery_signal.eureka.client.user.domain.model.UserRole;
-import com.delivery_signal.eureka.client.user.presentation.dto.request.LoginRequestDto;
+import com.delivery_signal.eureka.client.user.common.auth.util.JwtUtil;
+import com.delivery_signal.eureka.client.user.common.auth.security.UserDetailsImpl;
+import com.delivery_signal.eureka.client.user.domain.entity.ApprovalStatus;
+import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.CreateUserLoginRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -32,7 +31,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         log.info("로그인 시도");
         try {
-            LoginRequestDto requestDto = new ObjectMapper().readValue(request.getInputStream(), LoginRequestDto.class);
+            CreateUserLoginRequest requestDto = new ObjectMapper().readValue(request.getInputStream(), CreateUserLoginRequest.class);
 
             return getAuthenticationManager().authenticate(
                     new UsernamePasswordAuthenticationToken(

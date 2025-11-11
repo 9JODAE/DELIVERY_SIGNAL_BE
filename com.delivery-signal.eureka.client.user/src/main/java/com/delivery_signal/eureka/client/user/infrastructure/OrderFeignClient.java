@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.user.presentation.controller;
+package com.delivery_signal.eureka.client.user.infrastructure;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,7 +1,7 @@
-package com.delivery_signal.eureka.client.user.application.service;
+package com.delivery_signal.eureka.client.user.common.auth.security;
 
-import com.delivery_signal.eureka.client.user.domain.model.User;
-import com.delivery_signal.eureka.client.user.domain.model.UserRole;
+import com.delivery_signal.eureka.client.user.domain.entity.User;
+import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

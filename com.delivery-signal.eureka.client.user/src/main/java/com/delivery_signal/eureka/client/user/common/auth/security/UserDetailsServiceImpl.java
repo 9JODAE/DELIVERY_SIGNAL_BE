@@ -1,8 +1,8 @@
-package com.delivery_signal.eureka.client.user.application.service;
+package com.delivery_signal.eureka.client.user.common.auth.security;
 
-import com.delivery_signal.eureka.client.user.domain.common.exception.ErrorCode;
-import com.delivery_signal.eureka.client.user.domain.common.exception.ServiceException;
-import com.delivery_signal.eureka.client.user.domain.model.User;
+import com.delivery_signal.eureka.client.user.application.exception.ErrorCode;
+import com.delivery_signal.eureka.client.user.application.exception.ServiceException;
+import com.delivery_signal.eureka.client.user.domain.entity.User;
 import com.delivery_signal.eureka.client.user.domain.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

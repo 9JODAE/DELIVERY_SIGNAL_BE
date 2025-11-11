@@ -1,6 +1,6 @@
-package com.delivery_signal.eureka.client.user.application.service;
+package com.delivery_signal.eureka.client.user.common.auth.util;
 
-import com.delivery_signal.eureka.client.user.domain.model.UserRole;
+import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 

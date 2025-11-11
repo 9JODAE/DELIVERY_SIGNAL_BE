@@ -31,3 +31,7 @@ service:
     refresh:
       secret: ${KEY2}
       expiration: 7d # 일주일
+
+
+master:
+  token: "AAABnvxRVklrnYxKZ0aHgTBcXukeZygoC"

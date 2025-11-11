@@ -1,7 +1,7 @@
-//package com.delivery_signal.eureka.client.user.infrastructure.filter;
+//package com.delivery_signal.eureka.client.user.infrastructure.jwt;
 //
-//import com.delivery_signal.eureka.client.user.application.service.JwtUtil;
-//import com.delivery_signal.eureka.client.user.application.service.UserDetailsServiceImpl;
+//import com.delivery_signal.eureka.client.user.common.util.auth.JwtUtil;
+//import com.delivery_signal.eureka.client.user.common.security.auth.UserDetailsServiceImpl;
 //import io.jsonwebtoken.Claims;
 //import jakarta.servlet.FilterChain;
 //import jakarta.servlet.ServletException;
@@ -14,7 +14,7 @@
 //import org.springframework.security.core.context.SecurityContextHolder;
 //import org.springframework.security.core.userdetails.UserDetails;
 //import org.springframework.util.StringUtils;
-//import org.springframework.web.filter.OncePerRequestFilter;
+//import org.springframework.web.jwt.OncePerRequestFilter;
 //
 //import java.io.IOException;
 //

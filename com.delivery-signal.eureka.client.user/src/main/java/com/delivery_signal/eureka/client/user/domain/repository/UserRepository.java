@@ -1,6 +1,6 @@
 package com.delivery_signal.eureka.client.user.domain.repository;
 
-import com.delivery_signal.eureka.client.user.domain.model.User;
+import com.delivery_signal.eureka.client.user.domain.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

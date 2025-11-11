@@ -1,9 +1,6 @@
 package com.delivery_signal.eureka.client.user.presentation.dto.request;
 
-import lombok.Getter;
-import lombok.Setter;
-
-public record LoginRequestDto (
+public record CreateUserLoginRequest(
     String username,
     String password
 ){}

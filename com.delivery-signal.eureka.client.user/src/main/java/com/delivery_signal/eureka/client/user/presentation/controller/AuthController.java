@@ -1,10 +1,9 @@
 package com.delivery_signal.eureka.client.user.presentation.controller;
 
-import com.delivery_signal.eureka.client.user.application.service.JwtUtil;
+import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserResponse;
 import com.delivery_signal.eureka.client.user.application.service.UserService;
 import com.delivery_signal.eureka.client.user.presentation.dto.ApiResponse;
-import com.delivery_signal.eureka.client.user.presentation.dto.request.UserCreateRequestDto;
-import com.delivery_signal.eureka.client.user.presentation.dto.response.UserResponseDto;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.CreateUserRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +23,9 @@ public class AuthController {
 
     @PostMapping("")
     @Operation(summary="회원가입", description="새로운 사용자가 회원가입을 진행합니다")
-    public ResponseEntity<ApiResponse<UserResponseDto>> signUp(@Valid @RequestBody UserCreateRequestDto requestDto) {
+    public ResponseEntity<ApiResponse<GetUserResponse>> signUp(@Valid @RequestBody CreateUserRequest requestDto) {
         log.info("회원가입 요청 : username={}", requestDto.username());
-        UserResponseDto responseDto = userService.createUser(requestDto);
+        GetUserResponse responseDto = userService.createUser(requestDto);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
 
     }
