@@ -1,12 +1,14 @@
 package com.delivery_signal.eureka.client.delivery.presentation.controller.external;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
+import com.delivery_signal.eureka.client.delivery.application.command.SearchDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryInfoCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryStatusCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.dto.RouteRecordQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.service.DeliveryService;
+import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryStatus;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
 import com.delivery_signal.eureka.client.delivery.application.dto.PagedDeliveryResponse;
@@ -53,12 +55,6 @@ public class DeliveryController {
     public DeliveryController(DeliveryService deliveryService, DeliveryPresentationMapper deliveryPresentationMapper) {
         this.deliveryService = deliveryService;
         this.deliveryPresentationMapper = deliveryPresentationMapper;
-    }
-
-    // TEST 엔드포인트
-    @GetMapping
-    public ResponseEntity<String> test() {
-        return ResponseEntity.status(HttpStatus.OK).body("Delivery Service 통신 성공");
     }
 
     @PostMapping
@@ -149,6 +145,29 @@ public class DeliveryController {
     ) {
         List<RouteRecordQueryResponse> response = deliveryService.getDeliveryRoutes(deliveryId,
             currUserId, role);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+    }
+
+    /**
+     * 배송 목록 조회 : 허브, 업체, 배송 담당자, 배송 상태별
+     */
+    @GetMapping
+    public ResponseEntity<ApiResponse<PagedDeliveryResponse>> searchDeliveries(
+        @RequestParam(required = false) UUID hubId,
+        @RequestParam(required = false) UUID companyId,
+        @RequestParam(required = false) Long deliveryManagerId,
+        @RequestParam(required = false) DeliveryStatus status,
+        @RequestParam(name = "page", defaultValue = "1") int page,
+        @RequestParam(name = "size", defaultValue = "10") int size,
+        @RequestParam(name = "sort-by", defaultValue = "createdAt") String sortBy,
+        @RequestParam(name = "sort-direction", defaultValue = "DESC") Sort.Direction sortDirection,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        DeliveryListQuery query = DeliveryListQuery.of(page, size, sortBy, sortDirection);
+        SearchDeliveryCommand command = SearchDeliveryCommand.of(status, hubId, companyId, deliveryManagerId);
+        PagedDeliveryResponse response = deliveryService.searchDeliveries(currUserId, role,
+            command, query);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
     }
 }

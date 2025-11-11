@@ -14,7 +14,20 @@ java {
 	}
 }
 
+def queryDslVersion = "7.1"
+def querydslSrcDir = layout.buildDirectory.dir("generated/querydsl").get().asFile
+
+// Q-Class 파일이 생성될 디렉토리 설정
+sourceSets {
+	main {
+		java {
+			srcDirs += querydslSrcDir
+		}
+	}
+}
+
 configurations {
+	querydsl.extendsFrom compileClasspath
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
@@ -53,6 +66,11 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// QueryDSL
+	implementation("io.github.openfeign.querydsl:querydsl-core:${queryDslVersion}")
+	implementation("io.github.openfeign.querydsl:querydsl-jpa:$queryDslVersion")
+	annotationProcessor("io.github.openfeign.querydsl:querydsl-apt:$queryDslVersion:jpa")
 }
 
 dependencyManagement {

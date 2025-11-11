@@ -1,15 +1,18 @@
 package com.delivery_signal.eureka.client.delivery.application.service;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
+import com.delivery_signal.eureka.client.delivery.application.command.SearchDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryInfoCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryStatusCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateRouteRecordCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
+import com.delivery_signal.eureka.client.delivery.application.dto.DeliverySearchCondition;
 import com.delivery_signal.eureka.client.delivery.application.dto.RouteRecordQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.mapper.DeliveryDomainMapper;
 import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryRouteRecords;
 import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryStatus;
+import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryQueryRepository;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRouteRecordsRepository;
 import com.delivery_signal.eureka.client.delivery.application.dto.PagedDeliveryResponse;
 import com.delivery_signal.eureka.client.delivery.common.UserRole;
@@ -35,15 +38,18 @@ public class DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
     private final DeliveryRouteRecordsRepository deliveryRouteRecordsRepository;
+    private final DeliveryQueryRepository deliveryQueryRepository;
     private final OrderServiceClient orderServiceClient;
     private final DeliveryDomainMapper deliveryDomainMapper;
 
     public DeliveryService(DeliveryRepository deliveryRepository,
         DeliveryRouteRecordsRepository deliveryRouteRecordsRepository,
+        DeliveryQueryRepository deliveryQueryRepository,
         OrderServiceClient orderServiceClient,
         DeliveryDomainMapper deliveryDomainMapper) {
         this.deliveryRepository = deliveryRepository;
         this.deliveryRouteRecordsRepository = deliveryRouteRecordsRepository;
+        this.deliveryQueryRepository = deliveryQueryRepository;
         this.orderServiceClient = orderServiceClient;
         this.deliveryDomainMapper = deliveryDomainMapper;
     }
@@ -109,6 +115,36 @@ public class DeliveryService {
 //            );
 //        }
 //    }
+
+    /**
+     * 배송 목록 검색 (페이징/정렬 포함)
+     * 권한: 모든 로그인 사용자 ('배송 담당자'는 본인 담당 배송만, '허브 담당자'는 본인 담당)
+     */
+    public PagedDeliveryResponse searchDeliveries(Long currUserId,
+        String role, SearchDeliveryCommand command, DeliveryListQuery query) {
+
+        DeliverySearchCondition condition = DeliverySearchCondition.of(
+            command.hubId(),
+            command.deliveryManagerId(),
+            command.companyId(),
+            command.status()
+        );
+
+        // 권한 확인은 QueryRepository 내부에서 필터링으로 처리
+        UserRole userRole = UserRole.valueOf(role);
+        DeliverySearchCondition searchCondition = refineSearchCondition(condition, currUserId, userRole);
+        PageRequest pageable = query.toPageable();
+
+        Page<Delivery> deliveryPage = deliveryQueryRepository.searchDeliveries(currUserId, searchCondition,
+            pageable, userRole);
+
+        List<DeliveryQueryResponse> responses = deliveryPage.getContent()
+            .stream()
+            .map(deliveryDomainMapper::toResponse)
+            .toList();
+
+        return PagedDeliveryResponse.from(deliveryPage, responses);
+    }
 
     /**
      * 담당 배송 목록 조회
@@ -373,5 +409,41 @@ public class DeliveryService {
             return delivery.getDeliveryManagerId().equals(currUserid);
         }
         return true;
+    }
+
+    /**
+     * 권한에 따른 검색 조건 보정
+     */
+    private DeliverySearchCondition refineSearchCondition(
+        DeliverySearchCondition originalCondition,
+        Long currUserId,
+        UserRole role
+    ) {
+        if (role.equals(UserRole.MASTER) || role.equals(UserRole.SUPPLIER_MANAGER)) {
+            return originalCondition;
+        }
+
+        // TODO: 허브 관리자는 delivery의 fromHubId/toHubId 중 하나를 관리하는지 확인 (허브 FeignClient 필요)
+        if (role.equals(UserRole.HUB_MANAGER)) {
+            // return hubService.isManagingHub(currUserId, delivery.getFromHubId())
+            //         || hubService.isManagingHub(currUserId, delivery.getToHubId());
+            return originalCondition; // 임시 허용
+        }
+
+        // 배송 담당자: 본인 담당 배송만 검색 가능하도록 조건 강제
+        if (role.equals(UserRole.DELIVERY_MANAGER)) {
+            if (originalCondition.deliveryManagerId() != null &&
+                    !originalCondition.deliveryManagerId().equals(currUserId)) {
+                throw new RuntimeException("배송 담당자는 본인의 배송 목록만 검색할 수 있습니다.");
+            }
+
+            return DeliverySearchCondition.builder()
+                .hubId(originalCondition.hubId())
+                .companyId(originalCondition.companyId())
+                .deliveryManagerId(currUserId)
+                .status(originalCondition.status())
+                .build();
+        }
+        return originalCondition;
     }
 }
