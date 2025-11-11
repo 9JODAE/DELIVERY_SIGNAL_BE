@@ -3,13 +3,15 @@ package com.delivery_signal.eureka.client.order.presentation.external.controller
 import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
 import com.delivery_signal.eureka.client.order.application.command.DeleteOrderCommand;
 import com.delivery_signal.eureka.client.order.application.command.UpdateOrderCommand;
-import com.delivery_signal.eureka.client.order.application.dto.response.*;
+import com.delivery_signal.eureka.client.order.application.result.*;
 import com.delivery_signal.eureka.client.order.application.service.OrderService;
 import com.delivery_signal.eureka.client.order.presentation.external.dto.request.CreateOrderRequestDto;
 import com.delivery_signal.eureka.client.order.presentation.external.dto.request.UpdateOrderRequestDto;
-import com.delivery_signal.eureka.client.order.presentation.mapper.CreateOrderMapper;
-import com.delivery_signal.eureka.client.order.presentation.mapper.OrderDeleteMapper;
-import com.delivery_signal.eureka.client.order.presentation.mapper.UpdateOrderMapper;
+import com.delivery_signal.eureka.client.order.presentation.external.dto.response.*;
+import com.delivery_signal.eureka.client.order.presentation.external.mapper.command.CreateOrderMapper;
+import com.delivery_signal.eureka.client.order.presentation.external.mapper.command.OrderDeleteMapper;
+import com.delivery_signal.eureka.client.order.presentation.external.mapper.response.OrderResponseMapper;
+import com.delivery_signal.eureka.client.order.presentation.external.mapper.command.UpdateOrderMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/orders")
@@ -35,7 +38,8 @@ public class OrderController {
             @RequestHeader(value = "x-user-id", required = false) Long userId) {
 
         CreateOrderCommand command = CreateOrderMapper.toCommand(requestDto, userId);
-        OrderCreateResponseDto responseDto = orderService.createOrderAndSendDelivery(command);
+        OrderCreateResult result = orderService.createOrderAndSendDelivery(command);
+        OrderCreateResponseDto responseDto = OrderResponseMapper.toCreateResponse(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
@@ -43,7 +47,8 @@ public class OrderController {
     @Operation(summary = "주문 조회", description = "주문 조회(개별)")
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderDetailResponseDto> getOrderById(@PathVariable UUID orderId) {
-        OrderDetailResponseDto responseDto = orderService.getOrderById(orderId);
+        OrderDetailResult result = orderService.getOrderById(orderId);
+        OrderDetailResponseDto responseDto = OrderResponseMapper.toDetailResponse(result);
         return ResponseEntity.ok(responseDto);
     }
 
@@ -51,7 +56,10 @@ public class OrderController {
     @Operation(summary = "주문 전체 조회", description = "관리자용")
     @GetMapping
     public ResponseEntity<List<OrderListResponseDto>> getAllOrders() {
-        List<OrderListResponseDto> responseDto = orderService.getAllOrders();
+        List<OrderListResult> result = orderService.getAllOrders();
+        List<OrderListResponseDto> responseDto = result.stream()
+                .map(OrderResponseMapper::toListResponse)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(responseDto);
     }
 
@@ -61,7 +69,10 @@ public class OrderController {
     public ResponseEntity<List<OrderListResponseDto>> getAllOrdersByHubId(
             @PathVariable UUID hubId,
             @RequestHeader(value = "x-user-id", required = false) Long userId) {
-        List<OrderListResponseDto> responseDto = orderService.getOrdersByHubId(hubId, userId);
+        List<OrderListResult> result = orderService.getOrdersByHubId(hubId, userId);
+        List<OrderListResponseDto> responseDto = result.stream()
+                .map(OrderResponseMapper::toListResponse)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(responseDto);
     }
 
@@ -69,11 +80,13 @@ public class OrderController {
     // 수정 (Update)
     @Operation(summary = "주문 수정", description = "주문 수정")
     @PutMapping("/{orderId}")
-    public ResponseEntity<OrderUpdateResponseDto> updateOrder(@PathVariable UUID orderId, @RequestBody UpdateOrderRequestDto requestDto) {
+    public ResponseEntity<OrderUpdateResponseDto> updateOrder(
+            @PathVariable UUID orderId,
+            @RequestBody UpdateOrderRequestDto requestDto) {
         UpdateOrderCommand command = UpdateOrderMapper.toCommand(orderId, requestDto);
-
-        OrderUpdateResponseDto responseDto = orderService.updateOrder(orderId, command);
-        return ResponseEntity.ok(responseDto);
+        OrderUpdateResult result = orderService.updateOrder(orderId, command);
+        OrderUpdateResponseDto response =OrderResponseMapper.toUpdateResponse(result);
+        return ResponseEntity.ok(response);
     }
 
     // 삭제 (Delete)
@@ -81,7 +94,8 @@ public class OrderController {
     @DeleteMapping("/{orderId}")
     public ResponseEntity<OrderDeleteResponseDto> deleteOrder(@PathVariable UUID orderId) {
         DeleteOrderCommand command = OrderDeleteMapper.toCommand(orderId);
-        OrderDeleteResponseDto requestDto = orderService.deleteOrder(command);
-        return ResponseEntity.ok(requestDto);
+        OrderDeleteResult result = orderService.deleteOrder(command);
+        OrderDeleteResponseDto responseDto = OrderResponseMapper.toDeleteResponse(result);
+        return ResponseEntity.ok(responseDto);
     }
 }

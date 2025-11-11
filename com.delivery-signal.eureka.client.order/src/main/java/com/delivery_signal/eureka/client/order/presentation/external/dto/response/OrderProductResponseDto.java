@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.order.application.dto.response;
+package com.delivery_signal.eureka.client.order.presentation.external.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,11 +10,10 @@ import java.util.UUID;
 @Getter
 @Builder
 @AllArgsConstructor
-public class OrderSummaryRequestDto {
+public class OrderProductResponseDto {
     private UUID productId;
-    private UUID orderId;
     private String productName;
-    private BigDecimal productPriceAtOrder;
     private int quantity;
-
+    private BigDecimal price;
 }
+

@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.order.presentation.mapper;
+package com.delivery_signal.eureka.client.order.presentation.external.mapper.command;
 
 import com.delivery_signal.eureka.client.order.application.command.UpdateOrderCommand;
 import com.delivery_signal.eureka.client.order.presentation.external.dto.request.UpdateOrderRequestDto;

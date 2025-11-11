@@ -1,11 +1,11 @@
 package com.delivery_signal.eureka.client.order.infrastructure.adapter.out;
 
-import com.delivery_signal.eureka.client.order.application.dto.request.CreateDeliveryRequestDto;
+import com.delivery_signal.eureka.client.order.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.order.application.port.out.DeliveryCommandPort;
 import com.delivery_signal.eureka.client.order.domain.vo.delivery.DeliveryCreatedInfo;
 import com.delivery_signal.eureka.client.order.infrastructure.client.delivery.DeliveryClient;
 import com.delivery_signal.eureka.client.order.infrastructure.client.delivery.dto.DeliveryCreateRequestDto;
-import com.delivery_signal.eureka.client.order.application.dto.response.OrderForDeliveryResponseDto;
+import com.delivery_signal.eureka.client.order.application.result.OrderForDeliveryResult;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.stereotype.Component;
@@ -27,10 +27,10 @@ public class DeliveryCommandAdapter implements DeliveryCommandPort {
     }
 
     @Override
-    public Optional<OrderForDeliveryResponseDto> findOrderForDeliveryById(UUID orderId) {
-        OrderForDeliveryResponseDto dto = queryFactory
+    public Optional<OrderForDeliveryResult> findOrderForDeliveryById(UUID orderId) {
+        OrderForDeliveryResult dto = queryFactory
                 .select(Projections.constructor(
-                        OrderForDeliveryResponseDto.class,
+                        OrderForDeliveryResult.class,
                         order.id,
                         order.supplierCompanyId,
                         order.receiverCompanyId,
@@ -45,7 +45,7 @@ public class DeliveryCommandAdapter implements DeliveryCommandPort {
     }
 
     @Override
-    public DeliveryCreatedInfo createDelivery(CreateDeliveryRequestDto appRequest) {
+    public DeliveryCreatedInfo createDelivery(CreateDeliveryCommand appRequest) {
         DeliveryCreateRequestDto infraRequest = DeliveryCreateRequestDto.builder()
                 .deliveryId(appRequest.getDeliveryId())
                 .orderId(appRequest.getOrderId())
