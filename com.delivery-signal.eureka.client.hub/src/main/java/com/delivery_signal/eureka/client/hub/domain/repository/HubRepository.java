@@ -34,4 +34,11 @@ public interface HubRepository {
 	 * @return 조회된 허브 (재고 포함)
 	 */
 	Optional<Hub> findByIdWithStocks(UUID hubId);
+
+	/**
+	 * 허브 존재 여부 확인
+	 * @param hubId 허브 아이디
+	 * @return 허브 존재 여부
+	 */
+	boolean exists(UUID hubId);
 }

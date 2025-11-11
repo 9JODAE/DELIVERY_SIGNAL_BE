@@ -107,12 +107,12 @@ public class DeliveryManagerController {
     }
 
     @DeleteMapping("/{user-id}")
-    public ResponseEntity<Void> deleteManager(
+    public ResponseEntity<ApiResponse<Void>> deleteManager(
         @PathVariable("user-id") Long managerId,
         @RequestHeader(USER_ID_HEADER) Long currUserId,
         @RequestHeader(USER_ROLE_HEADER) String role
     ) {
         deliveryManagerService.softDeleteManager(managerId, currUserId);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
     }
 }
