@@ -2,6 +2,7 @@ package com.delivery_signal.eureka.client.user.application.service;
 
 import com.delivery_signal.eureka.client.user.application.dto.UserRoleType;
 import com.delivery_signal.eureka.client.user.application.port.out.OrderQueryPort;
+import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
 import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserAuthorizationResponse;
 import com.delivery_signal.eureka.client.user.presentation.mapper.UserMapper;
 import com.delivery_signal.eureka.client.user.application.exception.ErrorCode;
@@ -55,7 +56,7 @@ public class UserService {
 
     @Transactional
     public String callOrder() {
-        return "User -> Order 호출 성공!" + orderQueryPort.getOrder();
+        return "User -> Order 호출 성공!" + orderQueryPort.test();
     }
 
     // User 권한 검증
@@ -83,13 +84,15 @@ public class UserService {
     @Transactional
     public GetUserResponse createUser(CreateUserRequest requestDto) {
         User user = userMapper.toEntity(requestDto);
-
         // 사용자 중복 확인
         if (userRepository.findBySlackId(requestDto.slackId()).isPresent()) {
             throw new IllegalArgumentException(ErrorCode.USER_USERNAME_DUPLICATED.getMessage());
         }
-        // Master인 경우 approved로 넣기 로직 추가 필요!
 
+        // Master인 경우, 승인 상태 PENDING -> APPROVED 자동 조정
+        if (user.getRole().equals(UserRole.MASTER)) {
+            user.updateApprovalStatus(ApprovalStatus.APPROVED);
+        }
         userRepository.save(user);
         return userMapper.from(user);
     }

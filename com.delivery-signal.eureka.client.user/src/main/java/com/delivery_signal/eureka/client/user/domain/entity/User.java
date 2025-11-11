@@ -81,7 +81,7 @@ public class User extends BaseEntity {
         this.organization = organization;
     }
 
-//    public void updateRole(UserRole role) { this.role = role; }
+    public void updateUserRole(UserRole role) { this.role = role; }
 
     public void updateApprovalStatus(ApprovalStatus approvalStatus) {
         this.approvalStatus = approvalStatus;

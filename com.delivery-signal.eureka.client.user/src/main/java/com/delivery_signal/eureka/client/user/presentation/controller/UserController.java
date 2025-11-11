@@ -30,10 +30,10 @@ public class UserController {
     private final UserService userService;
 
     // Feign Client
-    @GetMapping("/call")
-    public String callUserByOrder() {
-        return "Order 어플리케이션에서 User의 /call 호출";
-    }
+//    @GetMapping("/call")
+//    public String callUserByOrder() {
+//        return "Order 어플리케이션에서 User의 /call 호출";
+//    }
 
     @GetMapping("/authorization")
     @Operation(summary="다른 애플리케이션의 인가 확인", description="인가를 확인합니다")

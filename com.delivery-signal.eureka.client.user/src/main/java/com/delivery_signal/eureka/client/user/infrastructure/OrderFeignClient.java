@@ -5,6 +5,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @FeignClient(name="order-service")
 public interface OrderFeignClient {
-    @GetMapping("/order/temp")
-    String getOrder();
+    @GetMapping("/open-api/v1/orders")
+    String test();
 }

@@ -12,7 +12,7 @@ public class OrderQueryAdapter implements OrderQueryPort {
     private final OrderFeignClient orderFeignClient;
 
     @Override
-    public String getOrder() {
-        return orderFeignClient.getOrder();
+    public String test() {
+        return orderFeignClient.test();
     }
 }

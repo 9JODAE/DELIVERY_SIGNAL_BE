@@ -2,8 +2,8 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/delivery_signal
     driver-class-name: org.postgresql.Driver
-    username: ${DB_USERNAME}  # user
-    password: ${DB_PASSWORD}  # user1234
+    username: postgres # ${DB_USERNAME:postgres}
+    password: 1234 # ${DB_PASSWORD:1234}
 
   jpa:
     hibernate:
@@ -14,7 +14,7 @@ spring:
         show_sql: true
         use_sql_comments: false
         database-platform: org.hibernate.dialect.PostgreSQLDialect
-        default_schema: users
+        default_schema: p_user
 
 eureka:
   client:
@@ -34,4 +34,4 @@ service:
 
 
 master:
-  token: "AAABnvxRVklrnYxKZ0aHgTBcXukeZygoC"
+  token: "AAABnvxRVklrnYxKZ0aHgTBcXukeZygoC"  # ${MASTER_TOKEN} #
