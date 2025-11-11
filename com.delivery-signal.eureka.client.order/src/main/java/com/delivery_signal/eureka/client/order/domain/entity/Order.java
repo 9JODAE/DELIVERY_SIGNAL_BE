@@ -77,17 +77,22 @@ public class Order {
     @Builder
     public Order(UUID supplierCompanyId,
                  UUID receiverCompanyId,
+                 UUID departureHubId,
+                 UUID arrivalHubId,
                  String requestNote,
-                 BigDecimal totalPrice,
+                 BigDecimal totalPriceAtOrder,
                  List<OrderProduct> orderProducts,
                  UUID deliveryId) {
         this.supplierCompanyId = supplierCompanyId;
         this.receiverCompanyId = receiverCompanyId;
+        this.departureHubId = departureHubId;
+        this.arrivalHubId = arrivalHubId;
         this.requestNote = requestNote;
-        this.totalPriceAtOrder = totalPrice;
+        this.totalPriceAtOrder = totalPriceAtOrder;
         this.orderProducts = orderProducts;
         this.deliveryId = deliveryId;
     }
+
 
 
     /**

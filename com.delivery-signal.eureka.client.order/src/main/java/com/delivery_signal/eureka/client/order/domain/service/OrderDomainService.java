@@ -16,20 +16,32 @@ public class OrderDomainService {
 
     private final OrderRepository orderRepository;
 
-    public Order createOrder(UUID supplier, UUID receiver, String requestNote, List<OrderProduct> orderProducts, UUID deliveryId) {
+    public Order createOrder(
+            UUID supplierCompanyId,
+            UUID receiverCompanyId,
+            UUID departureHubId,
+            UUID arrivalHubId,
+            String requestNote,
+            List<OrderProduct> orderProducts,
+            UUID deliveryId
+    ) {
         BigDecimal totalPrice = orderProducts.stream()
-                .map(p -> p.getProductPriceAtOrder().multiply(BigDecimal.valueOf(p.getTransferQuantity())))
+                .map(p -> p.getProductPriceAtOrder()
+                        .multiply(BigDecimal.valueOf(p.getTransferQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return Order.builder()
-                .supplierCompanyId(supplier)
-                .receiverCompanyId(receiver)
+                .supplierCompanyId(supplierCompanyId)
+                .receiverCompanyId(receiverCompanyId)
+                .departureHubId(departureHubId)
+                .arrivalHubId(arrivalHubId)
                 .requestNote(requestNote)
-                .totalPrice(totalPrice)
-                .deliveryId(deliveryId)
+                .totalPriceAtOrder(totalPrice)
                 .orderProducts(orderProducts)
+                .deliveryId(deliveryId)
                 .build();
     }
+
 
     // OrderDomainService
     public List<Order> getOrdersByHub(UUID hubId) {

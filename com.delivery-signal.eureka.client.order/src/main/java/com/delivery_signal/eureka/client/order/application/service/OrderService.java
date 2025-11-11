@@ -132,13 +132,20 @@ public class OrderService {
 
         // 주문 생성 (도메인 로직)
         Order order = orderDomainService.createOrder(
-                supplier.getHubId(), receiver.getHubId(), command.getRequestNote(), orderProducts, deliveryId);
+                supplier.getCompanyId(),    // 공급업체 ID
+                receiver.getCompanyId(),    // 수령업체 ID
+                supplier.getHubId(),        // 출발 허브 ID
+                receiver.getHubId(),        // 도착 허브 ID
+                command.getRequestNote(),
+                orderProducts,
+                deliveryId
+        );
 
         // 주문 저장
         orderRepository.save(order);
 
         // 허브 재고 차감 요청
-        hubCommandPort.decreaseStock(command.getProducts());
+        hubCommandPort.deductStocks(order.getDepartureHubId(), command.getProducts());
 
         // 배송 생성 요청
         CreateDeliveryCommand deliveryRequest = CreateDeliveryCommand.builder()
