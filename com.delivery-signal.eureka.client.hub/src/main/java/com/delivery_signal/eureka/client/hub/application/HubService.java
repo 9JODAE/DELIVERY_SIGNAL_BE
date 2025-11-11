@@ -29,7 +29,6 @@ import com.delivery_signal.eureka.client.hub.domain.mapper.StockSearchCondition;
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
 import com.delivery_signal.eureka.client.hub.domain.model.HubRoute;
 import com.delivery_signal.eureka.client.hub.domain.model.Stock;
-import com.delivery_signal.eureka.client.hub.domain.repository.DistributedLockManager;
 import com.delivery_signal.eureka.client.hub.domain.repository.StockReadRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubQueryRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRepository;
@@ -57,10 +56,6 @@ public class HubService {
 	private final HubRouteQueryRepository hubRouteQueryRepository;
 	private final StockQueryRepository stockQueryRepository;
 	private final StockReadRepository stockReadRepository;
-
-	private final DistributedLockManager distributedLockManager;
-
-	private static final String STOCK_LOCK_PREFIX = "stock:";
 
 	/**
 	 * 허브 생성
@@ -103,6 +98,15 @@ public class HubService {
 	public HubResult getHub(UUID hubId) {
 		Hub hub = getHubOrThrow(hubId);
 		return HubResult.from(hub);
+	}
+
+	/**
+	 * 허브 존재 여부 확인 (내부 API)
+	 * @param hubId 허브 아이디
+	 * @return 존재 여부
+	 */
+	public boolean existsHub(UUID hubId) {
+		return hubRepository.exists(hubId);
 	}
 
 	/**
@@ -250,7 +254,7 @@ public class HubService {
 	}
 
 	/**
-	 * 재고 수량 조회 (외부 서비스용)
+	 * 재고 수량 조회 (내부 API)
 	 * @param productIds 상품 아이디 List
 	 * @return Map<UUID, Integer> 상품 아이디별 수량 Map
 	 */

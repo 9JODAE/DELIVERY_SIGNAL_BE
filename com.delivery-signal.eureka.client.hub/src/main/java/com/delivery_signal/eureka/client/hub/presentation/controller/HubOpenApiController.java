@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,7 +35,7 @@ public class HubOpenApiController {
 	private final StockFacade stockFacade;
 
 	@PostMapping("/stocks")
-	Map<UUID, Integer> getStockQuantities(
+	public Map<UUID, Integer> getStockQuantities(
 		@Valid @RequestBody GetStockQuantitiesRequest request
 	) {
 		return hubService.getStockQuantities(request.productIds());
@@ -58,5 +59,10 @@ public class HubOpenApiController {
 		RestoreStockQuantityCommand command = RestoreStockQuantityCommand.of(hubId, request.items());
 		stockFacade.restoreStocks(command);
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("재고 복구가 완료되었습니다."));
+	}
+
+	@GetMapping("/hubs/{hubId}")
+	public boolean existsHub(@PathVariable UUID hubId) {
+		return hubService.existsHub(hubId);
 	}
 }
