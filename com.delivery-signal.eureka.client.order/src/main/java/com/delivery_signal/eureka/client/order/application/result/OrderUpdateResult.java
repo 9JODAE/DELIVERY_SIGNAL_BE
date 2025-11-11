@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.order.application.dto.response;
+package com.delivery_signal.eureka.client.order.application.result;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,9 +10,9 @@ import java.util.UUID;
 @Getter
 @Builder
 @AllArgsConstructor
-public class OrderCreateResponseDto {
+public class OrderUpdateResult {
     private UUID orderId;
-    private Long createBy;
-    private LocalDateTime createAt;
+    private Long updatedBy;
+    private LocalDateTime updatedAt;
     private String message;
 }

@@ -1,8 +1,10 @@
 package com.delivery_signal.eureka.client.order.presentation.internal.controller;
 
 import com.delivery_signal.eureka.client.order.application.service.internal.InternalOrderService;
-import com.delivery_signal.eureka.client.order.application.dto.response.OrderForDeliveryResponseDto;
+import com.delivery_signal.eureka.client.order.application.result.OrderForDeliveryResult;
+import com.delivery_signal.eureka.client.order.presentation.internal.dto.response.DeliveryCreateResponseDto;
 import com.delivery_signal.eureka.client.order.presentation.internal.dto.response.OrderPongResponseDto;
+import com.delivery_signal.eureka.client.order.presentation.internal.mapper.OrderDeliveryResponseMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -57,12 +59,11 @@ public class OrderInternalController {
                 **GET /api/v1/orders/external/{order-id}**
                 """)
     @GetMapping("/{order-id}")
-    public ResponseEntity<OrderForDeliveryResponseDto> getOrderForDelivery(@PathVariable("order-id") UUID orderId) {
+    public ResponseEntity<DeliveryCreateResponseDto> getOrderForDelivery(@PathVariable("order-id") UUID orderId) {
         log.info("배송 서비스에서 주문 조회 요청: {}", orderId);
 
-        OrderForDeliveryResponseDto response = internalOrderService.getOrderForDelivery(orderId); // Application Layer 호출
-
-        return ResponseEntity.ok(response);
+        OrderForDeliveryResult result = internalOrderService.getOrderForDelivery(orderId); // Application Layer 호출
+        DeliveryCreateResponseDto responseDto = OrderDeliveryResponseMapper.toResponse(result);
+        return ResponseEntity.ok(responseDto);
     }
-
 }

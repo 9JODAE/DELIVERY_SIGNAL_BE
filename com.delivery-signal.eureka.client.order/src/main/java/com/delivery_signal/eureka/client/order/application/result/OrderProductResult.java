@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.order.application.dto.response;
+package com.delivery_signal.eureka.client.order.application.result;
 
 import com.delivery_signal.eureka.client.order.domain.entity.OrderProduct;
 import lombok.AllArgsConstructor;
@@ -11,18 +11,23 @@ import java.util.UUID;
 @Getter
 @Builder
 @AllArgsConstructor
-public class OrderQueryResponseDto {
+public class OrderProductResult {
+
     private UUID productId;
+    private UUID orderId;
     private String productName;
     private BigDecimal productPriceAtOrder;
     private Integer quantity;
 
-    public static OrderQueryResponseDto from(OrderProduct orderProduct) {
-        return new OrderQueryResponseDto(
+    // Entity -> DTO 변환용 정적 팩토리 메서드
+    public static OrderProductResult from(OrderProduct orderProduct) {
+        return new OrderProductResult(
                 orderProduct.getProductId(),
+                orderProduct.getOrder().getId(),
                 orderProduct.getProductName(),
                 orderProduct.getProductPriceAtOrder(),
                 orderProduct.getTransferQuantity()
         );
     }
 }
+

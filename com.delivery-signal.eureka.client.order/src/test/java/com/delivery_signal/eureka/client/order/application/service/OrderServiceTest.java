@@ -2,7 +2,7 @@ package com.delivery_signal.eureka.client.order.application.service;
 
 import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
 import com.delivery_signal.eureka.client.order.application.command.OrderProductCommand;
-import com.delivery_signal.eureka.client.order.application.dto.response.OrderCreateResponseDto;
+import com.delivery_signal.eureka.client.order.application.result.OrderCreateResult;
 import com.delivery_signal.eureka.client.order.application.port.out.*;
 import com.delivery_signal.eureka.client.order.application.validator.OrderPermissionValidator;
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
@@ -24,149 +24,219 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 class OrderServiceTest {
 
     @InjectMocks
-    private OrderService orderService;
+    private OrderService orderService; // 실제 테스트 대상 서비스
 
+    // ==================== Mock Port/Service ====================
     @Mock
     private ProductQueryPort productQueryPort;
-
     @Mock
     private CompanyQueryPort companyQueryPort;
-
     @Mock
     private HubQueryPort hubQueryPort;
-
     @Mock
     private DeliveryCommandPort deliveryCommandPort;
-
     @Mock
     private HubCommandPort hubCommandPort;
-
     @Mock
     private OrderDomainService orderDomainService;
-
     @Mock
     private OrderRepository orderRepository;
-
     @Mock
-    private UserQueryPort userQueryPort; // 사용자 승인 검증
-
+    private UserQueryPort userQueryPort;
     @Mock
-    private OrderPermissionValidator orderPermissionValidator; // 권한 검증
+    private OrderPermissionValidator orderPermissionValidator;
 
+    // ==================== 테스트용 데이터 ====================
+    private Long userId;
+    private UUID supplierCompanyId;
+    private UUID receiverCompanyId;
+    private UUID supplierHubId;
+    private UUID receiverHubId;
+    private UUID productId;
+    private CreateOrderCommand command;
+
+    // ==================== 공통 초기화 ====================
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-    }
 
-    /**
-     * 주문 생성 정상 흐름 확인 + 권한 체크 포함
-     * - userId 기반 권한 검증 호출
-     * - UserQueryPort.isUserApproved 호출
-     * - 상품/업체/재고 조회, 도메인 주문 생성, 배송 생성 정상 동작
-     * - 기존 검증 호출 모두 유지
-     */
-    @Test
-    void createOrderAndSendDelivery_success_withPermissionCheck() {
-        // given
-        Long userId = 123L;
-        UUID supplierCompanyId = UUID.randomUUID();
-        UUID receiverCompanyId = UUID.randomUUID();
-        UUID productId = UUID.randomUUID();
-        UUID hubId = UUID.randomUUID();
+        // 테스트용 유저/업체/허브/상품 ID 생성
+        userId = 123L;
+        supplierCompanyId = UUID.randomUUID();
+        receiverCompanyId = UUID.randomUUID();
+        supplierHubId = UUID.randomUUID();
+        receiverHubId = UUID.randomUUID();
+        productId = UUID.randomUUID();
 
-        // 직접 Command 생성 (presentation 의존 제거)
-        CreateOrderCommand command = CreateOrderCommand.builder()
-                .userId(userId)
+        // 테스트용 CreateOrderCommand 생성
+        command = CreateOrderCommand.builder()
                 .supplierCompanyId(supplierCompanyId)
                 .receiverCompanyId(receiverCompanyId)
+                .userId(userId)
                 .requestNote("테스트 주문")
-                .products(List.of(
-                        OrderProductCommand.builder()
-                                .productId(productId)
-                                .quantity(3)
-                                .build()
-                ))
+                .products(List.of(new OrderProductCommand(productId, 3)))
                 .build();
 
-        // 권한 체크 mock
-        doNothing().when(orderPermissionValidator).validateCreate(userId);
+        // ==================== Mock 설정 ====================
 
-        // 유저 승인 여부 mock
+        // 1️⃣ 사용자 권한 및 승인 체크
+        doNothing().when(orderPermissionValidator).validateCreate(userId);
         when(userQueryPort.isUserApproved(userId)).thenReturn(true);
 
-        // 상품 조회 mock
-        when(productQueryPort.getProducts(anyList()))
-                .thenReturn(List.of(
-                        ProductInfo.builder()
-                                .productId(productId)
-                                .companyId(supplierCompanyId)
-                                .productName("테스트상품")
-                                .price(BigDecimal.valueOf(1000))
-                                .build()
-                ));
-
-        // 공급/수령 업체 조회 mock
+        // 2️⃣ 업체 정보 조회 mock
         when(companyQueryPort.getCompanyById(supplierCompanyId))
-                .thenReturn(new CompanyInfo(supplierCompanyId, hubId, "서울시 강남구"));
+                .thenReturn(new CompanyInfo(supplierCompanyId, supplierHubId, "서울시 강남구"));
         when(companyQueryPort.getCompanyById(receiverCompanyId))
-                .thenReturn(new CompanyInfo(receiverCompanyId, hubId, "서울시 송파구"));
+                .thenReturn(new CompanyInfo(receiverCompanyId, receiverHubId, "서울시 송파구"));
 
-        // 허브 재고 조회 mock
+        // 3️⃣ 상품 조회 mock
+        when(productQueryPort.getProducts(anyList()))
+                .thenReturn(List.of(ProductInfo.builder()
+                        .productId(productId)
+                        .companyId(supplierCompanyId)
+                        .productName("테스트상품")
+                        .price(BigDecimal.valueOf(1000))
+                        .build()));
+
+        // 4️⃣ 허브 재고 조회 mock
         when(hubQueryPort.getStockQuantities(anyList()))
                 .thenReturn(Map.of(productId, 100));
 
-        // 도메인 주문 생성 mock
-        when(orderDomainService.createOrder(any(), any(), any(), anyList(), any()))
-                .thenReturn(Order.builder()
-                        .supplierCompanyId(supplierCompanyId)
-                        .receiverCompanyId(receiverCompanyId)
-                        .orderProducts(List.of(
-                                OrderProduct.builder()
-                                        .productId(productId)
-                                        .productName("테스트상품")
-                                        .transferQuantity(3)
-                                        .build()
-                        ))
-                        .build()
-                );
+        // 5️⃣ 도메인 주문 생성 mock
+        // createOrder()는 7개의 인자를 받도록 변경됨
+        when(orderDomainService.createOrder(
+                any(UUID.class),    // supplierCompanyId
+                any(UUID.class),    // receiverCompanyId
+                any(UUID.class),    // departureHubId
+                any(UUID.class),    // arrivalHubId
+                anyString(),        // requestNote
+                anyList(),          // orderProducts
+                any(UUID.class)     // deliveryId
+        )).thenReturn(Order.builder()
+                .supplierCompanyId(supplierCompanyId)
+                .receiverCompanyId(receiverCompanyId)
+                .departureHubId(supplierHubId)
+                .arrivalHubId(receiverHubId)
+                .orderProducts(List.of(
+                        OrderProduct.builder()
+                                .productId(productId)
+                                .productName("테스트상품")
+                                .transferQuantity(3)
+                                .build()
+                ))
+                .build());
 
-        // 배송 생성 mock
+        // 6️⃣ 배송 생성 mock
         when(deliveryCommandPort.createDelivery(any()))
                 .thenReturn(DeliveryCreatedInfo.builder()
                         .message("배송 요청 완료")
                         .build());
+    }
 
-        // when
-        OrderCreateResponseDto response = orderService.createOrderAndSendDelivery(command);
+    // ==================== 테스트 ====================
 
-        // then
-        assertThat(response).isNotNull();
-        assertThat(response.getMessage()).isEqualTo("주문이 완료되었습니다.");
+    // 1️⃣ 권한 및 승인 검증
+    @Test
+    void validateUserPermissionAndApproval() {
+        orderService.createOrderAndSendDelivery(command);
 
-        // 권한 체크, 유저 승인 호출 확인
-        verify(orderPermissionValidator, times(1)).validateCreate(userId);
-        verify(userQueryPort, times(1)).isUserApproved(userId);
+        // 권한 검증 호출 확인
+        verify(orderPermissionValidator).validateCreate(userId);
 
-        // 기존 검증 호출 유지
+        // 사용자 승인 여부 확인
+        verify(userQueryPort).isUserApproved(userId);
+    }
 
-        // 상품 조회 호출 확인
-        verify(productQueryPort, times(1)).getProducts(anyList());
-        // 공급/수령 업체 조회 호출 확인
-        verify(companyQueryPort, times(2)).getCompanyById(any());
-        // 주문 저장 호출 확인
-        verify(orderRepository, times(1)).save(any());
-        // 배송 생성 호출 확인
-        verify(deliveryCommandPort, times(1)).createDelivery(any());
-        // 허브 재고 조회 호출 확인
-        verify(hubQueryPort, times(1)).getStockQuantities(anyList());
-        // 허브 재고 차감 호출 확인
-        verify(hubCommandPort, times(1)).decreaseStock(command.getProducts());
+    // 2️⃣ 상품 조회 및 재고 확인
+    @Test
+    void getProductsAndStockQuantities() {
+        orderService.createOrderAndSendDelivery(command);
+
+        // 상품 조회 확인
+        verify(productQueryPort).getProducts(anyList());
+
+        // 허브 재고 조회 확인
+        verify(hubQueryPort).getStockQuantities(anyList());
+    }
+
+    // 3️⃣ 업체 조회 및 허브 ID 추출
+    @Test
+    void getCompanyInfo_hubIdExtraction() {
+        orderService.createOrderAndSendDelivery(command);
+
+        verify(companyQueryPort).getCompanyById(supplierCompanyId);
+        verify(companyQueryPort).getCompanyById(receiverCompanyId);
+    }
+
+    // 4️⃣ 도메인 주문 생성 및 저장
+    @Test
+    void createOrderDomainEntity() {
+        orderService.createOrderAndSendDelivery(command);
+
+        verify(orderDomainService).createOrder(
+                any(UUID.class),
+                any(UUID.class),
+                any(UUID.class),
+                any(UUID.class),
+                anyString(),
+                anyList(),
+                any(UUID.class)
+        );
+
+        // 주문 저장 확인
+        verify(orderRepository).save(any());
+    }
+
+    // 5️⃣ 배송 생성 호출 및 메시지 검증
+    @Test
+    void createDeliveryCall() {
+        OrderCreateResult result = orderService.createOrderAndSendDelivery(command);
+
+        verify(deliveryCommandPort).createDelivery(any());
+
+        // 결과 메시지 확인
+        assertThat(result.getMessage()).isEqualTo("주문이 완료되었습니다.");
+    }
+
+    // 6️⃣ 허브 재고 차감 확인
+    @Test
+    void deductHubStock() {
+        // given: 업체 정보 재설정
+        when(companyQueryPort.getCompanyById(command.getSupplierCompanyId()))
+                .thenReturn(new CompanyInfo(command.getSupplierCompanyId(), supplierHubId, "서울시 강남구"));
+        when(companyQueryPort.getCompanyById(command.getReceiverCompanyId()))
+                .thenReturn(new CompanyInfo(command.getReceiverCompanyId(), receiverHubId, "서울시 송파구"));
+
+        // when: 도메인 주문 생성 mock
+        when(orderDomainService.createOrder(
+                any(UUID.class),
+                any(UUID.class),
+                any(UUID.class),
+                any(UUID.class),
+                anyString(),
+                anyList(),
+                any(UUID.class)
+        )).thenAnswer(invocation -> {
+            UUID deliveryId = invocation.getArgument(6); // 6번째 인자가 deliveryId
+            return Order.builder()
+                    .supplierCompanyId(command.getSupplierCompanyId())
+                    .receiverCompanyId(command.getReceiverCompanyId())
+                    .departureHubId(supplierHubId)
+                    .arrivalHubId(receiverHubId)
+                    .deliveryId(deliveryId)
+                    .orderProducts(List.of())
+                    .build();
+        });
+
+        // 실행
+        orderService.createOrderAndSendDelivery(command);
+
+        // then: 허브 재고 차감 호출 확인
+        verify(hubCommandPort).deductStocks(eq(supplierHubId), eq(command.getProducts()));
     }
 }

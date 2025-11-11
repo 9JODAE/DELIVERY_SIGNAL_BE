@@ -1,17 +1,17 @@
-package com.delivery_signal.eureka.client.order.application.dto.request;
+package com.delivery_signal.eureka.client.order.application.command;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-/**
- * Application 계층에서 사용되는 배송 생성 요청 DTO.
- * 인프라 계층의 DeliveryCreateRequestDto와 구분됨.
- */
 @Getter
 @Builder
-public class CreateDeliveryRequestDto {
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateDeliveryCommand {
     private UUID deliveryId;          // 주문에서 미리 생성한 UUID
     private UUID orderId;             // 주문 PK
     private UUID supplierCompanyId;   // 출발 업체 ID (공급자)

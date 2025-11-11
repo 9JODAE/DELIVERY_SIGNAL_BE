@@ -4,10 +4,10 @@ import com.delivery_signal.eureka.client.order.application.command.CreateOrderCo
 import com.delivery_signal.eureka.client.order.application.command.DeleteOrderCommand;
 import com.delivery_signal.eureka.client.order.application.command.OrderProductCommand;
 import com.delivery_signal.eureka.client.order.application.command.UpdateOrderCommand;
-import com.delivery_signal.eureka.client.order.application.dto.request.CreateDeliveryRequestDto;
-import com.delivery_signal.eureka.client.order.application.dto.response.*;
+import com.delivery_signal.eureka.client.order.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.order.application.mapper.OrderQueryMapper;
 import com.delivery_signal.eureka.client.order.application.port.out.*;
+import com.delivery_signal.eureka.client.order.application.result.*;
 import com.delivery_signal.eureka.client.order.application.validator.OrderPermissionValidator;
 import com.delivery_signal.eureka.client.order.common.NotFoundException;
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
@@ -71,7 +71,7 @@ public class OrderService {
      * @param command 입력된 주문 정보
      * @return 주문 결과
      */
-    public OrderCreateResponseDto createOrderAndSendDelivery(CreateOrderCommand command) {
+    public OrderCreateResult createOrderAndSendDelivery(CreateOrderCommand command) {
 
         // 로그인 및 최소 권한 체크
         orderPermissionValidator.validateCreate(command.getUserId());
@@ -116,7 +116,7 @@ public class OrderService {
         UUID deliveryId = UUID.randomUUID();
         List<OrderProduct> orderProducts = productInfos.stream()
                 .map(info -> {
-                    int quantity = command.getProducts().stream()
+                    Integer quantity = command.getProducts().stream()
                             .filter(p -> p.getProductId().equals(info.getProductId()))
                             .findFirst()
                             .map(OrderProductCommand::getQuantity)
@@ -132,16 +132,23 @@ public class OrderService {
 
         // 주문 생성 (도메인 로직)
         Order order = orderDomainService.createOrder(
-                supplier.getHubId(), receiver.getHubId(), command.getRequestNote(), orderProducts, deliveryId);
+                supplier.getCompanyId(),    // 공급업체 ID
+                receiver.getCompanyId(),    // 수령업체 ID
+                supplier.getHubId(),        // 출발 허브 ID
+                receiver.getHubId(),        // 도착 허브 ID
+                command.getRequestNote(),
+                orderProducts,
+                deliveryId
+        );
 
         // 주문 저장
         orderRepository.save(order);
 
         // 허브 재고 차감 요청
-        hubCommandPort.decreaseStock(command.getProducts());
+        hubCommandPort.deductStocks(order.getDepartureHubId(), command.getProducts());
 
         // 배송 생성 요청
-        CreateDeliveryRequestDto deliveryRequest = CreateDeliveryRequestDto.builder()
+        CreateDeliveryCommand deliveryRequest = CreateDeliveryCommand.builder()
                 .deliveryId(deliveryId)
                 .orderId(order.getId())
                 .supplierCompanyId(command.getSupplierCompanyId())
@@ -155,7 +162,7 @@ public class OrderService {
 
         log.info("주문 id: {}, 배송 요청 완료: {}", deliveryRequest.getOrderId(), deliveryInfo.getMessage());
 
-        return new OrderCreateResponseDto(
+        return new OrderCreateResult(
                 order.getId(),
                 order.getCreatedBy(),
                 order.getCreatedAt(),
@@ -170,7 +177,7 @@ public class OrderService {
      * @return
      */
     @Transactional(readOnly = true)
-    public OrderDetailResponseDto getOrderById(UUID orderId) {
+    public OrderDetailResult getOrderById(UUID orderId) {
         Order order = orderRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
         return orderQueryMapper.toDetailDto(order); // Application Layer 내 Mapper 사용
@@ -182,7 +189,7 @@ public class OrderService {
      * @return
      */
     @Transactional(readOnly = true)
-    public List<OrderListResponseDto> getAllOrders() {
+    public List<OrderListResult> getAllOrders() {
         List<Order> orders = orderRepository.findAllWithOrderProducts();
         return orderQueryMapper.toListDtos(orders);
     }
@@ -191,7 +198,7 @@ public class OrderService {
      * 허브별 주문 조회
      */
     @Transactional(readOnly = true)
-    public List<OrderListResponseDto> getOrdersByHubId(UUID hubId, Long userId) {
+    public List<OrderListResult> getOrdersByHubId(UUID hubId, Long userId) {
 
         // 1. 허브 존재 여부 확인
         if (!hubQueryPort.existsByHubId(hubId)) {
@@ -221,7 +228,7 @@ public class OrderService {
      * @param command
      * @return
      */
-    public OrderUpdateResponseDto updateOrder(UUID orderId, UpdateOrderCommand command) {
+    public OrderUpdateResult updateOrder(UUID orderId, UpdateOrderCommand command) {
         Order order = orderRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
@@ -233,7 +240,12 @@ public class OrderService {
                 .orElseThrow(() -> new OrderNotFoundException(command.getProductId()))
                 .updateQuantity(command.getTransferQuantity());
 
-        return OrderUpdateResponseDto.toResponse(order.getId(), order.getUpdatedBy());
+        // Service에서 DTO 만들지 않고 Result만 반환
+        return OrderUpdateResult.builder()
+                .orderId(order.getId())         // Response에 필요한 주문 아이디
+                .updatedBy(order.getUpdatedBy())    // 수정한 유저
+                .updatedAt(order.getUpdatedAt())
+                .build();
     }
 
     /**
@@ -242,7 +254,7 @@ public class OrderService {
      * @param command
      * @return
      */
-    public OrderDeleteResponseDto deleteOrder(DeleteOrderCommand command) {
+    public OrderDeleteResult deleteOrder(DeleteOrderCommand command) {
         Order order = orderRepository.findByOrderId(command.getOrderId())
                 .orElseThrow(() -> new OrderNotFoundException(command.getOrderId()));
 
@@ -255,6 +267,10 @@ public class OrderService {
         orderRepository.save(order);
         orderProductRepository.saveAll(orderProducts);
 
-        return OrderDeleteResponseDto.toResponse(order.getId(), order.getDeletedBy(), now);
+        return OrderDeleteResult.builder()
+                .orderId(order.getId())
+                .deletedBy(order.getDeletedBy())
+                .deletedAt(order.getDeletedAt())
+                .build();
     }
 }
