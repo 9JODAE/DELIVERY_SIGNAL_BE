@@ -2,6 +2,7 @@ package com.delivery_signal.eureka.client.user.application.service;
 
 import com.delivery_signal.eureka.client.user.application.dto.UserRoleType;
 import com.delivery_signal.eureka.client.user.application.port.out.OrderQueryPort;
+import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserAuthorizationResponse;
 import com.delivery_signal.eureka.client.user.presentation.mapper.UserMapper;
 import com.delivery_signal.eureka.client.user.application.exception.ErrorCode;
 import com.delivery_signal.eureka.client.user.application.exception.ServiceException;
@@ -21,10 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 @Service
@@ -62,13 +60,24 @@ public class UserService {
 
     // User 권한 검증
     @Transactional
-    public Boolean checkAuthorization(CheckUserRoleRequest requestDto) {
+    public GetUserAuthorizationResponse checkUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+        UserRoleType userRole = UserRoleType.from(user.getRole());
+        String organization = user.getOrganization();
+        UUID organizationId = user.getOrganizationId();
+        return new GetUserAuthorizationResponse(userId, userRole, organization, organizationId);
+    }
+
+
+    @Transactional
+    public Boolean checkUserRole(CheckUserRoleRequest requestDto) {
         User user = userRepository.findById(requestDto.userId()).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
         UserRoleType userRole = UserRoleType.from(user.getRole());
         UserRoleType userRoleType = requestDto.role();
 
         return userRole.equals(userRoleType);
     }
+
 
     // User 생성
     @Transactional

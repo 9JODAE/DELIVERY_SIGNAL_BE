@@ -9,7 +9,8 @@ public enum ErrorCode {
     // USER
     USER_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "U001", "사용자를 찾을 수 없습니다."),
     USER_USERNAME_DUPLICATED(HttpStatus.CONFLICT.value(), "U002", "이름은 중복될 수 없습니다"),
-    USER_AUTHORIZATION_FORBIDDEN(HttpStatus.FORBIDDEN.value(), "U003", "권한이 없습니다");
+    USER_AUTHORIZATION_FORBIDDEN(HttpStatus.FORBIDDEN.value(), "U003", "권한이 없습니다"),
+    USER_INVALID_USER_ID_FORMAT(HttpStatus.BAD_REQUEST.value(), "U004", "UUID 형식이 아닙니다");
     // AUTH
 
 

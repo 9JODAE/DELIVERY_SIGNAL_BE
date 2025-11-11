@@ -4,7 +4,7 @@ import com.delivery_signal.eureka.client.user.presentation.dto.request.CreateUse
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UpdateUserApprovalStatusRequest;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.UpdateUserRequest;
 import com.delivery_signal.eureka.client.user.presentation.dto.request.CheckUserRoleRequest;
-import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserAuthorizationResponse;
+import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserRoleResponse;
 import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserResponse;
 import com.delivery_signal.eureka.client.user.application.dto.ApprovalStatusType;
 import com.delivery_signal.eureka.client.user.application.dto.UserRoleType;
@@ -38,14 +38,13 @@ public class UserController {
     @GetMapping("/authorization")
     @Operation(summary="다른 애플리케이션의 인가 확인", description="인가를 확인합니다")
 //  UserController에서 구현 -> JwtAuthorizationFilter에서 구현 -> Gateway에서 구현됨
-    public ResponseEntity<ApiResponse<GetUserAuthorizationResponse>> confirmAuthorization(@RequestHeader("x-user-id") String x_user_id, @RequestBody CheckUserRoleRequest requestDto) {
+    public ResponseEntity<ApiResponse<GetUserRoleResponse>> confirmUserRole(@RequestHeader("x-user-id") String x_user_id, @RequestBody CheckUserRoleRequest requestDto) {
         // 로그인한 사용자의 권한 확인 아닌 요청 body의 사용자(userId)에 대한 권한 확인
-        Boolean check = userService.checkAuthorization(requestDto);
+        Boolean check = userService.checkUserRole(requestDto);
         if (!check) {
             return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.message("권한이 일치하지 않습니다"));
         }
-        String extraInfo = null;
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(new GetUserAuthorizationResponse(requestDto.userId(), requestDto.role(), extraInfo)));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(new GetUserRoleResponse(requestDto.userId(), requestDto.role(), null)));
 
     }
 
@@ -259,13 +258,13 @@ public class UserController {
 
     // Master 여부 확인
     private Boolean isMaster(Long userId) {
-        return userService.checkAuthorization(new CheckUserRoleRequest(userId, UserRoleType.MASTER));
+        return userService.checkUserRole(new CheckUserRoleRequest(userId, UserRoleType.MASTER));
 
     }
 
     // Hub Manager 여부 확인
     private Boolean isHubManager(Long userId) {
-        return userService.checkAuthorization(new CheckUserRoleRequest(userId, UserRoleType.HUB_MANAGER));
+        return userService.checkUserRole(new CheckUserRoleRequest(userId, UserRoleType.HUB_MANAGER));
 
     }
 

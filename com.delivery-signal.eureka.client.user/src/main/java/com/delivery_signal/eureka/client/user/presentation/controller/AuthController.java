@@ -1,5 +1,9 @@
 package com.delivery_signal.eureka.client.user.presentation.controller;
 
+import com.delivery_signal.eureka.client.user.application.exception.ErrorCode;
+import com.delivery_signal.eureka.client.user.application.exception.ServiceException;
+import com.delivery_signal.eureka.client.user.presentation.dto.request.CheckUserRoleRequest;
+import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserAuthorizationResponse;
 import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserResponse;
 import com.delivery_signal.eureka.client.user.application.service.UserService;
 import com.delivery_signal.eureka.client.user.presentation.dto.ApiResponse;
@@ -11,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -35,4 +41,14 @@ public class AuthController {
     @Operation(summary="로그인", description="사용자가 로그인합니다")
     */
 //      JwtAuthenticationFilter에서 진행
+
+
+    @GetMapping("/authorization")
+    @Operation(summary="다른 애플리케이션의 인가 확인", description="인가를 확인합니다")
+    public ResponseEntity<ApiResponse<GetUserAuthorizationResponse>> confirmUser(@RequestHeader("x-user-id") String x_user_id) {
+        Long userId = Long.valueOf(x_user_id);
+        GetUserAuthorizationResponse authorizationInfo = userService.checkUser(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(authorizationInfo));
+
+    }
 }
