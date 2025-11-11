@@ -103,7 +103,7 @@ public class DeliveryController {
     }
 
     /**
-     * 배송 상태 및 경로 기록 상태 업데이트
+     * 배송 상태 업데이트
      */
     @PatchMapping("/{delivery-id}/status")
     public ResponseEntity<ApiResponse<DeliveryQueryResponse>> updateDeliveryStatus(
@@ -130,20 +130,6 @@ public class DeliveryController {
     ) {
         deliveryService.softDeleteDelivery(deliveryId, currUserId, role);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
-    }
-
-    /**
-     * 특정 배송의 경로 이력 조회
-     */
-    @GetMapping("/{delivery-id}/routes")
-    public ResponseEntity<ApiResponse<List<RouteRecordQueryResponse>>> getDeliveryRoutes(
-        @PathVariable("delivery-id") UUID deliveryId,
-        @RequestHeader(USER_ID_HEADER) Long currUserId,
-        @RequestHeader(USER_ROLE_HEADER) String role
-    ) {
-        List<RouteRecordQueryResponse> response = deliveryService.getDeliveryRoutes(deliveryId,
-            currUserId, role);
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
     }
 
     /**
