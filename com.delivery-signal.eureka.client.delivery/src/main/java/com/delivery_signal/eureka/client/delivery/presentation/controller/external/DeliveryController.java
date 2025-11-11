@@ -119,8 +119,6 @@ public class DeliveryController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
     }
 
-
-
     /**
      * 배송 삭제(논리적)
      */
@@ -168,6 +166,16 @@ public class DeliveryController {
         SearchDeliveryCommand command = SearchDeliveryCommand.of(status, hubId, companyId, deliveryManagerId);
         PagedDeliveryResponse response = deliveryService.searchDeliveries(currUserId, role,
             command, query);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+    }
+
+    @GetMapping("{delivery-id}")
+    public ResponseEntity<ApiResponse<DeliveryQueryResponse>> getDeliveryInfo(
+        @PathVariable("delivery-id") UUID deliveryId,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        DeliveryQueryResponse response = deliveryService.getDeliveryInfo(deliveryId, currUserId, role);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
     }
 }

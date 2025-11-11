@@ -288,7 +288,6 @@ public class DeliveryService {
         delivery.softDelete(currUserId);
     }
 
-
     /**
      * 배송 경로 이력 조회
      * 권한: 모든 로그인 사용자 (단, 허브 관리자와 배송 담당자는 자신이 담당하는 허브/배송만)
@@ -308,6 +307,20 @@ public class DeliveryService {
         return records.stream()
             .map(deliveryDomainMapper::toResponse)
             .collect(Collectors.toList());
+    }
+
+    /**
+     * 특정 배송 정보 조회
+     */
+    @Transactional(readOnly = true)
+    public DeliveryQueryResponse getDeliveryInfo(UUID deliveryId, Long currUserId, String role) {
+        Delivery delivery = getDelivery(deliveryId);
+
+        if (!hasReadPermission(delivery, currUserId, UserRole.valueOf(role))) {
+            throw new RuntimeException("해당 배송 정보를 조회할 권한이 없습니다.");
+        }
+
+        return deliveryDomainMapper.toResponse(delivery);
     }
 
     // TODO: Hub 배송 담당자를 할당하는 가상의 로직
