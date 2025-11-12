@@ -1,6 +1,6 @@
-# DELIVERY_SIGNAL
+# 🚚 DELIVERY_SIGNAL Logistics
 
-> 프로젝트 간략 설명
+> MSA 기반 국내 B2B 물류 관리 및 배송 시스템
 
 
 
