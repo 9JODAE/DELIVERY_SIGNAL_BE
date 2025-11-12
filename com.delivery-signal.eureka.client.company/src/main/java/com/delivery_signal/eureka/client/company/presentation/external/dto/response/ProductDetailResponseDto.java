@@ -22,9 +22,6 @@ public class ProductDetailResponseDto {
     @Schema(description = "상품명")
     private String name;
 
-    @Schema(description = "상품 설명")
-    private String description;
-
     @Schema(description = "상품 소속 업체 ID")
     private UUID companyId;
 
@@ -34,6 +31,4 @@ public class ProductDetailResponseDto {
     @Schema(description = "생성 시각")
     private LocalDateTime createdAt;
 
-    @Schema(description = "수정 시각")
-    private LocalDateTime updatedAt;
 }

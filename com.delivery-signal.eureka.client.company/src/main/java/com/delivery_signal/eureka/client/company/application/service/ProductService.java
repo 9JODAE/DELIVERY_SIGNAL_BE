@@ -29,9 +29,6 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    // 외부 MSA 포트
-    private final CompanyQueryPort companyQueryPort;
-
     private final CompanyService companyService;
 
     // 도메인 / 검증 / 매퍼
