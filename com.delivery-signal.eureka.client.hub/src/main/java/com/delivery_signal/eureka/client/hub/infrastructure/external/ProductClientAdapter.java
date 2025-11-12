@@ -6,6 +6,7 @@ import java.util.UUID;
 import com.delivery_signal.eureka.client.hub.application.dto.external.ProductInfo;
 import com.delivery_signal.eureka.client.hub.application.port.ProductClient;
 import com.delivery_signal.eureka.client.hub.common.annotation.ExternalAdapter;
+import com.delivery_signal.eureka.client.hub.common.api.ApiResponse;
 import com.delivery_signal.eureka.client.hub.infrastructure.external.dto.ProductDTO;
 import com.delivery_signal.eureka.client.hub.infrastructure.external.mapper.ProductMapper;
 
@@ -20,12 +21,13 @@ public class ProductClientAdapter implements ProductClient {
 
 	@Override
 	public boolean exists(UUID productId) {
-		return productFeignClient.exists(productId);
+		ApiResponse<Boolean> response = productFeignClient.exists(productId);
+		return response.data();
 	}
 
 	@Override
 	public Map<UUID, ProductInfo> searchProducts(UUID hubId, String productName) {
-		Map<UUID, ProductDTO> productDTOs = productFeignClient.searchProducts(hubId, productName);
-		return productMapper.toProductInfoMap(productDTOs);
+		ApiResponse<Map<UUID, ProductDTO>> response = productFeignClient.searchProducts(hubId, productName);
+		return productMapper.toProductInfoMap(response.data());
 	}
 }
