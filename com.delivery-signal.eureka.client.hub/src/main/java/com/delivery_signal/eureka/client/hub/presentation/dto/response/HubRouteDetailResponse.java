@@ -2,7 +2,7 @@ package com.delivery_signal.eureka.client.hub.presentation.dto.response;
 
 import java.util.UUID;
 
-import com.delivery_signal.eureka.client.hub.application.dto.HubRouteDetailResult;
+import com.delivery_signal.eureka.client.hub.application.dto.HubRouteResult;
 
 /**
  * 허브 이동정보 상세 응답 DTO
@@ -16,7 +16,7 @@ public record HubRouteDetailResponse(
 	double distance,
 	int transitTime
 ) {
-	public static HubRouteDetailResponse from(HubRouteDetailResult result) {
+	public static HubRouteDetailResponse from(HubRouteResult result) {
 		return new HubRouteDetailResponse(
 			result.hubRouteId(),
 			result.departureHubId(),
