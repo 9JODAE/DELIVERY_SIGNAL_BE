@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("open-api/v1/externals/slacks")
+@RequestMapping("/api/v1/externals/slacks")
 @RequiredArgsConstructor
 public class SlackRecordControllerV1 {
 
@@ -31,6 +31,7 @@ public class SlackRecordControllerV1 {
     public ResponseEntity<CommonApiResponse<CreateSlackRecordResponse>> createSlackRecord(
             @RequestBody CreateSlackRecordRequest request
             ) {
+
         CreateSlackRecordResponse response = CreateSlackRecordResponse.from(
                 serviceV1.createSlackRecord(request.getRecipientId(),request.getMessage())
         );
@@ -39,10 +40,11 @@ public class SlackRecordControllerV1 {
 
     @GetMapping("/{id}")
     public ResponseEntity<CommonApiResponse<SlackRecordResponse>> getSlackRecord(
-            @PathVariable UUID id
+            @PathVariable UUID id,
+            @RequestHeader("x-user-id") Long userId
             ){
         SlackRecordResponse response = SlackRecordResponse.from(
-                serviceV1.getSlackRecord(id)
+                serviceV1.getSlackRecord(id,userId)
         );
         return CommonApiResponse.ok(response);
     }

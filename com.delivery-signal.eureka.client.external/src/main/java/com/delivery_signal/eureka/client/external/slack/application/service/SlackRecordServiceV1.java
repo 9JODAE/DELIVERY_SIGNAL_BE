@@ -5,6 +5,7 @@ import com.delivery_signal.eureka.client.external.slack.application.dto.SlackRec
 import com.delivery_signal.eureka.client.external.slack.application.dto.SlackRecordDto;
 import com.delivery_signal.eureka.client.external.slack.application.dto.SlackRecordUpdateDto;
 import com.delivery_signal.eureka.client.external.slack.application.dto.request.UpdateSlackRecordRequestDto;
+import com.delivery_signal.eureka.client.external.slack.application.port.UserConnector;
 import com.delivery_signal.eureka.client.external.slack.domain.model.SlackRecord;
 import com.delivery_signal.eureka.client.external.slack.domain.repository.SlackRecordRepository;
 import jakarta.persistence.EntityManager;
@@ -26,6 +27,7 @@ import java.util.UUID;
 public class SlackRecordServiceV1 {
 
     private final SlackRecordRepository repository;
+    private final UserConnector userConnector;
     @PersistenceContext
     private EntityManager em;
 
@@ -46,8 +48,10 @@ public class SlackRecordServiceV1 {
      * @param slackRecordId 식별자
      * @return {@link SlackRecordDto}
      */
-    public SlackRecordDto getSlackRecord(UUID slackRecordId) {
+    public SlackRecordDto getSlackRecord(UUID slackRecordId, Long userId) {
         SlackRecord slackRecord = getRecord(slackRecordId);
+        String role = userConnector.getUserAuthorizationInfo(userId).getRole();
+        System.out.println(role);
         return SlackRecordDto.from(slackRecord);
     }
 
