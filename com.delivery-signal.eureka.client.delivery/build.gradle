@@ -71,6 +71,10 @@ dependencies {
 	implementation("io.github.openfeign.querydsl:querydsl-core:${queryDslVersion}")
 	implementation("io.github.openfeign.querydsl:querydsl-jpa:$queryDslVersion")
 	annotationProcessor("io.github.openfeign.querydsl:querydsl-apt:$queryDslVersion:jpa")
+
+    // Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13'
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
 }
 
 dependencyManagement {
