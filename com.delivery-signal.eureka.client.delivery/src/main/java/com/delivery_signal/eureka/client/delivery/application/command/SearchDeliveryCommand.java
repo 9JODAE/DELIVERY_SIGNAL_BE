@@ -12,6 +12,9 @@ public record SearchDeliveryCommand(
 
     public static SearchDeliveryCommand of(String status, UUID hubId, UUID companyId,
         Long deliveryManagerId) {
+        if (status == null) {
+            return new SearchDeliveryCommand(hubId, companyId, deliveryManagerId, null);
+        }
         return new SearchDeliveryCommand(hubId, companyId, deliveryManagerId, DeliveryStatus.valueOf(status));
     }
 }
