@@ -2,7 +2,7 @@ package com.delivery_signal.eureka.client.order.infrastructure.adapter.out;
 
 import com.delivery_signal.eureka.client.order.application.port.out.ProductQueryPort;
 import com.delivery_signal.eureka.client.order.domain.vo.product.ProductInfo;
-import com.delivery_signal.eureka.client.order.infrastructure.client.product.ProductClient;
+import com.delivery_signal.eureka.client.order.infrastructure.client.company.CompanyClient;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -11,14 +11,14 @@ import java.util.UUID;
 @Component
 public class ProductQueryAdapter implements ProductQueryPort {
 
-    private final ProductClient productClient;
+    private final CompanyClient companyClient;
 
-    public ProductQueryAdapter(ProductClient productClient) {
-        this.productClient = productClient;
+    public ProductQueryAdapter(CompanyClient companyClient) {
+        this.companyClient = companyClient;
     }
 
     @Override
     public List<ProductInfo> getProducts(List<UUID> productIds) {
-        return productClient.getProducts(productIds);
+        return companyClient.getProducts(productIds);
     }
 }

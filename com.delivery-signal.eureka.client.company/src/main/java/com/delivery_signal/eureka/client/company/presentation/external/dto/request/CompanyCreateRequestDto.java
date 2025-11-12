@@ -1,6 +1,6 @@
 package com.delivery_signal.eureka.client.company.presentation.external.dto.request;
 
-import com.delivery_signal.eureka.client.company.domain.entity.CompanyType;
+import com.delivery_signal.eureka.client.company.presentation.external.dto.CompanyTypeDto;
 import lombok.*;
 
 import java.util.UUID;
@@ -13,7 +13,7 @@ import java.util.UUID;
 public class CompanyCreateRequestDto {
     private UUID hubId;
     private String name;
-    private CompanyType type;
+    private CompanyTypeDto type;
     private String address;
 }
 

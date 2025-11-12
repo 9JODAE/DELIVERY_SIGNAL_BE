@@ -3,13 +3,15 @@ package com.delivery_signal.eureka.client.company.presentation.external.mapper.r
 import com.delivery_signal.eureka.client.company.application.result.*;
 import com.delivery_signal.eureka.client.company.presentation.external.dto.response.*;
 
+import static com.delivery_signal.eureka.client.company.common.CompanyTypeConverter.toDto;
+
 public class CompanyResponseMapper {
 
     public static CompanyCreateResponseDto toCreateResponse(CompanyCreateResult result) {
         return CompanyCreateResponseDto.builder()
                 .companyId(result.getCompanyId())
                 .companyName(result.getCompanyName())
-                .type(result.getType())
+                .type(toDto(result.getType()))
                 .address(result.getAddress())
                 .hubId(result.getHubId())
                 .createdAt(result.getCreatedAt())
@@ -20,7 +22,7 @@ public class CompanyResponseMapper {
         return CompanyDetailResponseDto.builder()
                 .companyId(result.getCompanyId())
                 .name(result.getCompanyName())
-                .type(result.getType())
+                .type(toDto(result.getType()))
                 .address(result.getAddress())
                 .hubId(result.getHubId())
                 .createdAt(result.getCreatedAt())
@@ -32,7 +34,7 @@ public class CompanyResponseMapper {
         return CompanyListResponseDto.builder()
                 .companyId(result.getCompanyId())
                 .companyName(result.getCompanyName())
-                .type(result.getType())
+                .type(toDto(result.getType()))
                 .hubId(result.getHubId())
                 .build();
     }
@@ -41,7 +43,7 @@ public class CompanyResponseMapper {
         return CompanyUpdateResponseDto.builder()
                 .companyId(result.getCompanyId())
                 .companyName(result.getCompanyName())
-                .type(result.getType())
+                .type(toDto(result.getType()))
                 .address(result.getAddress())
                 .updatedAt(result.getUpdatedAt())
                 .build();

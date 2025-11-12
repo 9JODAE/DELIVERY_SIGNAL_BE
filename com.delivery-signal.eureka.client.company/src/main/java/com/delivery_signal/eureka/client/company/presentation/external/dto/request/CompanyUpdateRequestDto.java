@@ -1,6 +1,6 @@
 package com.delivery_signal.eureka.client.company.presentation.external.dto.request;
 
-import com.delivery_signal.eureka.client.company.domain.entity.CompanyType;
+import com.delivery_signal.eureka.client.company.presentation.external.dto.CompanyTypeDto;
 import lombok.*;
 
 @Getter
@@ -10,6 +10,6 @@ import lombok.*;
 @Builder
 public class CompanyUpdateRequestDto {
     private String companyName;
-    private CompanyType type;
+    private CompanyTypeDto type;
     private String address;
 }

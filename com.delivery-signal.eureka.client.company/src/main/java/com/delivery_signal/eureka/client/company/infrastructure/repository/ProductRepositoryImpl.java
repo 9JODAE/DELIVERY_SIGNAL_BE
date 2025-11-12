@@ -1,7 +1,6 @@
 package com.delivery_signal.eureka.client.company.infrastructure.repository;
 
 import com.delivery_signal.eureka.client.company.domain.entity.Product;
-import com.delivery_signal.eureka.client.company.domain.entity.QProduct;
 import com.delivery_signal.eureka.client.company.domain.repository.ProductRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
