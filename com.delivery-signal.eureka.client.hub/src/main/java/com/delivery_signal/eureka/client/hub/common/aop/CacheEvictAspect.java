@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.hub.infrastructure.aop;
+package com.delivery_signal.eureka.client.hub.common.aop;
 
 import java.lang.reflect.Method;
 import java.util.Set;
@@ -15,7 +15,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
-import com.delivery_signal.eureka.client.hub.infrastructure.annotation.CacheEvict;
+import com.delivery_signal.eureka.client.hub.common.annotation.CacheEvict;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public class CacheEvictAspect {
 	private final ExpressionParser parser = new SpelExpressionParser();
 	private final DefaultParameterNameDiscoverer nameDiscoverer = new DefaultParameterNameDiscoverer();
 
-	@Around("@annotation(com.delivery_signal.eureka.client.hub.infrastructure.annotation.CacheEvict)")
+	@Around("@annotation(com.delivery_signal.eureka.client.hub.common.annotation.CacheEvict)")
 	public Object handleCacheEviction(ProceedingJoinPoint joinPoint) throws Throwable {
 		MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 		Method method = signature.getMethod();

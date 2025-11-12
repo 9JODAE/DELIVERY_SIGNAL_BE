@@ -11,7 +11,7 @@ import com.delivery_signal.eureka.client.hub.application.dto.HubRouteResult;
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
 import com.delivery_signal.eureka.client.hub.domain.model.HubRoute;
 import com.delivery_signal.eureka.client.hub.domain.service.HubPathService;
-import com.delivery_signal.eureka.client.hub.infrastructure.annotation.Cacheable;
+import com.delivery_signal.eureka.client.hub.common.annotation.Cacheable;
 
 import lombok.RequiredArgsConstructor;
 

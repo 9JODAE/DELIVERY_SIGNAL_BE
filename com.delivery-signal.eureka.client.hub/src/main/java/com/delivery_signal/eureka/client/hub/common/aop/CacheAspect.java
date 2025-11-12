@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.hub.infrastructure.aop;
+package com.delivery_signal.eureka.client.hub.common.aop;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -16,7 +16,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
-import com.delivery_signal.eureka.client.hub.infrastructure.annotation.Cacheable;
+import com.delivery_signal.eureka.client.hub.common.annotation.Cacheable;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,7 +36,7 @@ public class CacheAspect {
 	private final ExpressionParser parser = new SpelExpressionParser();
 	private final DefaultParameterNameDiscoverer nameDiscoverer = new DefaultParameterNameDiscoverer();
 
-	@Around("@annotation(com.delivery_signal.eureka.client.hub.infrastructure.annotation.Cacheable)")
+	@Around("@annotation(com.delivery_signal.eureka.client.hub.common.annotation.Cacheable)")
 	public Object handleCache(ProceedingJoinPoint joinPoint) throws Throwable {
 		MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 		Method method = signature.getMethod();

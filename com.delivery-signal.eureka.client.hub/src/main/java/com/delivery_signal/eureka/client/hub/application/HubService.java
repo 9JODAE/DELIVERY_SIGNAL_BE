@@ -42,7 +42,7 @@ import com.delivery_signal.eureka.client.hub.domain.vo.Duration;
 import com.delivery_signal.eureka.client.hub.domain.mapper.HubRouteSearchCondition;
 import com.delivery_signal.eureka.client.hub.domain.mapper.HubSearchCondition;
 import com.delivery_signal.eureka.client.hub.domain.vo.ProductId;
-import com.delivery_signal.eureka.client.hub.infrastructure.annotation.CacheEvict;
+import com.delivery_signal.eureka.client.hub.common.annotation.CacheEvict;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
