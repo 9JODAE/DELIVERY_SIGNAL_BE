@@ -3,7 +3,6 @@ package com.delivery_signal.eureka.client.user.application.service;
 import com.delivery_signal.eureka.client.user.application.port.out.OrderQueryPort;
 import com.delivery_signal.eureka.client.user.application.mapper.UserMapper;
 import com.delivery_signal.eureka.client.user.application.exception.ErrorCode;
-import com.delivery_signal.eureka.client.user.application.exception.ServiceException;
 import com.delivery_signal.eureka.client.user.application.dto.UserRoleType;
 import com.delivery_signal.eureka.client.user.application.dto.response.GetUserAuthorizationResponse;
 import com.delivery_signal.eureka.client.user.application.dto.request.CreateUserRequest;
@@ -17,9 +16,9 @@ import com.delivery_signal.eureka.client.user.domain.entity.User;
 import com.delivery_signal.eureka.client.user.domain.repository.UserRepository;
 import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -33,8 +32,8 @@ public class UserService {
     private final OrderQueryPort orderQueryPort;
 
     // MASTER_TOKEN
-    @Value("${master.token}")
-    private String MASTER_TOKEN;
+//    @Value("${master.token}")
+    private String MASTER_TOKEN = null;
 
 
     // Feign Client
@@ -61,17 +60,21 @@ public class UserService {
     // User 권한 검증
     @Transactional
     public GetUserAuthorizationResponse checkUser(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException());
+        if (user.isDeleted()) {
+            throw new EntityNotFoundException("사용자가 존재하지 않습니다");
+        }
         UserRoleType userRole = UserRoleType.from(user.getRole());
         String organization = user.getOrganization();
         UUID organizationId = user.getOrganizationId();
+
         return new GetUserAuthorizationResponse(userId, userRole, organization, organizationId);
     }
 
 
     @Transactional
     public Boolean checkUserRole(CheckUserRoleRequest requestDto) {
-        User user = userRepository.findById(requestDto.userId()).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(requestDto.userId()).orElseThrow(() -> new EntityNotFoundException());
         UserRoleType userRole = UserRoleType.from(user.getRole());
         UserRoleType userRoleType = requestDto.role();
 
@@ -107,10 +110,10 @@ public class UserService {
     // 특정 User 조회
     @Transactional
     public GetUserResponse getUser(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException());
 
         if (user.isDeleted()) {
-            return null;
+            throw new EntityNotFoundException();
         }
 
         return userMapper.from(user);
@@ -144,9 +147,6 @@ public class UserService {
                     .toList()
                     .forEach(user -> addIfNotPresented(user, presented, responseDtos));
         }
-
-
-
         return responseDtos;
     }
 
@@ -154,10 +154,10 @@ public class UserService {
     @Transactional
     public GetUserResponse updateApprovalStatus(Long userId, UpdateUserApprovalStatusRequest requestDto) {
 
-        User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException());
 
         if (user.isDeleted()) {
-            return null;
+            throw new EntityNotFoundException();
         }
 
         ApprovalStatus status = requestDto.approvalStatus();
@@ -169,10 +169,10 @@ public class UserService {
 
     @Transactional
     public GetUserResponse updateUser(Long userId, UpdateUserRequest requestDto) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException());
 
         if (user.isDeleted()) {
-            return null;
+            throw new EntityNotFoundException();
         }
 
         if (requestDto.username() != null && !requestDto.username().isBlank()) {
@@ -191,14 +191,18 @@ public class UserService {
             user.updateOrganization(requestDto.organization());
         }
 
-//        if (requestDto.role() != null) { user.updateRole(requestDto.role()); }
+        if (requestDto.organizationId() != null) {
+            user.updateOrganizationId(requestDto.organizationId());
+        }
+
+        if (requestDto.role() != null) { user.updateUserRole(requestDto.role()); }
 
         return userMapper.from(user);
     }
 
     @Transactional
     public Boolean softDeleteUser(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException());
 
         if (!user.isDeleted()) {
 //            userRepository.deleteById(userId); 대체
@@ -206,7 +210,7 @@ public class UserService {
             return true;
         }
 
-        return false;
+        throw new EntityNotFoundException();
     }
 
 
