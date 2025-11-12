@@ -38,6 +38,8 @@ internal:
     url: http://localhost:19093
   user:
     url: http://localhost:19092
+  external:
+    url: http://localhost:19097
 
 logging:
   level:
