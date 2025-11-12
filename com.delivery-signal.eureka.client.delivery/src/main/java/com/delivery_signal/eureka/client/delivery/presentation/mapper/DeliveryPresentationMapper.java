@@ -1,7 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.presentation.mapper;
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
-import com.delivery_signal.eureka.client.delivery.application.command.RouteSegmentCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryInfoCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeliveryStatusCommand;
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateRouteRecordCommand;
@@ -23,9 +22,6 @@ public class DeliveryPresentationMapper {
             .status(request.status())
             .departureHubId(request.departureHubId())
             .destinationHubId(request.destinationHubId())
-            .routes(request.routes() != null ?
-                request.routes().stream().map(this::toRouteSegmentCommand).toList() :
-                null)
             .address(request.address())
             .recipient(request.recipient())
             .recipientSlackId(request.recipientSlackId())
@@ -56,16 +52,6 @@ public class DeliveryPresentationMapper {
             .newStatus(request.newStatus())
             .actualDistance(request.actualDistance())
             .actualTime(request.actualTime())
-            .build();
-    }
-
-    private RouteSegmentCommand toRouteSegmentCommand(DeliveryCreateRequest.RouteSegmentDto dto) {
-        return RouteSegmentCommand.builder()
-            .sequence(dto.sequence())
-            .departureHubId(dto.departureHubId())
-            .destinationHubId(dto.destinationHubId())
-            .estDistance(dto.estDistance())
-            .estTime(dto.estTime())
             .build();
     }
 }

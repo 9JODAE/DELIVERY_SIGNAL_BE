@@ -7,6 +7,7 @@ import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeli
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateRouteRecordCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
+import com.delivery_signal.eureka.client.delivery.application.port.HubPort;
 import com.delivery_signal.eureka.client.delivery.domain.vo.DeliverySearchCondition;
 import com.delivery_signal.eureka.client.delivery.application.dto.RouteRecordQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.mapper.DeliveryDomainMapper;
@@ -20,6 +21,7 @@ import com.delivery_signal.eureka.client.delivery.common.UserRole;
 import com.delivery_signal.eureka.client.delivery.domain.entity.Delivery;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRepository;
 import com.delivery_signal.eureka.client.delivery.domain.vo.HubIdentifier;
+import com.delivery_signal.eureka.client.delivery.domain.vo.HubRouteInfo;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -43,16 +45,19 @@ public class DeliveryService {
     private final DeliveryQueryRepository deliveryQueryRepository;
     private final DeliveryDomainMapper deliveryDomainMapper;
     private final DeliveryPermissionValidator permissionValidator;
+    private final HubPort hubPort;
 
     public DeliveryService(DeliveryRepository deliveryRepository,
         DeliveryQueryRepository deliveryQueryRepository,
         DeliveryRouteRecordsRepository deliveryRouteRecordsRepository,
-        DeliveryDomainMapper deliveryDomainMapper, DeliveryPermissionValidator permissionValidator) {
+        DeliveryDomainMapper deliveryDomainMapper, DeliveryPermissionValidator permissionValidator,
+        HubPort hubPort) {
         this.deliveryRepository = deliveryRepository;
         this.deliveryRouteRecordsRepository = deliveryRouteRecordsRepository;
         this.deliveryQueryRepository = deliveryQueryRepository;
         this.deliveryDomainMapper = deliveryDomainMapper;
         this.permissionValidator = permissionValidator;
+        this.hubPort = hubPort;
     }
 
     /**
@@ -80,19 +85,25 @@ public class DeliveryService {
         );
         Delivery savedDelivery = deliveryRepository.save(delivery);
 
-        // 배송(허브 이동) 경로 기록 엔티티 목록 생성 및 저장
         // TODO: 배송 담당자 할당 로직 수정 필요
         Long initialHubManagerId = assignInitialHubManager();
 
-        List<DeliveryRouteRecords> routeRecords = command.routes().stream()
+        // 배송(허브 이동) 경로 요청 생성 및 저장
+        List<HubRouteInfo> hubRouteInfos = hubPort.searchRoutes(
+            HubIdentifier.of(command.departureHubId()), HubIdentifier.of(command.destinationHubId()));
+
+        if (hubRouteInfos.isEmpty()) {
+            throw new IllegalStateException("출발지(" + command.departureHubId() + ")에서 목적지(" + command.destinationHubId() + ")까지의 배송 경로를 찾을 수 없습니다.");
+        }
+        List<DeliveryRouteRecords> routeRecords = hubRouteInfos.stream()
             .map(segment ->
                 DeliveryRouteRecords.initialCreate(
                     delivery,
-                    segment.sequence(),
+                    0, // 추후 수정 예정
                     segment.departureHubId(),
-                    segment.destinationHubId(),
-                    segment.estDistance(),
-                    segment.estTime(),
+                    segment.arrivalHubId(),
+                    segment.distance(),
+                    segment.transitTime(),
                     initialHubManagerId,
                     creatorId
                 ))
