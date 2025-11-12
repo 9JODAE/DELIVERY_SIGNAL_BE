@@ -182,11 +182,11 @@ public class DeliveryPermissionValidator {
             return originalCondition;
         }
 
-        // TODO: 허브 관리자는 delivery의 fromHubId/toHubId 중 하나를 관리하는지 확인 (허브 FeignClient 필요)
         if (role.equals(UserRole.HUB_MANAGER)) {
-            // return hubService.isManagingHub(currUserId, delivery.getFromHubId())
-            //         || hubService.isManagingHub(currUserId, delivery.getToHubId());
-            return originalCondition; // 임시 허용
+            if (!validateHubExistence(HubIdentifier.of(originalCondition.hubId()), currUserId, authorizedUser.role())) {
+                throw new IllegalArgumentException("허브 ID가 유효하지 않습니다.");
+            }
+            return originalCondition;
         }
 
         // 배송 담당자: 본인 담당 배송만 검색 가능하도록 조건 강제
