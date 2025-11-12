@@ -33,5 +33,5 @@ service:
       expiration: 7d # 일주일
 
 
-master:
-  token: "AAABnvxRVklrnYxKZ0aHgTBcXukeZygoC"  # ${MASTER_TOKEN} #
+#master:
+#  token: "AAABnvxRVklrnYxKZ0aHgTBcXukeZygoC"  # ${MASTER_TOKEN} #

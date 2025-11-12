@@ -1,9 +1,9 @@
 package com.delivery_signal.eureka.client.user.presentation.controller;
 
+import com.delivery_signal.eureka.client.user.application.dto.ApiResponse;
 import com.delivery_signal.eureka.client.user.application.dto.response.GetUserAuthorizationResponse;
 import com.delivery_signal.eureka.client.user.application.dto.response.GetUserResponse;
 import com.delivery_signal.eureka.client.user.application.service.UserService;
-import com.delivery_signal.eureka.client.user.application.dto.ApiResponse;
 import com.delivery_signal.eureka.client.user.application.dto.request.CreateUserRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,9 +44,6 @@ public class AuthController {
     public ResponseEntity<ApiResponse<GetUserAuthorizationResponse>> confirmUser(@RequestHeader("x-user-id") String x_user_id) {
         Long userId = Long.valueOf(x_user_id);
         GetUserAuthorizationResponse authorizationInfo = userService.checkUser(userId);
-        if (authorizationInfo == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.message("사용자가 존재하지 않습니다 (soft Delete)"));
-        }
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(authorizationInfo));
     }
 }
