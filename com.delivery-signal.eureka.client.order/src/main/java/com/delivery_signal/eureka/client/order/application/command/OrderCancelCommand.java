@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -14,4 +15,5 @@ import java.util.UUID;
 public class OrderCancelCommand {
     private UUID orderId;
     private Long userId;
+    private List<OrderProductCommand> products;
 }

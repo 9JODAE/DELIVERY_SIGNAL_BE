@@ -280,6 +280,9 @@ public class OrderService {
         // 주문 취소 처리 (도메인 로직)
         order.cancel();
 
+        //취소된 주문만큼 허브의 수량 복구
+        hubCommandPort.restoreStocks(order.getDepartureHubId(),command.getProducts());
+
         // 저장
         orderCommandPort.save(order);
 
