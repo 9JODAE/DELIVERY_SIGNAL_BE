@@ -64,9 +64,10 @@ public class ProductController {
     @PutMapping("/{productId}")
     public ResponseEntity<ProductUpdateResponseDto> updateProduct(
             @PathVariable UUID productId,
+            @RequestHeader(value = "x-user-id", required = false) Long userId,
             @RequestBody ProductUpdateRequestDto request) {
 
-        UpdateProductCommand command = ProductUpdateMapper.toCommand(productId, request);
+        UpdateProductCommand command = ProductUpdateMapper.toCommand(productId, request, userId);
         ProductUpdateResult result = productService.updateProduct(command);
         ProductUpdateResponseDto response = ProductResponseMapper.toUpdateResponse(result);
         return ResponseEntity.ok(response);

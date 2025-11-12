@@ -7,9 +7,11 @@ import java.util.UUID;
 
 public class ProductUpdateMapper {
 
-    public static UpdateProductCommand toCommand(UUID productId, ProductUpdateRequestDto dto) {
+    public static UpdateProductCommand toCommand(UUID productId, ProductUpdateRequestDto dto, Long userId) {
         return UpdateProductCommand.builder()
                 .productId(productId)
+                .userId(userId)
+                .price(dto.getPrice())
                 .productName(dto.getName())
                 .build();
     }
