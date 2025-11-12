@@ -148,7 +148,7 @@ public class DeliveryPermissionValidator {
             return;
         }
 
-        // 허브 관리자가 delivery의 출발지 허브 ID/목적지 허브 ID 중 하나를 관리하는지 확인
+        // 허브 관리자가 delivery의 출발지 허브 ID를 관리하는지 확인
         if (role.equals(UserRole.HUB_MANAGER)) {
             // 출발 허브 유효성 검증
             if (!validateHubExistence(HubIdentifier.of(delivery.getDepartureHubId()), currUserid, authorizedUser.role())) {
