@@ -1,6 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.application.service;
 
-import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
  * User 서비스 호출 클라이언트
  * 사용자 인가 정보 조회
  */
-//@FeignClient(name = "user-service", path = "${internal.user.url}")
 @FeignClient(name = "user-service")
 public interface UserServiceClient {
     @GetMapping("/open-api/v1/auth/authorization")
@@ -22,5 +21,13 @@ public interface UserServiceClient {
         String role,
         String organization,
         UUID organizationId
+    ) {}
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    record ApiResponse<T>(
+        boolean success,
+        String message,
+        T data,
+        Long timestamp
     ) {}
 }

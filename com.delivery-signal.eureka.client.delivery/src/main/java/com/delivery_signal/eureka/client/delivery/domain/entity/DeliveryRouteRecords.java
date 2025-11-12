@@ -40,13 +40,21 @@ public class DeliveryRouteRecords extends BaseEntity {
     @Column(name = "sequence", nullable = false)
     private Integer sequence;
 
-    // 출발 허브 ID (허브 서비스와 연동)
+    // 출발 허브 ID
     @Column(name = "from_hub_id", nullable = false)
     private UUID departureHubId;
+
+    // 출발 허브 이름
+    @Column(name = "from_hub_name", nullable = false)
+    private String departureHubName;
 
     // 목적지 허브 ID
     @Column(name = "to_hub_id", nullable = false)
     private UUID destinationHubId;
+
+    // 목적지 허브 이름
+    @Column(name = "to_hub_name", nullable = false)
+    private String arrivalHubName;
 
     // 예상 거리
     @Column(name = "est_distance")
@@ -75,13 +83,16 @@ public class DeliveryRouteRecords extends BaseEntity {
 
     // Delivery 도메인 객체와 RouteSegmentCommand를 받아 최초 이력 엔티티 생성
     public static DeliveryRouteRecords initialCreate(Delivery delivery, Integer sequence,
-        UUID departureHubId, UUID destinationHubId, Double estDistance, Long estTime,
+        UUID departureHubId, String departureHubName, UUID destinationHubId, String arrivalHubName,
+        Double estDistance, Long estTime,
         Long initialHubManagerId, Long creatorId) {
         return DeliveryRouteRecords.builder()
             .delivery(delivery)
             .sequence(sequence)
             .departureHubId(departureHubId)
+            .departureHubName(departureHubName)
             .destinationHubId(destinationHubId)
+            .arrivalHubName(arrivalHubName)
             .estDistance(estDistance)
             .estTime(estTime)
             .currStatus(DeliveryStatus.HUB_WAITING) // 초기 상태

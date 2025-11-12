@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "hub-service", path = "${internal.hub.url}")
+@FeignClient(name = "hub-service")
 public interface HubServiceClient {
     String USER_ID_HEADER = "X-User-Id";
     String USER_ROLE_HEADER = "X-User-Role";
@@ -38,9 +38,12 @@ public interface HubServiceClient {
     );
 
     record PathResponse(
+        UUID departureHubId,
+        UUID arrivalHubId,
         String departureHubName,
         String arrivalHubName,
-        int transitTime
+        Double distance, // 예상 거리
+        Long transitTime // 분 단위
     ) {}
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
