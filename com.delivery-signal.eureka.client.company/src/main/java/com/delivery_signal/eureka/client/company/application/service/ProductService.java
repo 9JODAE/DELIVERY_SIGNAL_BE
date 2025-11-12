@@ -1,7 +1,9 @@
 package com.delivery_signal.eureka.client.company.application.service;
 
 
-import com.delivery_signal.eureka.client.company.application.command.*;
+import com.delivery_signal.eureka.client.company.application.command.CreateProductCommand;
+import com.delivery_signal.eureka.client.company.application.command.DeleteProductCommand;
+import com.delivery_signal.eureka.client.company.application.command.UpdateProductCommand;
 import com.delivery_signal.eureka.client.company.application.mapper.ProductQueryMapper;
 import com.delivery_signal.eureka.client.company.application.port.out.CompanyQueryPort;
 import com.delivery_signal.eureka.client.company.application.port.out.UserQueryPort;
@@ -11,7 +13,6 @@ import com.delivery_signal.eureka.client.company.common.NotFoundException;
 import com.delivery_signal.eureka.client.company.domain.entity.Product;
 import com.delivery_signal.eureka.client.company.domain.repository.ProductRepository;
 import com.delivery_signal.eureka.client.company.domain.service.ProductDomainService;
-import com.delivery_signal.eureka.client.company.domain.vo.company.CompanyInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

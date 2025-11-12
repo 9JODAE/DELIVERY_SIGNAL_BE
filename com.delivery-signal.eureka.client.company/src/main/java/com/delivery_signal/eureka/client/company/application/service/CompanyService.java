@@ -1,6 +1,8 @@
 package com.delivery_signal.eureka.client.company.application.service;
 
-import com.delivery_signal.eureka.client.company.application.command.*;
+import com.delivery_signal.eureka.client.company.application.command.CreateCompanyCommand;
+import com.delivery_signal.eureka.client.company.application.command.DeleteCompanyCommand;
+import com.delivery_signal.eureka.client.company.application.command.UpdateCompanyCommand;
 import com.delivery_signal.eureka.client.company.application.mapper.CompanyQueryMapper;
 import com.delivery_signal.eureka.client.company.application.port.out.CompanyQueryPort;
 import com.delivery_signal.eureka.client.company.application.port.out.HubQueryPort;

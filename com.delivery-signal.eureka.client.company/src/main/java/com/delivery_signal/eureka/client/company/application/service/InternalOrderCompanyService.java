@@ -1,8 +1,7 @@
 package com.delivery_signal.eureka.client.company.application.service;
 
+import com.delivery_signal.eureka.client.company.application.port.out.OrderCompanyQueryPort;
 import com.delivery_signal.eureka.client.company.application.result.OrderCompanyResult;
-import com.delivery_signal.eureka.client.company.domain.entity.Company;
-import com.delivery_signal.eureka.client.company.domain.repository.CompanyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,16 +14,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class InternalOrderCompanyService {
 
-    private final CompanyRepository companyRepository;
+    private final OrderCompanyQueryPort orderCompanyQueryPort;
 
     public OrderCompanyResult getCompanyInfo(UUID companyId) {
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new RuntimeException("Company not found: " + companyId));
-
-        return OrderCompanyResult.builder()
-                .companyId(company.getCompanyId())
-                .hubId(company.getHubId())
-                .address(company.getAddress())
-                .build();
+        return orderCompanyQueryPort.findCompanyById(companyId);
     }
 }

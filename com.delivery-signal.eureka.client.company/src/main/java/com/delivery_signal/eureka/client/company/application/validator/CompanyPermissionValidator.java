@@ -1,7 +1,7 @@
 package com.delivery_signal.eureka.client.company.application.validator;
 
-import com.delivery_signal.eureka.client.company.application.port.out.UserQueryPort;
 import com.delivery_signal.eureka.client.company.application.port.out.HubQueryPort;
+import com.delivery_signal.eureka.client.company.application.port.out.UserQueryPort;
 import com.delivery_signal.eureka.client.company.domain.vo.user.UserAuthorizationInfo;
 import jakarta.ws.rs.ForbiddenException;
 import org.springframework.stereotype.Component;

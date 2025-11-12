@@ -2,6 +2,7 @@ package com.delivery_signal.eureka.client.company.presentation.external.dto.requ
 
 import com.delivery_signal.eureka.client.company.domain.entity.CompanyType;
 import lombok.*;
+
 import java.util.UUID;
 
 @Getter

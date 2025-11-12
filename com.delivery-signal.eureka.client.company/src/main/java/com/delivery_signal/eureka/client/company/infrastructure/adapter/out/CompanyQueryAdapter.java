@@ -7,12 +7,10 @@ import com.delivery_signal.eureka.client.company.application.result.CompanyDetai
 import com.delivery_signal.eureka.client.company.application.result.CompanyListResult;
 import com.delivery_signal.eureka.client.company.domain.entity.Company;
 import com.delivery_signal.eureka.client.company.domain.repository.CompanyRepository;
-import com.delivery_signal.eureka.client.company.domain.vo.company.CompanyInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service

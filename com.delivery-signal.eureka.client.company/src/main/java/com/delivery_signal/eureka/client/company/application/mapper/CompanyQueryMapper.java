@@ -3,11 +3,10 @@ package com.delivery_signal.eureka.client.company.application.mapper;
 import com.delivery_signal.eureka.client.company.application.result.CompanyDetailResult;
 import com.delivery_signal.eureka.client.company.application.result.CompanyListResult;
 import com.delivery_signal.eureka.client.company.domain.entity.Company;
-import com.delivery_signal.eureka.client.company.domain.vo.company.CompanyInfo; // VO for other MSAs
+import com.delivery_signal.eureka.client.company.domain.vo.company.CompanyInfo;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.UUID;
 
 @Component
 public class CompanyQueryMapper {

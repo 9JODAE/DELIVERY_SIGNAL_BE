@@ -12,7 +12,6 @@ import com.delivery_signal.eureka.client.company.domain.repository.CompanyReposi
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Component
