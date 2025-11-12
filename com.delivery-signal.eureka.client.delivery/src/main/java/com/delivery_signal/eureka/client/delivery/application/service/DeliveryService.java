@@ -8,6 +8,9 @@ import com.delivery_signal.eureka.client.delivery.application.command.UpdateRout
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.port.HubPort;
+import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryManager;
+import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryManagerRepository;
+import com.delivery_signal.eureka.client.delivery.domain.service.DeliveryAssignmentService;
 import com.delivery_signal.eureka.client.delivery.domain.vo.DeliverySearchCondition;
 import com.delivery_signal.eureka.client.delivery.application.dto.RouteRecordQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.mapper.DeliveryDomainMapper;
@@ -43,21 +46,26 @@ public class DeliveryService {
     private final DeliveryRepository deliveryRepository;
     private final DeliveryRouteRecordsRepository deliveryRouteRecordsRepository;
     private final DeliveryQueryRepository deliveryQueryRepository;
+    private final DeliveryManagerRepository deliveryManagerRepository;
     private final DeliveryDomainMapper deliveryDomainMapper;
     private final DeliveryPermissionValidator permissionValidator;
     private final HubPort hubPort;
+    private final DeliveryAssignmentService deliveryAssignmentService;
 
     public DeliveryService(DeliveryRepository deliveryRepository,
         DeliveryQueryRepository deliveryQueryRepository,
         DeliveryRouteRecordsRepository deliveryRouteRecordsRepository,
+        DeliveryManagerRepository deliveryManagerRepository,
         DeliveryDomainMapper deliveryDomainMapper, DeliveryPermissionValidator permissionValidator,
-        HubPort hubPort) {
+        HubPort hubPort, DeliveryAssignmentService deliveryAssignmentService) {
         this.deliveryRepository = deliveryRepository;
         this.deliveryRouteRecordsRepository = deliveryRouteRecordsRepository;
         this.deliveryQueryRepository = deliveryQueryRepository;
+        this.deliveryManagerRepository = deliveryManagerRepository;
         this.deliveryDomainMapper = deliveryDomainMapper;
         this.permissionValidator = permissionValidator;
         this.hubPort = hubPort;
+        this.deliveryAssignmentService = deliveryAssignmentService;
     }
 
     /**
@@ -71,7 +79,6 @@ public class DeliveryService {
             throw new IllegalArgumentException("유효하지 않거나 활성화되지 않은 허브 ID입니다: " + command.departureHubId());
         }
 
-        // TODO: 배송 경로 기록은 추후에 추가 예정
         Delivery delivery = Delivery.create(command.orderId(),
             command.companyId(),
             command.status(),
@@ -85,8 +92,9 @@ public class DeliveryService {
         );
         Delivery savedDelivery = deliveryRepository.save(delivery);
 
-        // TODO: 배송 담당자 할당 로직 수정 필요
-        Long initialHubManagerId = assignInitialHubManager();
+        // 배송 담당자 할당 로직 수정 필요
+        DeliveryManager initialHubManager = assignInitialHubManager();
+        Long initialHubManagerId = initialHubManager.getManagerId();
 
         // 배송(허브 이동) 경로 요청 생성 및 저장
         List<HubRouteInfo> hubRouteInfos = hubPort.searchRoutes(
@@ -95,11 +103,12 @@ public class DeliveryService {
         if (hubRouteInfos.isEmpty()) {
             throw new IllegalStateException("출발지(" + command.departureHubId() + ")에서 목적지(" + command.destinationHubId() + ")까지의 배송 경로를 찾을 수 없습니다.");
         }
+
         List<DeliveryRouteRecords> routeRecords = hubRouteInfos.stream()
             .map(segment ->
                 DeliveryRouteRecords.initialCreate(
                     delivery,
-                    0, // 추후 수정 예정
+                    initialHubManager.getDeliverySequence(),
                     segment.departureHubId(),
                     segment.arrivalHubId(),
                     segment.distance(),
@@ -113,24 +122,6 @@ public class DeliveryService {
         deliveryRouteRecordsRepository.saveAll(routeRecords);
         return deliveryDomainMapper.toResponse(savedDelivery);
     }
-
-    // TODO: 테스트용, 추후 삭제 예정
-    // DeliveryService의 헬스체크나 특정 로직에서 OrderService의 상태를 확인할 때 사용
-//    public OrderServiceClient.OrderPongResponseDto checkOrderServiceStatus() {
-//        try {
-//            // FeignClient를 호출합니다. 'from' 파라미터에 호출자(DeliveryService) 명시
-//            return orderServiceClient.ping("안녕안녕안녕");
-//        } catch (Exception e) {
-//            // 통신 실패 처리 (여기서 Resilience4j가 동작합니다)
-//            // 실제 MSA에서는 이 통신이 실패해도 시스템이 멈추지 않도록 설계해야 합니다.
-//            // ... 로그 기록 및 Fallback 처리
-//            return new OrderServiceClient.OrderPongResponseDto(
-//                "Order-service 통신 실패",
-//                "ERROR",
-//                Instant.now()
-//            );
-//        }
-//    }
 
     /**
      * 배송 목록 검색 (페이징/정렬 포함)
@@ -323,10 +314,16 @@ public class DeliveryService {
         return deliveryDomainMapper.toResponse(delivery);
     }
 
-    // TODO: Hub 배송 담당자를 할당하는 가상의 로직
-    private Long assignInitialHubManager() {
-        // TODO:  배송 순번 기준 할당 로직 호출
-        return 3L; // 임시 값
+    /**
+     * Hub 배송 담당자 할당
+     */
+    private DeliveryManager assignInitialHubManager() {
+        // 활성 담당자 수 확인 (순환 로직 기반)
+        Long activeCount = deliveryManagerRepository.countActiveManagers();
+        if (activeCount == 0) {
+            throw new IllegalStateException("현재 배정 가능한 배송 담당자가 없습니다.");
+        }
+        return deliveryAssignmentService.getNextManagerForAssignment();
     }
 
     private Delivery getDelivery(UUID deliveryId) {
