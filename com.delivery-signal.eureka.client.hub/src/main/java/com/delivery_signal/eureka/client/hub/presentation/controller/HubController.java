@@ -29,7 +29,7 @@ import com.delivery_signal.eureka.client.hub.application.command.UpdateHubRouteC
 import com.delivery_signal.eureka.client.hub.application.command.UpdateStockCommand;
 import com.delivery_signal.eureka.client.hub.application.facade.StockFacade;
 import com.delivery_signal.eureka.client.hub.application.facade.StockSearchFacade;
-import com.delivery_signal.eureka.client.hub.presentation.dto.ApiResponse;
+import com.delivery_signal.eureka.client.hub.common.api.ApiResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRouteRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateStockRequest;

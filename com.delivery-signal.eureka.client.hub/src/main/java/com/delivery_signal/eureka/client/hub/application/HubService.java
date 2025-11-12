@@ -25,6 +25,8 @@ import com.delivery_signal.eureka.client.hub.application.command.UpdateStockComm
 import com.delivery_signal.eureka.client.hub.application.dto.HubResult;
 import com.delivery_signal.eureka.client.hub.application.dto.HubRouteResult;
 import com.delivery_signal.eureka.client.hub.application.dto.StockResult;
+import com.delivery_signal.eureka.client.hub.common.annotation.PreAuthorize;
+import com.delivery_signal.eureka.client.hub.common.auth.Authority;
 import com.delivery_signal.eureka.client.hub.domain.mapper.StockSearchCondition;
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
 import com.delivery_signal.eureka.client.hub.domain.model.HubRoute;
@@ -65,6 +67,7 @@ public class HubService {
 	 * @param command 허브 생성 커맨드
 	 * @return 저장된 허브의 아이디
 	 */
+	@PreAuthorize({Authority.MASTER})
 	public UUID createHub(CreateHubCommand command) {
 		Address address = Address.of(command.address());
 		Coordinate coordinate = Coordinate.of(command.latitude(), command.longitude());
@@ -77,6 +80,7 @@ public class HubService {
 	 * @param command 허브 검색 커맨드
 	 * @return Page<HubResult> 허브 검색 결과
 	 */
+	@PreAuthorize({Authority.MASTER, Authority.HUB_MANAGER, Authority.DELIVERY_MANAGER, Authority.SUPPLIER_MANAGER})
 	@Transactional(readOnly = true)
 	public Page<HubResult> searchHubs(SearchHubCommand command) {
 		HubSearchCondition condition = HubSearchCondition.of(
@@ -97,6 +101,7 @@ public class HubService {
 	 * @param hubId 허브 아이디
 	 * @return 허브 조회 결과
 	 */
+	@PreAuthorize({Authority.MASTER, Authority.HUB_MANAGER, Authority.DELIVERY_MANAGER, Authority.SUPPLIER_MANAGER})
 	@Transactional(readOnly = true)
 	public HubResult getHub(UUID hubId) {
 		Hub hub = getHubOrThrow(hubId);
@@ -117,6 +122,7 @@ public class HubService {
 	 * @param command 허브 수정 커맨드
 	 * @return 수정된 허브 결과
 	 */
+	@PreAuthorize({Authority.MASTER})
 	public HubResult updateHub(UpdateHubCommand command) {
 		Hub hub = getHubOrThrow(command.hubId());
 		Address address = Address.of(command.address());
@@ -129,6 +135,7 @@ public class HubService {
 	 * 허브 삭제
 	 * @param hubId 허브 아이디
 	 */
+	@PreAuthorize({Authority.MASTER})
 	@CacheEvict(value = "hubRoutes", allEntries = true)
 	public void deleteHub(UUID hubId) {
 		Hub hub = getHubOrThrow(hubId);
@@ -145,6 +152,7 @@ public class HubService {
 	 * @param command 허브 경로 생성 커맨드
 	 * @return 생성된 허브 경로 아이디
 	 */
+	@PreAuthorize({Authority.MASTER})
 	@CacheEvict(value = "hubRoutes", allEntries = true)
 	public UUID createHubRoute(CreateHubRouteCommand command) {
 		Hub departureHub = getHubOrThrow(command.departureHubId());
@@ -162,6 +170,7 @@ public class HubService {
 	 * @param command 허브 경로 검색 커맨드
 	 * @return Page<HubRouteResult> 허브 경로 검색 결과
 	 */
+	@PreAuthorize({Authority.MASTER, Authority.HUB_MANAGER, Authority.DELIVERY_MANAGER, Authority.SUPPLIER_MANAGER})
 	@Transactional(readOnly = true)
 	public Page<HubRouteResult> searchHubRoutes(SearchHubRouteCommand command) {
 		HubRouteSearchCondition condition = HubRouteSearchCondition.of(
@@ -182,6 +191,7 @@ public class HubService {
 	 * @param hubRouteId 허브 이동정보 아이디
 	 * @return 허브 이동정보 조회 결과
 	 */
+	@PreAuthorize({Authority.MASTER, Authority.HUB_MANAGER, Authority.DELIVERY_MANAGER, Authority.SUPPLIER_MANAGER})
 	@Transactional(readOnly = true)
 	public HubRouteResult getHubRoute(UUID hubId, UUID hubRouteId) {
 		Hub hub = getHubWithRoutesOrThrow(hubId);
@@ -196,6 +206,7 @@ public class HubService {
 	 * @param command 허브 이동정보 수정 커맨드
 	 * @return 수정된 허브 이동정보 결과
 	 */
+	@PreAuthorize({Authority.MASTER})
 	@CacheEvict(value = "hubRoutes", allEntries = true)
 	public HubRouteResult updateHubRoute(UUID hubId, UUID hubRouteId, UpdateHubRouteCommand command) {
 		Hub hub = getHubWithRoutesOrThrow(hubId);
@@ -210,6 +221,7 @@ public class HubService {
 	 * @param hubId 출발 허브 아이디
 	 * @param hubRouteId 허브 이동정보 아이디
 	 */
+	@PreAuthorize({Authority.MASTER})
 	@CacheEvict(value = "hubRoutes", allEntries = true)
 	public void deleteHubRoute(UUID hubId, UUID hubRouteId) {
 		Hub hub = getHubWithRoutesOrThrow(hubId);
@@ -251,13 +263,12 @@ public class HubService {
 			.collect(Collectors.toList());
 	}
 
-
-
 	/**
 	 * 재고 생성
 	 * @param command 재고 생성 커맨드
 	 * @return 생성된 재고 아이디
 	 */
+	@PreAuthorize({Authority.MASTER, Authority.HUB_MANAGER})
 	public UUID createStock(CreateStockCommand command) {
 		// TODO 상품 서비스로부터 상품 존재 유무 확인하는 로직
 		// if (!productClient.exists(command.productId())) {
@@ -278,6 +289,7 @@ public class HubService {
 	 * @param productIds 상품 아이디 리스트
 	 * @return Page<Stock> 재고 검색 결과
 	 */
+	@PreAuthorize({Authority.MASTER, Authority.HUB_MANAGER})
 	@Transactional(readOnly = true)
 	public Page<Stock> findStocks(SearchStockCommand command, List<UUID> productIds) {
 		StockSearchCondition condition = StockSearchCondition.of(
@@ -311,6 +323,7 @@ public class HubService {
 	 * @param command 재고 수정 Command
 	 * @return 수정된 재고 결과
 	 */
+	@PreAuthorize({Authority.MASTER, Authority.HUB_MANAGER})
 	public StockResult updateStock(UpdateStockCommand command) {
 		Hub hub = getHubWithStocksOrThrow(command.hubId());
 		Stock stock = hub.updateStockQuantity(command.stockId(), command.quantity());
@@ -325,6 +338,7 @@ public class HubService {
 	 * 재고 삭제
 	 * @param command 재고 삭제 Command
 	 */
+	@PreAuthorize({Authority.MASTER, Authority.HUB_MANAGER})
 	public void deleteStock(DeleteStockCommand command) {
 		Hub hub = getHubWithStocksOrThrow(command.hubId());
 		hub.deleteStock(command.stockId(), 1L); // TODO 유저 서비스 개발 완료 시 변경
@@ -337,11 +351,11 @@ public class HubService {
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void deductStocks(DeductStockQuantityCommand command, Map<UUID, UUID> productToStockId) {
-	    Hub hub = getHubWithStocksOrThrow(command.hubId());
+		Hub hub = getHubWithStocksOrThrow(command.hubId());
 
-	    command.items().forEach((productId, quantity) ->
-	        deductStock(hub, productId, quantity, productToStockId.get(productId))
-	    );
+		command.items().forEach((productId, quantity) ->
+			deductStock(hub, productId, quantity, productToStockId.get(productId))
+		);
 	}
 
 	/**
@@ -351,30 +365,30 @@ public class HubService {
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void restoreStocks(RestoreStockQuantityCommand command, Map<UUID, UUID> productToStockId) {
-	    Hub hub = getHubWithStocksOrThrow(command.hubId());
+		Hub hub = getHubWithStocksOrThrow(command.hubId());
 
-	    command.items().forEach((productId, quantity) ->
-	        restoreStock(hub, productId, quantity, productToStockId.get(productId))
-	    );
+		command.items().forEach((productId, quantity) ->
+			restoreStock(hub, productId, quantity, productToStockId.get(productId))
+		);
 	}
 
 	private void deductStock(Hub hub, UUID productId, int quantity, UUID stockId) {
-	    try {
-	        hub.deductStocks(stockId, quantity);
+		try {
+			hub.deductStocks(stockId, quantity);
 			log.info("재고 차감 완료 - productId={}, stockId={}, quantity={}", productId, stockId, quantity);
-	    } catch (IllegalArgumentException ex) {
+		} catch (IllegalArgumentException ex) {
 			log.error("재고 부족 - productId={}, 요청수량={}", productId, quantity);
 			throw new IllegalStateException("재고가 부족합니다. productId=" + productId);
-	    }
+		}
 	}
 
 	private void restoreStock(Hub hub, UUID productId, int quantity, UUID stockId) {
-	    try {
-	        hub.restoreStocks(stockId, quantity);
+		try {
+			hub.restoreStocks(stockId, quantity);
 			log.info("재고 복구 완료 - productId={}, stockId={}, quantity={}", productId, stockId, quantity);
-	    } catch (IllegalArgumentException ex) {
-	        throw new IllegalStateException("재고 복구 실패. productId=" + productId, ex);
-	    }
+		} catch (IllegalArgumentException ex) {
+			throw new IllegalStateException("재고 복구 실패. productId=" + productId, ex);
+		}
 	}
 
 	private Hub getHubWithStocksOrThrow(UUID hubId) {

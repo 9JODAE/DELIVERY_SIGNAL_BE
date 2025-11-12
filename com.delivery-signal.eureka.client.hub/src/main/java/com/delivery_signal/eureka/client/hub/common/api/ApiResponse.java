@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.hub.presentation.dto;
+package com.delivery_signal.eureka.client.hub.common.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
