@@ -23,7 +23,7 @@ public class UserServiceAdapter implements UserAuthPort {
     public AuthorizedUser fetchUserAuthorizationInfo(Long userId) {
         // FeignClient를 통해 User Service 호출 (인프라 상세 구현)
         UserServiceClient.AuthUserResponseDto response =
-            userServiceClient.getUserAuthorizationInfo(userId);
+            userServiceClient.getUserAuthorizationInfo(userId).data();
 
         // DTO -> Domain VO 변환 (ACL 역할 수행)
         return new AuthorizedUser(
