@@ -41,11 +41,12 @@ public class HubOpenApiController {
 	private final HubRouteFacade hubRouteFacade;
 
 	@PostMapping("/stocks")
-	public Map<UUID, Integer> getStockQuantities(
+	public ResponseEntity<ApiResponse<Map<UUID, Integer>>> getStockQuantities(
 		@Valid @RequestBody GetStockQuantitiesRequest request
 	) {
-		return hubService.getStockQuantities(request.productIds());
-	};
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(ApiResponse.success(hubService.getStockQuantities(request.productIds())));
+	}
 
 	@PostMapping("/hubs/{hubId}/stocks/deduct")
 	public ResponseEntity<ApiResponse<Void>> deductStocks(
@@ -68,8 +69,8 @@ public class HubOpenApiController {
 	}
 
 	@GetMapping("/hubs/{hubId}")
-	public boolean existsHub(@PathVariable UUID hubId) {
-		return hubService.existsHub(hubId);
+	public ResponseEntity<ApiResponse<Boolean>> existsHub(@PathVariable UUID hubId) {
+		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(hubService.existsHub(hubId)));
 	}
 
 	@GetMapping("/routes")
