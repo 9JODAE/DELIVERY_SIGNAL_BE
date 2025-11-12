@@ -9,13 +9,12 @@ import java.util.UUID;
 @Service
 public class CompanyDomainService {
 
-    public Company createCompany(String name, UUID hubId, String address, CompanyType type, Long createdBy) {
+    public Company createCompany(String name, UUID hubId, String address, CompanyType type) {
         return Company.builder()
                 .companyName(name)
                 .hubId(hubId)
                 .address(address)
                 .companyType(type)
-                .createdBy(createdBy)
                 .build();
     }
 }
