@@ -9,7 +9,6 @@ import java.util.UUID;
 
 public interface DeliveryCommandPort {
     Optional<OrderForDeliveryResult> findOrderForDeliveryById(UUID orderId);
-
     DeliveryCreatedInfo createDelivery(CreateDeliveryCommand deliveryRequest);
-
+    void cancelDelivery(UUID deliveryId);
 }

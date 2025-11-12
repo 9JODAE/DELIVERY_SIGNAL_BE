@@ -19,11 +19,11 @@ EUREKA_CONTAINER_NAME="eureka"
 GATEWAY_CONTAINER_NAME="gateway"
 
 # --- 1️⃣ Eureka 서버 ---
-echo "=== 1️⃣ Eureka 서버 ==="
-cd "$ROOT_DIR/com.delivery-signal.eureka.server"
-docker build -t eurekaserver:latest .
-docker run -d --name "$EUREKA_CONTAINER_NAME" -p "$EUREKA_PORT":19090 eurekaserver:latest
-cd "$ROOT_DIR"
+#echo "=== 1️⃣ Eureka 서버 ==="
+#cd "$ROOT_DIR/com.delivery-signal.eureka.server"
+#docker build -t eurekaserver:latest .
+#docker run -d --name "$EUREKA_CONTAINER_NAME" -p "$EUREKA_PORT":19090 eurekaserver:latest
+#cd "$ROOT_DIR"
 
 # --- 2️⃣ Redis ---
 echo "=== 2️⃣ Redis ==="
@@ -56,11 +56,11 @@ do
 done
 
 # --- 5️⃣ Gateway 서비스 ---
-echo "=== 5️⃣ Gateway 서비스 ==="
-cd "$ROOT_DIR/com.delivery-signal.eureka.client.gateway"
-./gradlew clean build -x test
-docker build -t gateway .
-docker run -d --name "$GATEWAY_CONTAINER_NAME" --env-file "$ROOT_DIR/.env" -p "$GATEWAY_PORT":80 gateway
-cd "$ROOT_DIR"
+#echo "=== 5️⃣ Gateway 서비스 ==="
+#cd "$ROOT_DIR/com.delivery-signal.eureka.client.gateway"
+#./gradlew clean build -x test
+#docker build -t gateway .
+#docker run -d --name "$GATEWAY_CONTAINER_NAME" --env-file "$ROOT_DIR/.env" -p "$GATEWAY_PORT":80 gateway
+#cd "$ROOT_DIR"
 
 echo "✅ 모든 컨테이너 실행 완료!"

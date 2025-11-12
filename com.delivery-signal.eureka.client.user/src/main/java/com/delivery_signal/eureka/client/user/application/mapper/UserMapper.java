@@ -1,8 +1,11 @@
 package com.delivery_signal.eureka.client.user.application.mapper;
 
-import com.delivery_signal.eureka.client.user.presentation.dto.request.UserCreateRequestDto;
-import com.delivery_signal.eureka.client.user.presentation.dto.response.UserResponseDto;
-import com.delivery_signal.eureka.client.user.domain.model.User;
+import com.delivery_signal.eureka.client.user.application.dto.ApprovalStatusType;
+import com.delivery_signal.eureka.client.user.application.dto.UserRoleType;
+import com.delivery_signal.eureka.client.user.application.dto.request.CreateUserRequest;
+import com.delivery_signal.eureka.client.user.application.dto.response.GetUserResponse;
+import com.delivery_signal.eureka.client.user.domain.entity.User;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -14,15 +17,15 @@ public class UserMapper {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UserResponseDto from(User user) {
-        return new UserResponseDto(
+    public GetUserResponse from(User user) {
+        return new GetUserResponse(
                 user.getUserId(), user.getUsername(), user.getSlackId(),
-                user.getOrganization(), user.getOrganizationId(), user.getRole(), user.getApprovalStatus()
+                user.getOrganization(), user.getOrganizationId(), UserRoleType.from(user.getRole()), ApprovalStatusType.from(user.getApprovalStatus())
         );
     }
 
 
-    public User toEntity(UserCreateRequestDto requestDto) {
+    public User toEntity(CreateUserRequest requestDto) {
         return User.builder()
                 .username(requestDto.username())
                 .password(passwordEncoder.encode(requestDto.password()))

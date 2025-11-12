@@ -101,25 +101,24 @@ public class OrderPermissionValidator {
 
     /**
      * 주문 조회 권한 검증
-     * - MASTER_ADMIN: 전체
-     * - HUB_ADMIN: 자기 허브
-     * - DELIVERY_MANAGER: 본인 담당 주문만 가능
-     * - COMPANY_MANAGER: 본인 주문만 가능
+     * - MASTER_ADMIN: 전체 조회 가능
+     * - HUB_ADMIN: 자기 허브 주문 조회 가능
+     * - COMPANY_MANAGER: 본인 주문만 조회 가능
      */
-    public void validateRead(Long userId, UUID orderHubId, Long orderDeliveryManagerId, Long orderCompanyManagerId) {
+    public void validateRead(Long userId, UUID orderHubId, Long orderCompanyManagerId) {
         UserAuthorizationInfo userInfo = getActiveUser(userId);
         String role = userInfo.getRole();
 
         switch (role) {
-            case "MASTER_ADMIN" -> {}
+            case "MASTER_ADMIN" -> {
+                // 전체 조회 가능
+            }
             case "HUB_ADMIN" -> checkHubAdminPermission(orderHubId, userInfo.getHubId(), "조회");
-            case "DELIVERY_MANAGER" ->
-                    checkUserPermission(orderDeliveryManagerId, userId, "본인 담당 주문만 조회 가능합니다.");
-            case "COMPANY_MANAGER" ->
-                    checkUserPermission(orderCompanyManagerId, userId, "본인 주문만 조회 가능합니다.");
+            case "COMPANY_MANAGER" -> checkUserPermission(orderCompanyManagerId, userId, "본인 주문만 조회 가능합니다.");
             default -> throwForbidden(role, "주문 조회");
         }
     }
+
 
     /** 허브별 주문 조회 검증 - MASTER_ADMIN 전체 / HUB_ADMIN 자기 허브 */
     public void validateReadByHub(Long userId, UUID orderHubId) {

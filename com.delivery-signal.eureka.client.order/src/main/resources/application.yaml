@@ -24,9 +24,6 @@ spring:
       port: 6379
 
 eureka:
-  instance:
-    prefer-ip-address: false
-    hostname: order-service
   client:
     register-with-eureka: true
     fetch-registry: true

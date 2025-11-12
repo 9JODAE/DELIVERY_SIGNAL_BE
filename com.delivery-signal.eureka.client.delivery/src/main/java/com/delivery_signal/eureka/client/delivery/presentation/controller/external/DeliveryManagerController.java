@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 // TODO: 추후 /api/v1/... 로 바꿀 예정
 @RestController
-@RequestMapping("/open-api/v1/managers")
+@RequestMapping("/open-api/v1/deliveries/managers")
 public class DeliveryManagerController {
 
     private final DeliveryManagerService deliveryManagerService;
