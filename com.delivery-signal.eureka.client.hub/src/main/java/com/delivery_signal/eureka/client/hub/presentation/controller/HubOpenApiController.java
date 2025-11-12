@@ -38,7 +38,7 @@ public class HubOpenApiController {
 
 	private final HubService hubService;
 	private final StockFacade stockFacade;
-	private final HubRouteFacade  hubRouteFacade;
+	private final HubRouteFacade hubRouteFacade;
 
 	@PostMapping("/stocks")
 	public Map<UUID, Integer> getStockQuantities(
