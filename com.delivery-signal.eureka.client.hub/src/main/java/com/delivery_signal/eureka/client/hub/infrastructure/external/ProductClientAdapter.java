@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import com.delivery_signal.eureka.client.hub.application.dto.external.ProductInfo;
 import com.delivery_signal.eureka.client.hub.application.port.ProductClient;
-import com.delivery_signal.eureka.client.hub.infrastructure.annotation.ExternalAdapter;
+import com.delivery_signal.eureka.client.hub.common.annotation.ExternalAdapter;
 import com.delivery_signal.eureka.client.hub.infrastructure.external.dto.ProductDTO;
 import com.delivery_signal.eureka.client.hub.infrastructure.external.mapper.ProductMapper;
 

@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.hub.infrastructure.annotation;
+package com.delivery_signal.eureka.client.hub.common.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
