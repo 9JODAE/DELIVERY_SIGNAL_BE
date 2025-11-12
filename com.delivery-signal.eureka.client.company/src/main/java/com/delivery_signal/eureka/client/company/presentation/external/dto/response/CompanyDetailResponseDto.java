@@ -1,5 +1,6 @@
 package com.delivery_signal.eureka.client.company.presentation.external.dto.response;
 
+import com.delivery_signal.eureka.client.company.domain.entity.CompanyType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,10 +15,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CompanyDetailResponseDto {
-    private UUID id;
+    private UUID companyId;
     private UUID hubId;
     private String name;
-    private String type;
+    private CompanyType type;
     private String address;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

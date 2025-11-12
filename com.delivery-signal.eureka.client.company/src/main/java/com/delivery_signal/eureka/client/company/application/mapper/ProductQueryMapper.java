@@ -17,8 +17,8 @@ public class ProductQueryMapper {
     /** 단건 리스트용 매핑 */
     public ProductListResult toListDto(Product product) {
         return ProductListResult.builder()
-                .id(product.getId())
-                .name(product.getName())
+                .productId(product.getProductId())
+                .productName(product.getProductName())
                 .price(product.getPrice())
                 .build();
     }
@@ -33,8 +33,8 @@ public class ProductQueryMapper {
     /** 상세 조회용 매핑 */
     public ProductDetailResult toDetailDto(Product product) {
         return ProductDetailResult.builder()
-                .id(product.getId())
-                .name(product.getName())
+                .productId(product.getProductId())
+                .productName(product.getProductName())
                 .companyId(product.getCompanyId())
                 .hubId(product.getHubId())
                 .build();

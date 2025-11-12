@@ -1,5 +1,6 @@
 package com.delivery_signal.eureka.client.company.application.command;
 
+import com.delivery_signal.eureka.client.company.domain.entity.CompanyType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,7 +13,7 @@ public class CreateCompanyCommand {
     private Long userId;
     private UUID hubId;
     private String name;
-    private String type;
+    private CompanyType type;
     private String address;
     private LocalDateTime createdAt;
 }

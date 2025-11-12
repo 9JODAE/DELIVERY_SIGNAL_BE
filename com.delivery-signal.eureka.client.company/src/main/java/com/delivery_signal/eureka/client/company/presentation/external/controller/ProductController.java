@@ -32,8 +32,10 @@ public class ProductController {
 
     @Operation(summary = "상품 생성", description = "신규 상품을 등록합니다.")
     @PostMapping
-    public ResponseEntity<ProductCreateResponseDto> createProduct(@RequestBody ProductCreateRequestDto request) {
-        CreateProductCommand command = ProductCreateMapper.toCommand(request);
+    public ResponseEntity<ProductCreateResponseDto> createProduct(
+            @RequestBody ProductCreateRequestDto request,
+            @RequestHeader(value = "x-user-id", required = false) Long userId) {
+        CreateProductCommand command = ProductCreateMapper.toCommand(request, userId);
         ProductCreateResult result = productService.createProduct(command);
         ProductCreateResponseDto response = ProductResponseMapper.toCreateResponse(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -57,24 +59,24 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
-//    @Operation(summary = "상품 수정", description = "상품 정보를 수정합니다.")
-//    @PutMapping("/{productId}")
-//    public ResponseEntity<ProductUpdateResponseDto> updateProduct(
-//            @PathVariable UUID productId,
-//            @RequestBody ProductUpdateRequestDto request) {
-//
-//        UpdateProductCommand command = ProductUpdateMapper.toCommand(productId, request);
-//        ProductUpdateResult result = productService.updateProduct(command);
-//        ProductUpdateResponseDto response = ProductResponseMapper.toUpdateResponse(result);
-//        return ResponseEntity.ok(response);
-//    }
-//
-//    @Operation(summary = "상품 삭제", description = "상품을 삭제합니다.")
-//    @DeleteMapping("/{productId}")
-//    public ResponseEntity<ProductDeleteResponseDto> deleteProduct(@PathVariable UUID productId) {
-//        DeleteProductCommand command = ProductDeleteMapper.toCommand(productId);
-//        ProductDeleteResult result = productService.deleteProduct(command);
-//        ProductDeleteResponseDto response = ProductResponseMapper.toDeleteResponse(result);
-//        return ResponseEntity.ok(response);
-//    }
+    @Operation(summary = "상품 수정", description = "상품 정보를 수정합니다.")
+    @PutMapping("/{productId}")
+    public ResponseEntity<ProductUpdateResponseDto> updateProduct(
+            @PathVariable UUID productId,
+            @RequestBody ProductUpdateRequestDto request) {
+
+        UpdateProductCommand command = ProductUpdateMapper.toCommand(productId, request);
+        ProductUpdateResult result = productService.updateProduct(command);
+        ProductUpdateResponseDto response = ProductResponseMapper.toUpdateResponse(result);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "상품 삭제", description = "상품을 삭제합니다.")
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<ProductDeleteResponseDto> deleteProduct(@PathVariable UUID productId) {
+        DeleteProductCommand command = ProductDeleteMapper.toCommand(productId);
+        ProductDeleteResult result = productService.deleteProduct(command);
+        ProductDeleteResponseDto response = ProductResponseMapper.toDeleteResponse(result);
+        return ResponseEntity.ok(response);
+    }
 }

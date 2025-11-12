@@ -9,10 +9,9 @@ import java.util.UUID;
 @Getter
 @Builder
 public class ProductDetailResult {
-    private UUID id;
+    private UUID productId;
     private UUID companyId;
     private UUID hubId;
-    private String name;
-    private Integer quantity;
+    private String productName;
     private BigDecimal price;
 }

@@ -60,22 +60,24 @@ public class ProductService {
 
         // 4️⃣ 도메인 엔티티 생성
         Product product = productDomainService.createProduct(
-                command.getCompanyId(),
-                command.getName(),
+                command.getProductName(),
                 command.getPrice(),
+                command.getProductId(),
+                command.getCompanyId(),
                 command.getUserId()
         );
 
         // 5️⃣ 저장
         productRepository.save(product);
 
-        log.info("상품 생성 완료: {}", product.getId());
+        log.info("상품 생성 완료: {}", product.getProductId());
 
         return ProductCreateResult.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .hubId(product.getHubId())
-                .companyId(product.getCompanyId())
+                .productId(UUID.randomUUID())
+                .productName(product.getProductName())
+                .price(product.getPrice())
+                .companyId(command.getCompanyId())
+                .hubId(command.getHubId())
                 .build();
     }
 
@@ -101,59 +103,59 @@ public class ProductService {
     }
 
 
-//    /**
-//     * 상품 수정
-//     */
-//    public ProductUpdateResult updateProduct(UpdateProductCommand command) {
-//
-//        Product product = productRepository.findById(command.getProductId())
-//                .orElseThrow(() -> new NotFoundException("",command.getProductId()));
-//
-//        // 권한 검증
-//        productPermissionValidator.validateUpdate(command.getUserId(),product.getCompanyId(),product.getHubId());
-//
-//        // 소속 업체 검증
-//        CompanyInfo companyInfo = companyQueryPort.getCompanyById());
-//        if (companyInfo == null) {
-//            throw new NotFoundException("업체", product.getCompanyId());
-//        }
-//
-//        // 도메인 로직 호출
-//        product.updateInfo(command.getProductName(), command.getPrice(), command.getDescription());
-//
-//        productRepository.save(product);
-//
-//        return ProductUpdateResult.builder()
-//                .productId(com.delivery_signal.eureka.client.company.domain.entity.product.getProductId())
-//                .updatedBy(product.getUpdatedBy())
-//                .updatedAt(product.getUpdatedAt())
-//                .message("상품 정보가 수정되었습니다.")
-//                .build();
-//    }
-//
-//
-//    /**
-//     * 상품 삭제
-//     */
-//    public ProductDeleteResult deleteProduct(DeleteProductCommand command) {
-//
-//        Product product = productRepository.findByProductId(command.getProductId())
-//                .orElseThrow(() -> new ProductNotFoundException(command.getProductId()));
-//
-//        // 권한 검증
-//        productPermissionValidator.validateDelete(command.getUserId(), com.delivery_signal.eureka.client.company.domain.entity.product.getCreatedBy());
-//
-//        // 삭제 처리 (soft delete)
-//        product.markAsDeleted(LocalDateTime.now());
-//        productRepository.save(product);
-//
-//        log.info("상품 삭제 완료: {}", product.getProductName());
-//
-//        return ProductDeleteResult.builder()
-//                .productId(com.delivery_signal.eureka.client.company.domain.entity.product.getProductId())
-//                .deletedBy(product.getDeletedBy())
-//                .deletedAt(product.getDeletedAt())
-//                .message("상품이 삭제되었습니다.")
-//                .build();
-//    }
+    /**
+     * 상품 수정
+     */
+    public ProductUpdateResult updateProduct(UpdateProductCommand command) {
+
+        Product product = productRepository.findById(command.getProductId())
+                .orElseThrow(() -> new NotFoundException("",command.getProductId()));
+
+        // 권한 검증
+        productPermissionValidator.validateUpdate(command.getUserId(),product.getCompanyId(),product.getHubId());
+
+        // 소속 업체 검증
+        CompanyDetailResult companyresult = companyQueryPort.getCompanyById(product.getCompanyId());
+        if (companyresult == null) {
+            throw new NotFoundException("업체", product.getCompanyId());
+        }
+
+        // 도메인 로직 호출
+        product.updateInfo(command.getProductName(), command.getPrice());
+
+        productRepository.save(product);
+
+        return ProductUpdateResult.builder()
+                .productId(product.getProductId())
+                .updatedBy(product.getUpdatedBy())
+                .updateAt(product.getUpdatedAt())
+                .message("상품 정보가 수정되었습니다.")
+                .build();
+    }
+
+
+    /**
+     * 상품 삭제
+     */
+    public ProductDeleteResult deleteProduct(DeleteProductCommand command) {
+
+        Product product = productRepository.findById(command.getProductId())
+                .orElseThrow(() -> new NotFoundException("",command.getProductId()));
+
+        // 권한 검증
+        productPermissionValidator.validateDelete(command.getUserId(),command.getHubId());
+
+        // 삭제 처리 (soft delete)
+        product.markAsDeleted(LocalDateTime.now());
+        productRepository.save(product);
+
+        log.info("상품 삭제 완료: {}", product.getProductName());
+
+        return ProductDeleteResult.builder()
+                .productId(product.getProductId())
+                .deletedBy(product.getDeletedBy())
+                .deletedAt(product.getDeletedAt())
+                .message("상품이 삭제되었습니다.")
+                .build();
+    }
 }

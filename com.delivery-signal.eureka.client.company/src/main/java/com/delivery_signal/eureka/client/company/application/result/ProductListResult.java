@@ -9,8 +9,7 @@ import java.util.UUID;
 @Getter
 @Builder
 public class ProductListResult {
-    private UUID id;
-    private String name;
-    private Integer quantity;
+    private UUID productId;
+    private String productName;
     private BigDecimal price;
 }

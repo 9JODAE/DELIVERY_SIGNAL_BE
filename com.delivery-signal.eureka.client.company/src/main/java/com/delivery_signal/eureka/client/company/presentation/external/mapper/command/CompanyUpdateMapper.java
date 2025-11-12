@@ -10,9 +10,9 @@ public class CompanyUpdateMapper {
     public static UpdateCompanyCommand toCommand(UUID companyId, CompanyUpdateRequestDto dto) {
         return UpdateCompanyCommand.builder()
                 .companyId(companyId)
-                .name(dto.getName())
+                .companyName(dto.getCompanyName())
                 .address(dto.getAddress())
-                .type(dto.getType())
+                .companyType(dto.getType())
                 .build();
     }
 }

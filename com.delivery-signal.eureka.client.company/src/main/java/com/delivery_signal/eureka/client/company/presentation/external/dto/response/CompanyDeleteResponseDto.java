@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CompanyDeleteResponseDto {
-    private UUID id;
+    private UUID companyId;
     private LocalDateTime deletedAt;
     private Long deletedBy;
 }

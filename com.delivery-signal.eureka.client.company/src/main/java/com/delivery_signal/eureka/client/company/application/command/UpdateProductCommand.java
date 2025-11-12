@@ -11,7 +11,6 @@ import java.util.UUID;
 public class UpdateProductCommand {
     private Long userId;
     private UUID productId;
-    private String name;
-    private Integer quantity;
+    private String productName;
     private BigDecimal price;
 }

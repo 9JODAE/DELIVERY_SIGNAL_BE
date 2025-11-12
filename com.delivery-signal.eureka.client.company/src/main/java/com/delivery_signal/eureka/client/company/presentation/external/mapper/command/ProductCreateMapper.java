@@ -5,9 +5,10 @@ import com.delivery_signal.eureka.client.company.presentation.external.dto.reque
 
 public class ProductCreateMapper {
 
-    public static CreateProductCommand toCommand(ProductCreateRequestDto dto) {
+    public static CreateProductCommand toCommand(ProductCreateRequestDto dto,Long userId) {
         return CreateProductCommand.builder()
-                .name(dto.getName())
+                .userId(userId)
+                .productName(dto.getName())
                 .price(dto.getPrice())
                 .build();
     }

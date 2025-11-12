@@ -10,7 +10,8 @@ import java.util.UUID;
 @Getter
 @Builder
 public class ProductDeleteResult {
-    private UUID id;
+    private UUID productId;
     private LocalDateTime deletedAt;
     private Long deletedBy;
+    private String message;
 }

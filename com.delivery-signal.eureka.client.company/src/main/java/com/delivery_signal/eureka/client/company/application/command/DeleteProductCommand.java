@@ -9,4 +9,6 @@ import java.util.UUID;
 @Builder
 public class DeleteProductCommand {
     private UUID productId;
+    private UUID hubId;
+    private Long userId;
 }

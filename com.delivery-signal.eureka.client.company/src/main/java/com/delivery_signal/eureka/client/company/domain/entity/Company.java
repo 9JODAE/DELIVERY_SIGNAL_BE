@@ -18,16 +18,17 @@ public class Company {
 
     @Id
     @Column(name = "company_id", nullable = false, updatable = false)
-    private UUID id;
+    private UUID companyId;
 
     @Column(name = "hub_id", nullable = false)
     private UUID hubId;
 
     @Column(name = "company_name", nullable = false)
-    private String name;
+    private String companyName;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "company_type", nullable = false)
-    private String type;
+    private CompanyType companyType;
 
     @Column(name = "company_address")
     private String address;
@@ -49,6 +50,16 @@ public class Company {
 
     @Column(name = "deleted_by")
     private Long deletedBy;
+
+
+    public void updateInfo(String companyName, String address, CompanyType type, UUID hubId) {
+        this.companyName = companyName;
+        this.address = address;
+        this.companyType = type;
+        this.hubId = hubId;
+        this.updatedAt = LocalDateTime.now();
+        // updatedBy는 service 쪽에서 주입받거나 auditor로 처리
+    }
 
     public void markAsDeleted(LocalDateTime now) {
         deletedAt = LocalDateTime.now();

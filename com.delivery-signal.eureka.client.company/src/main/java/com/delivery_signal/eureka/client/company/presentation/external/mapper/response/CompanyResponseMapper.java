@@ -7,8 +7,8 @@ public class CompanyResponseMapper {
 
     public static CompanyCreateResponseDto toCreateResponse(CompanyCreateResult result) {
         return CompanyCreateResponseDto.builder()
-                .id(result.getId())
-                .name(result.getName())
+                .companyId(result.getCompanyId())
+                .companyName(result.getCompanyName())
                 .type(result.getType())
                 .address(result.getAddress())
                 .hubId(result.getHubId())
@@ -18,8 +18,8 @@ public class CompanyResponseMapper {
 
     public static CompanyDetailResponseDto toDetailResponse(CompanyDetailResult result) {
         return CompanyDetailResponseDto.builder()
-                .id(result.getId())
-                .name(result.getName())
+                .companyId(result.getCompanyId())
+                .name(result.getCompanyName())
                 .type(result.getType())
                 .address(result.getAddress())
                 .hubId(result.getHubId())
@@ -30,8 +30,8 @@ public class CompanyResponseMapper {
 
     public static CompanyListResponseDto toListResponse(CompanyListResult result) {
         return CompanyListResponseDto.builder()
-                .id(result.getId())
-                .name(result.getName())
+                .companyId(result.getCompanyId())
+                .companyName(result.getCompanyName())
                 .type(result.getType())
                 .hubId(result.getHubId())
                 .build();
@@ -39,8 +39,8 @@ public class CompanyResponseMapper {
 
     public static CompanyUpdateResponseDto toUpdateResponse(CompanyUpdateResult result) {
         return CompanyUpdateResponseDto.builder()
-                .id(result.getId())
-                .name(result.getName())
+                .companyId(result.getCompanyId())
+                .companyName(result.getCompanyName())
                 .type(result.getType())
                 .address(result.getAddress())
                 .updatedAt(result.getUpdatedAt())
@@ -49,7 +49,7 @@ public class CompanyResponseMapper {
 
     public static CompanyDeleteResponseDto toDeleteResponse(CompanyDeleteResult result) {
         return CompanyDeleteResponseDto.builder()
-                .id(result.getId())
+                .companyId(result.getCompanyId())
                 .deletedAt(result.getDeletedAt())
                 .deletedBy(result.getDeletedBy())
                 .build();

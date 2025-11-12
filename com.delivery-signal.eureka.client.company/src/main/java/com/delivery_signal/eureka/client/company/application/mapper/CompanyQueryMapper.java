@@ -15,9 +15,9 @@ public class CompanyQueryMapper {
     // Entity -> List DTO (서비스 내부 응답용)
     public CompanyListResult toListDto(Company company) {
         return CompanyListResult.builder()
-                .id(company.getId())
-                .name(company.getName())
-                .type(company.getType())
+                .companyId(company.getCompanyId())
+                .companyName(company.getCompanyName())
+                .type(company.getCompanyType())
                 .hubId(company.getHubId())
                 .build();
     }
@@ -31,9 +31,9 @@ public class CompanyQueryMapper {
     // Entity -> Detail DTO (서비스 내부 응답용)
     public CompanyDetailResult toDetailDto(Company company) {
         return CompanyDetailResult.builder()
-                .id(company.getId())
-                .name(company.getName())
-                .type(company.getType())
+                .companyId(company.getCompanyId())
+                .companyName(company.getCompanyName())
+                .type(company.getCompanyType())
                 .hubId(company.getHubId())
                 .address(company.getAddress())
                 .createdAt(company.getCreatedAt())
@@ -44,8 +44,9 @@ public class CompanyQueryMapper {
     // Entity -> CompanyInfo VO (다른 MSA(예: Order)에서 사용할 경량 VO)
     public CompanyInfo toCompanyInfo(Company company) {
         return CompanyInfo.builder()
-                .companyId(company.getId())
-                .companyName(company.getName())
+                .companyId(company.getCompanyId())
+                .companyName(company.getCompanyName())
+                .type(company.getCompanyType())
                 .hubId(company.getHubId())
                 .address(company.getAddress())
                 .build();

@@ -65,10 +65,10 @@ public class CompanyService {
         );
 
         companyRepository.save(company);
-        log.info("업체 생성 완료: {}", company.getName());
+        log.info("업체 생성 완료: {}", company.getCompanyName());
 
         return CompanyCreateResult.builder()
-                .id(company.getId())
+                .companyId(company.getCompanyId())
                 .createdBy(company.getCreatedBy())
                 .createdAt(company.getCreatedAt())
                 .message("업체 등록이 완료되었습니다.")
@@ -109,34 +109,32 @@ public class CompanyService {
 
     /** 업체 수정 */
     public CompanyUpdateResult updateCompany(UpdateCompanyCommand command) {
-//
-//        Company company = companyRepository.findById(command.getCompanyId())
-//                .orElseThrow(() -> new NotFoundException("업체", command.getCompanyId()));
-//
-//        // 권한 체크
-//        companyPermissionValidator.validateUpdate(command.getUserId(),company.getHubId(),command.getUserId());
-//
-//        // 허브 유효성 체크
-//        if (!hubQueryPort.existsByHubId(company.getHubId())) {
-//            throw new NotFoundException("허브", company.getHubId());
-//        }
-//
-////        company.updateInfo(
-////                command.getCompanyName(),
-////                command.getAddress(),
-////                command.getType(),
-////                command.getHubId()
-////        );
-////
-////        companyRepository.save(company);
-////
-////        return CompanyUpdateResult.builder()
-////                .companyId(company.getCompanyId())
-////                .updatedBy(company.getUpdatedBy())
-////                .updatedAt(company.getUpdatedAt())
-////                .message("업체 정보가 수정되었습니다.")
-////                .build();
-        return null;
+
+        Company company = companyRepository.findById(command.getCompanyId())
+                .orElseThrow(() -> new NotFoundException("업체", command.getCompanyId()));
+
+        // 권한 체크
+        companyPermissionValidator.validateUpdate(command.getUserId(),company.getHubId(),command.getUserId());
+
+        // 허브 유효성 체크
+        if (!hubQueryPort.existsByHubId(company.getHubId())) {
+            throw new NotFoundException("허브", company.getHubId());
+        }
+
+        company.updateInfo(
+                command.getCompanyName(),
+                command.getAddress(),
+                command.getCompanyType(),
+                command.getHubId()
+        );
+
+        companyRepository.save(company);
+
+        return CompanyUpdateResult.builder()
+                .companyId(company.getCompanyId())
+                .updatedBy(company.getUpdatedBy())
+                .updatedAt(company.getUpdatedAt())
+                .build();
     }
 
 
@@ -151,10 +149,10 @@ public class CompanyService {
         company.markAsDeleted(LocalDateTime.now());
         companyRepository.save(company);
 
-        log.info("업체 삭제 완료: {}", company.getName());
+        log.info("업체 삭제 완료: {}", company.getCompanyName());
 
         return CompanyDeleteResult.builder()
-                .id(company.getId())
+                .companyId(company.getCompanyId())
                 .deletedBy(company.getDeletedBy())
                 .deletedAt(company.getDeletedAt())
                 .message("업체가 삭제되었습니다.")

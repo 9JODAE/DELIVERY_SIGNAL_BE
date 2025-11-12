@@ -10,7 +10,7 @@ public class ProductUpdateMapper {
     public static UpdateProductCommand toCommand(UUID productId, ProductUpdateRequestDto dto) {
         return UpdateProductCommand.builder()
                 .productId(productId)
-                .name(dto.getName())
+                .productName(dto.getName())
                 .build();
     }
 }

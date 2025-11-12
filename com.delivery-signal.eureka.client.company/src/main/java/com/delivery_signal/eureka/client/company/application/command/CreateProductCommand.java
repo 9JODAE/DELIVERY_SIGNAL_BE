@@ -11,8 +11,8 @@ import java.util.UUID;
 public class CreateProductCommand {
     private Long userId;
     private UUID companyId;
+    private UUID productId;
     private UUID hubId;
-    private String name;
-    private Integer quantity;
+    private String productName;
     private BigDecimal price;
 }

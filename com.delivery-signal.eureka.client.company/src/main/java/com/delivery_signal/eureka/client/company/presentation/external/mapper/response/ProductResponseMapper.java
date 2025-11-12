@@ -7,8 +7,8 @@ public class ProductResponseMapper {
 
     public static ProductCreateResponseDto toCreateResponse(ProductCreateResult result) {
         return ProductCreateResponseDto.builder()
-                .id(result.getId())
-                .name(result.getName())
+                .id(result.getProductId())
+                .name(result.getProductName())
                 .companyId(result.getCompanyId())
                 .hubId(result.getHubId())
                 .build();
@@ -16,8 +16,8 @@ public class ProductResponseMapper {
 
     public static ProductDetailResponseDto toDetailResponse(ProductDetailResult result) {
         return ProductDetailResponseDto.builder()
-                .id(result.getId())
-                .name(result.getName())
+                .id(result.getProductId())
+                .name(result.getProductName())
                 .companyId(result.getCompanyId())
                 .hubId(result.getHubId())
                 .build();
@@ -25,21 +25,21 @@ public class ProductResponseMapper {
 
     public static ProductListResponseDto toListResponse(ProductListResult result) {
         return ProductListResponseDto.builder()
-                .id(result.getId())
-                .name(result.getName())
+                .id(result.getProductId())
+                .name(result.getProductName())
                 .build();
     }
 
     public static ProductUpdateResponseDto toUpdateResponse(ProductUpdateResult result) {
         return ProductUpdateResponseDto.builder()
-                .id(result.getId())
-                .name(result.getName())
+                .id(result.getProductId())
+                .name(result.getProductName())
                 .build();
     }
 
     public static ProductDeleteResponseDto toDeleteResponse(ProductDeleteResult result) {
         return ProductDeleteResponseDto.builder()
-                .id(result.getId())
+                .id(result.getProductId())
                 .deletedAt(result.getDeletedAt())
                 .deletedBy(result.getDeletedBy())
                 .build();

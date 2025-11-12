@@ -27,10 +27,10 @@ public class CompanyCommandAdapter implements CompanyCommandPort {
     @Override
     public CompanyCreateResult createCompany(CreateCompanyCommand command) {
         Company company = Company.builder()
-                .id(UUID.randomUUID())
+                .companyId(UUID.randomUUID())
                 .hubId(command.getHubId())
-                .name(command.getName())
-                .type(command.getType())
+                .companyName(command.getName())
+                .companyType(command.getType())
                 .address(command.getAddress())
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -46,10 +46,11 @@ public class CompanyCommandAdapter implements CompanyCommandPort {
         Company entity = repository.findById(command.getCompanyId())
                 .orElseThrow(() -> new IllegalArgumentException("업체를 찾을 수 없습니다."));
 
-        entity.setName(command.getName());
-        entity.setType(command.getType());
-        entity.setAddress(command.getAddress());
-        entity.setUpdatedAt(LocalDateTime.now());
+        entity.updateInfo(
+                command.getCompanyName(),
+                command.getAddress(),
+                command.getCompanyType(),
+                command.getHubId());
 
         repository.save(entity);
 
@@ -71,10 +72,10 @@ public class CompanyCommandAdapter implements CompanyCommandPort {
 
     private Company toEntity(Company c) {
         return Company.builder()
-                .id(c.getId())
+                .companyId(c.getCompanyId())
+                .companyName(c.getCompanyName())
                 .hubId(c.getHubId())
-                .name(c.getName())
-                .type(c.getType())
+                .companyType(c.getCompanyType())
                 .address(c.getAddress())
                 .createdAt(c.getCreatedAt())
                 .updatedAt(c.getUpdatedAt())
@@ -85,10 +86,10 @@ public class CompanyCommandAdapter implements CompanyCommandPort {
 
     private CompanyCreateResult toCreateResult(Company e) {
         return CompanyCreateResult.builder()
-                .id(e.getId())
+                .companyId(e.getCompanyId())
                 .hubId(e.getHubId())
-                .name(e.getName())
-                .type(e.getType())
+                .companyName(e.getCompanyName())
+                .type(e.getCompanyType())
                 .address(e.getAddress())
                 .createdAt(e.getCreatedAt())
                 .build();
@@ -96,9 +97,9 @@ public class CompanyCommandAdapter implements CompanyCommandPort {
 
     private CompanyUpdateResult toUpdateResult(Company e) {
         return CompanyUpdateResult.builder()
-                .id(e.getId())
-                .name(e.getName())
-                .type(e.getType())
+                .companyId(e.getCompanyId())
+                .companyName(e.getCompanyName())
+                .type(e.getCompanyType())
                 .address(e.getAddress())
                 .updatedAt(e.getUpdatedAt())
                 .build();
@@ -106,7 +107,7 @@ public class CompanyCommandAdapter implements CompanyCommandPort {
 
     private CompanyDeleteResult toDeleteResult(Company e) {
         return CompanyDeleteResult.builder()
-                .id(e.getId())
+                .companyId(e.getCompanyId())
                 .deletedAt(e.getDeletedAt())
                 .deletedBy(e.getDeletedBy())
                 .build();
