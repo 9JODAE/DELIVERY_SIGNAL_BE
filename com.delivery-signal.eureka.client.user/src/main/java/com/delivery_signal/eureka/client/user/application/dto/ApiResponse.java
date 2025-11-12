@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.user.presentation.dto;
+package com.delivery_signal.eureka.client.user.application.dto;
 
 public record ApiResponse<T>(
         String message,

@@ -1,15 +1,16 @@
 package com.delivery_signal.eureka.client.user.presentation.controller;
 
-import com.delivery_signal.eureka.client.user.presentation.dto.request.CreateUserRequest;
-import com.delivery_signal.eureka.client.user.presentation.dto.request.UpdateUserApprovalStatusRequest;
-import com.delivery_signal.eureka.client.user.presentation.dto.request.UpdateUserRequest;
-import com.delivery_signal.eureka.client.user.presentation.dto.request.CheckUserRoleRequest;
-import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserRoleResponse;
-import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserResponse;
+import com.delivery_signal.eureka.client.user.application.dto.request.CreateUserRequest;
+import com.delivery_signal.eureka.client.user.application.dto.request.UpdateUserApprovalStatusRequest;
+import com.delivery_signal.eureka.client.user.application.dto.request.UpdateUserRequest;
+import com.delivery_signal.eureka.client.user.application.dto.request.CheckUserRoleRequest;
+import com.delivery_signal.eureka.client.user.application.dto.response.GetUserRoleResponse;
+import com.delivery_signal.eureka.client.user.application.dto.response.GetUserResponse;
 import com.delivery_signal.eureka.client.user.application.dto.ApprovalStatusType;
 import com.delivery_signal.eureka.client.user.application.dto.UserRoleType;
+import com.delivery_signal.eureka.client.user.application.dto.ApiResponse;
 import com.delivery_signal.eureka.client.user.application.service.UserService;
-import com.delivery_signal.eureka.client.user.presentation.dto.ApiResponse;
+
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,18 +36,18 @@ public class UserController {
 //        return "Order 어플리케이션에서 User의 /call 호출";
 //    }
 
-    @GetMapping("/authorization")
-    @Operation(summary="다른 애플리케이션의 인가 확인", description="인가를 확인합니다")
-//  UserController에서 구현 -> JwtAuthorizationFilter에서 구현 -> Gateway에서 구현됨
-    public ResponseEntity<ApiResponse<GetUserRoleResponse>> confirmUserRole(@RequestHeader("x-user-id") String x_user_id, @RequestBody CheckUserRoleRequest requestDto) {
-        // 로그인한 사용자의 권한 확인 아닌 요청 body의 사용자(userId)에 대한 권한 확인
-        Boolean check = userService.checkUserRole(requestDto);
-        if (!check) {
-            return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.message("권한이 일치하지 않습니다"));
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(new GetUserRoleResponse(requestDto.userId(), requestDto.role(), null)));
-
-    }
+//    @GetMapping("/authorization")
+//    @Operation(summary="다른 애플리케이션의 인가 확인", description="인가를 확인합니다")
+////  UserController에서 구현 -> JwtAuthorizationFilter에서 구현 -> Gateway에서 구현됨
+//    public ResponseEntity<ApiResponse<GetUserRoleResponse>> confirmUserRole(@RequestHeader("x-user-id") String x_user_id, @RequestBody CheckUserRoleRequest requestDto) {
+//        // 로그인한 사용자의 권한 확인 아닌 요청 body의 사용자(userId)에 대한 권한 확인
+//        Boolean check = userService.checkUserRole(requestDto);
+//        if (!check) {
+//            return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.message("권한이 일치하지 않습니다"));
+//        }
+//        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(new GetUserRoleResponse(requestDto.userId(), requestDto.role(), null)));
+//
+//    }
 
     @GetMapping("/profile")
     @Operation(summary="사용자의 본인 프로필 조회", description="본인의 정보를 조회합니다")
@@ -72,7 +73,7 @@ public class UserController {
 //    @PreAuthorize("hasRole('MASTER')")
     @Operation(summary="MASTER의 특정 사용자 조회", description="사용자를 조회합니다")
     public ResponseEntity<ApiResponse<GetUserResponse>> findUser(@RequestHeader("x-user-id") String x_user_id, @PathVariable("userId") Long userId) {
-        /*
+        //*
         if (!isMaster(Long.parseLong(x_user_id))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.message("특정 사용자 조회는 MASTER만 가능합니다"));
         }
@@ -84,12 +85,12 @@ public class UserController {
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
-        */
+        //*/
 
 
 
 
-        // dummy data
+        /*/ dummy data
         if (!isMaster(Long.parseLong(x_user_id))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.message("특정 사용자 조회는 MASTER만 가능합니다"));
         }
@@ -103,6 +104,8 @@ public class UserController {
                 UserRoleType.HUB_MANAGER,
                 ApprovalStatusType.APPROVED
         )));
+
+         */
     }
 
     @GetMapping()
@@ -112,20 +115,20 @@ public class UserController {
             @RequestHeader("x-user-id") String x_user_id,
 //            @Parameter(description = "사용자 이름, 사용자 소속 그룹(허브 또는 업체)명, 권한으로 검색 가능")
             @RequestParam(required = false) String search) {
-        /*
+        //*
         if (!isMaster(Long.parseLong(x_user_id))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.message("사용자 전체 조회는 MASTER만 가능합니다"));
         }
 
         List<GetUserResponse> responseDtos = userService.getUsers(search);
 
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDtos));
 
-        */
+        //*/
 
 
 
-        // dummy data
+        /*/ dummy data
 
         if (!isMaster(Long.parseLong(x_user_id))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.message("사용자 전체 조회는 MASTER만 가능합니다"));
@@ -194,7 +197,7 @@ public class UserController {
                 new GetUserResponse(48L, "okgwan", "UOKCOMGWAN", "D 업체", UUID.randomUUID(), UserRoleType.SUPPLIER_MANAGER, ApprovalStatusType.PENDING),
                 new GetUserResponse(49L, "takgwan", "UTAKCOMGWAN", "E 업체", UUID.randomUUID(), UserRoleType.SUPPLIER_MANAGER, ApprovalStatusType.PENDING)
         )));
-
+        */
     }
 
 

@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.user.presentation.dto.request;
+package com.delivery_signal.eureka.client.user.application.dto.request;
 
 import com.delivery_signal.eureka.client.user.application.dto.UserRoleType;
 

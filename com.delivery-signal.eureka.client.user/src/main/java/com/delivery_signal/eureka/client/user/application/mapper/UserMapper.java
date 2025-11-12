@@ -1,10 +1,11 @@
-package com.delivery_signal.eureka.client.user.presentation.mapper;
+package com.delivery_signal.eureka.client.user.application.mapper;
 
 import com.delivery_signal.eureka.client.user.application.dto.ApprovalStatusType;
 import com.delivery_signal.eureka.client.user.application.dto.UserRoleType;
-import com.delivery_signal.eureka.client.user.presentation.dto.request.CreateUserRequest;
-import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserResponse;
+import com.delivery_signal.eureka.client.user.application.dto.request.CreateUserRequest;
+import com.delivery_signal.eureka.client.user.application.dto.response.GetUserResponse;
 import com.delivery_signal.eureka.client.user.domain.entity.User;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 

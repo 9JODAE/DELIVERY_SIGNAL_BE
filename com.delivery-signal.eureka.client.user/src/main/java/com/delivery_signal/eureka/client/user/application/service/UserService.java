@@ -1,22 +1,21 @@
 package com.delivery_signal.eureka.client.user.application.service;
 
-import com.delivery_signal.eureka.client.user.application.dto.UserRoleType;
 import com.delivery_signal.eureka.client.user.application.port.out.OrderQueryPort;
-import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
-import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserAuthorizationResponse;
-import com.delivery_signal.eureka.client.user.presentation.mapper.UserMapper;
+import com.delivery_signal.eureka.client.user.application.mapper.UserMapper;
 import com.delivery_signal.eureka.client.user.application.exception.ErrorCode;
 import com.delivery_signal.eureka.client.user.application.exception.ServiceException;
-
-import com.delivery_signal.eureka.client.user.presentation.dto.request.CreateUserRequest;
-import com.delivery_signal.eureka.client.user.presentation.dto.request.CheckUserRoleRequest;
-import com.delivery_signal.eureka.client.user.presentation.dto.request.UpdateUserApprovalStatusRequest;
-import com.delivery_signal.eureka.client.user.presentation.dto.request.UpdateUserRequest;
-import com.delivery_signal.eureka.client.user.presentation.dto.response.GetUserResponse;
+import com.delivery_signal.eureka.client.user.application.dto.UserRoleType;
+import com.delivery_signal.eureka.client.user.application.dto.response.GetUserAuthorizationResponse;
+import com.delivery_signal.eureka.client.user.application.dto.request.CreateUserRequest;
+import com.delivery_signal.eureka.client.user.application.dto.request.CheckUserRoleRequest;
+import com.delivery_signal.eureka.client.user.application.dto.request.UpdateUserApprovalStatusRequest;
+import com.delivery_signal.eureka.client.user.application.dto.request.UpdateUserRequest;
+import com.delivery_signal.eureka.client.user.application.dto.response.GetUserResponse;
 
 import com.delivery_signal.eureka.client.user.domain.entity.ApprovalStatus;
 import com.delivery_signal.eureka.client.user.domain.entity.User;
 import com.delivery_signal.eureka.client.user.domain.repository.UserRepository;
+import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -85,13 +84,21 @@ public class UserService {
     public GetUserResponse createUser(CreateUserRequest requestDto) {
         User user = userMapper.toEntity(requestDto);
         // 사용자 중복 확인
-        if (userRepository.findBySlackId(requestDto.slackId()).isPresent()) {
+        Optional<User> duplicated = userRepository.findBySlackId(requestDto.slackId());
+        if (!duplicated.isEmpty()) {
+            System.out.print(duplicated.get().getUsername());
+            System.out.print(duplicated.get().getSlackId());
             throw new IllegalArgumentException(ErrorCode.USER_USERNAME_DUPLICATED.getMessage());
         }
 
         // Master인 경우, 승인 상태 PENDING -> APPROVED 자동 조정
         if (user.getRole().equals(UserRole.MASTER)) {
             user.updateApprovalStatus(ApprovalStatus.APPROVED);
+        }
+
+        // organization id가 'delivery-signal'인 경우, organizationId=null
+        if (user.getOrganization() == "delivery-signal") {
+            user.updateOrganizationId(null);
         }
         userRepository.save(user);
         return userMapper.from(user);
@@ -118,7 +125,7 @@ public class UserService {
         List<GetUserResponse> responseDtos;
 
         if (keywords == null) {
-            responseDtos = userRepository.findAll().stream().map(userMapper::from).toList();
+            responseDtos = userRepository.findAll().stream().filter(user -> !user.isDeleted()).map(userMapper::from).toList();
             return responseDtos;
         } else {
             responseDtos = new ArrayList<>();
@@ -137,6 +144,8 @@ public class UserService {
                     .toList()
                     .forEach(user -> addIfNotPresented(user, presented, responseDtos));
         }
+
+
 
         return responseDtos;
     }
@@ -220,7 +229,6 @@ public class UserService {
                 responseDtos.add(userMapper.from(user));
             }
         }
-
     }
 
 }

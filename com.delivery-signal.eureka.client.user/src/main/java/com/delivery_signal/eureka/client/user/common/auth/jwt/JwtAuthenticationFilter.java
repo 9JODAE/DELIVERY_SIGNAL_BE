@@ -4,7 +4,8 @@ import com.delivery_signal.eureka.client.user.common.auth.util.JwtUtil;
 import com.delivery_signal.eureka.client.user.common.auth.security.UserDetailsImpl;
 import com.delivery_signal.eureka.client.user.domain.entity.ApprovalStatus;
 import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
-import com.delivery_signal.eureka.client.user.presentation.dto.request.CreateUserLoginRequest;
+import com.delivery_signal.eureka.client.user.application.dto.request.CreateUserLoginRequest;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

@@ -90,6 +90,10 @@ public class User extends BaseEntity {
     public void updateIsPublic(Boolean isPublic) {
         this.isPublic = isPublic;
     }
+
+    public void updateOrganizationId(UUID organizationId) {
+        this.organizationId = organizationId;
+    }
 }
 
 

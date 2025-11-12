@@ -1,6 +1,7 @@
-package com.delivery_signal.eureka.client.user.presentation.dto.request;
+package com.delivery_signal.eureka.client.user.application.dto.request;
 
 import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -40,4 +41,20 @@ public record CreateUserRequest(
         boolean isMaster,
         String masterToken
 
-) {}
+) {
+    public static CreateUserRequest of(
+        String username,
+        String password,
+        String slackId,
+        String organization,
+        UUID organizationId,
+        UserRole role,
+        boolean isMaster,
+        String masterToken
+    ) {
+        if (!isMaster || masterToken == null) {
+            return new CreateUserRequest(username, password, slackId, organization, organizationId, role, false, null);
+        }
+        return new CreateUserRequest(username, password, slackId, organization, organizationId, role, isMaster, masterToken);
+    }
+}
