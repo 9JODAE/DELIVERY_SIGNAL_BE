@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.hub.presentation;
+package com.delivery_signal.eureka.client.hub.common.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -7,7 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.delivery_signal.eureka.client.hub.presentation.dto.ApiResponse;
+import com.delivery_signal.eureka.client.hub.common.api.ApiResponse;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;

@@ -21,7 +21,7 @@ import com.delivery_signal.eureka.client.hub.application.command.GetHubRouteComm
 import com.delivery_signal.eureka.client.hub.application.command.RestoreStockQuantityCommand;
 import com.delivery_signal.eureka.client.hub.application.facade.HubRouteFacade;
 import com.delivery_signal.eureka.client.hub.application.facade.StockFacade;
-import com.delivery_signal.eureka.client.hub.presentation.dto.ApiResponse;
+import com.delivery_signal.eureka.client.hub.common.api.ApiResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.DeductStockQuantityRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.GetStockQuantitiesRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.RestoreStockQuantityRequest;
