@@ -37,7 +37,6 @@ public class OrderService {
 
     private final HubQueryPort hubQueryPort;
     private final CompanyQueryPort companyQueryPort;
-    private final ProductQueryPort productQueryPort;
     private final UserQueryPort userQueryPort;
     private final OrderQueryPort orderQueryPort;
 
@@ -46,13 +45,12 @@ public class OrderService {
     private final OrderProductRepository orderProductRepository;
     private final OrderPermissionValidator orderPermissionValidator;
 
-    public OrderService(DeliveryCommandPort deliveryCommandPort, HubCommandPort hubCommandPort, OrderCommandPort orderCommandPort, HubQueryPort hubQueryPort, CompanyQueryPort companyQueryPort, ProductQueryPort productQueryPort, UserQueryPort userQueryPort, OrderQueryPort orderQueryPort, OrderDomainService orderDomainService, OrderQueryMapper orderQueryMapper, OrderProductRepository orderProductRepository, OrderPermissionValidator orderPermissionValidator) {
+    public OrderService(DeliveryCommandPort deliveryCommandPort, HubCommandPort hubCommandPort, OrderCommandPort orderCommandPort, HubQueryPort hubQueryPort, CompanyQueryPort companyQueryPort, UserQueryPort userQueryPort, OrderQueryPort orderQueryPort, OrderDomainService orderDomainService, OrderQueryMapper orderQueryMapper, OrderProductRepository orderProductRepository, OrderPermissionValidator orderPermissionValidator) {
         this.deliveryCommandPort = deliveryCommandPort;
         this.hubCommandPort = hubCommandPort;
         this.orderCommandPort = orderCommandPort;
         this.hubQueryPort = hubQueryPort;
         this.companyQueryPort = companyQueryPort;
-        this.productQueryPort = productQueryPort;
         this.userQueryPort = userQueryPort;
         this.orderQueryPort = orderQueryPort;
         this.orderDomainService = orderDomainService;
@@ -73,18 +71,13 @@ public class OrderService {
         // 로그인 및 최소 권한 체크
         orderPermissionValidator.validateCreate(command.getUserId());
 
-        //유저 활성 여부 확인
-        if (!userQueryPort.isUserApproved(command.getUserId())) {
-            throw new NotFoundException(command.getUserId());
-        }
-
         // 상품 ID 리스트
         List<UUID> productIds = command.getProducts().stream()
                 .map(OrderProductCommand::getProductId)
                 .toList();
 
         // 상품 정보 조회
-        List<ProductInfo> productInfos = productQueryPort.getProducts(productIds);
+        List<ProductInfo> productInfos = companyQueryPort.getProducts(productIds);
 
         // 상품 검증: 각 상품이 공급업체에 속하는지 확인
         productInfos.stream()
@@ -261,37 +254,48 @@ public class OrderService {
     @Transactional
     public OrderCancelResult cancelOrder(OrderCancelCommand command) {
 
+        // 1. 주문 조회
         Order order = orderQueryPort.findByOrderId(command.getOrderId())
                 .orElseThrow(() -> new OrderNotFoundException(command.getOrderId()));
 
-        // 이미 삭제된 주문 체크 (데이터 정합성)
+        // 2. 권한 검증
+        // MASTER_ADMIN / HUB_ADMIN(자기 허브) / COMPANY_MANAGER(본인 주문)
+        orderPermissionValidator.validateCancel(
+                command.getUserId(),
+                order.getDepartureHubId(),      // HUB_ADMIN은 허브 기준
+                order.getCreatedBy()            // COMPANY_MANAGER는 본인 주문 기준
+        );
+
+        // 3. 상태 검증
         if (order.getDeletedAt() != null) {
             throw new InvalidOrderStateException("삭제된 주문은 취소할 수 없습니다.");
         }
-
-        // 이미 취소된 주문 체크
         if (order.getStatus() == OrderStatus.CANCELED) {
             throw new InvalidOrderStateException("이미 취소된 주문입니다.");
         }
 
-        // 배송 취소 요청
+        // 4. 배송 취소 요청
         if (order.getDeliveryId() != null) {
             deliveryCommandPort.cancelDelivery(order.getDeliveryId());
         }
 
-        // 주문 취소 처리 (도메인 로직)
+        // 5. 주문 취소 처리 (도메인 로직)
         order.cancel();
 
-        // 저장
+        // 6. 허브 재고 복구
+        hubCommandPort.restoreStocks(order.getDepartureHubId(), command.getProducts());
+
+        // 7. 주문 저장
         orderCommandPort.save(order);
 
-        // 결과 반환
+        // 8. 결과 반환
         return OrderCancelResult.builder()
                 .orderId(order.getId())
                 .deliveryId(order.getDeliveryId())
                 .message("주문 및 배송이 정상적으로 취소되었습니다.")
                 .build();
     }
+
 
 
 

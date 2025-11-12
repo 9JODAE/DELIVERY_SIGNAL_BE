@@ -17,12 +17,12 @@ public class hubQueryAdapter implements HubQueryPort {
 
     @Override
     public Map<UUID, Integer> getStockQuantities(List<UUID> productIds) {
-        return hubClient.getStockQuantities(productIds);
+        return hubClient.getStockQuantities(productIds).getData();
     }
 
     @Override
     public boolean existsByHubId(UUID hubId) {
-        return hubClient.existsById(hubId);
+        return hubClient.existsById(hubId).getData();
     }
 }
 

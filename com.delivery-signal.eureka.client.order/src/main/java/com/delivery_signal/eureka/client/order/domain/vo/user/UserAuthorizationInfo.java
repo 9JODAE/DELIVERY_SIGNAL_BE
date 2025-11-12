@@ -14,9 +14,9 @@ import java.util.UUID;
 @Builder
 public class UserAuthorizationInfo {
     private final Long userId;
-    private final boolean active;
-    private final String role;
-    private final UUID hubId; // 허브 정보 포함 (인가 판단용)
+    private final UserRole role;
+    private final String organization; //허브인지, 업체인지 소속 확인
+    private final UUID organizationId; //소속된 곳(허브,업체)의 UUID
 
     /**
      * 특정 권한 보유 여부 확인

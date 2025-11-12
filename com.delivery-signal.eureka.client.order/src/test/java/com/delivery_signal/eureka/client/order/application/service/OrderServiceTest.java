@@ -7,7 +7,6 @@ import com.delivery_signal.eureka.client.order.application.port.out.*;
 import com.delivery_signal.eureka.client.order.application.validator.OrderPermissionValidator;
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
 import com.delivery_signal.eureka.client.order.domain.entity.OrderProduct;
-import com.delivery_signal.eureka.client.order.domain.repository.OrderRepository;
 import com.delivery_signal.eureka.client.order.domain.service.OrderDomainService;
 import com.delivery_signal.eureka.client.order.domain.vo.company.CompanyInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.delivery.DeliveryCreatedInfo;
@@ -24,32 +23,28 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * OrderService 단위테스트
+ * Port, Validator, DomainService를 Mock으로 구성하여 외부 의존성 제거
+ */
 class OrderServiceTest {
 
     @InjectMocks
     private OrderService orderService; // 실제 테스트 대상 서비스
 
     // ==================== Mock Port/Service ====================
-    @Mock
-    private ProductQueryPort productQueryPort;
-    @Mock
-    private CompanyQueryPort companyQueryPort;
-    @Mock
-    private HubQueryPort hubQueryPort;
-    @Mock
-    private DeliveryCommandPort deliveryCommandPort;
-    @Mock
-    private HubCommandPort hubCommandPort;
-    @Mock
-    private OrderDomainService orderDomainService;
-    @Mock
-    private OrderRepository orderRepository;
-    @Mock
-    private UserQueryPort userQueryPort;
-    @Mock
-    private OrderPermissionValidator orderPermissionValidator;
+
+    @Mock private CompanyQueryPort companyQueryPort;
+    @Mock private HubQueryPort hubQueryPort;
+    @Mock private DeliveryCommandPort deliveryCommandPort;
+    @Mock private HubCommandPort hubCommandPort;
+    @Mock private OrderDomainService orderDomainService;
+    @Mock private UserQueryPort userQueryPort;
+    @Mock private OrderPermissionValidator orderPermissionValidator;
+    @Mock private OrderCommandPort orderCommandPort; // 실제 저장 역할 Port (리포지토리 대신 Mock)
 
     // ==================== 테스트용 데이터 ====================
     private Long userId;
@@ -84,18 +79,18 @@ class OrderServiceTest {
 
         // ==================== Mock 설정 ====================
 
-        // 1️⃣ 사용자 권한 및 승인 체크
+        // 사용자 권한 및 승인 체크
         doNothing().when(orderPermissionValidator).validateCreate(userId);
         when(userQueryPort.isUserApproved(userId)).thenReturn(true);
 
-        // 2️⃣ 업체 정보 조회 mock
+        // 업체 정보 조회 mock
         when(companyQueryPort.getCompanyById(supplierCompanyId))
                 .thenReturn(new CompanyInfo(supplierCompanyId, supplierHubId, "서울시 강남구"));
         when(companyQueryPort.getCompanyById(receiverCompanyId))
                 .thenReturn(new CompanyInfo(receiverCompanyId, receiverHubId, "서울시 송파구"));
 
-        // 3️⃣ 상품 조회 mock
-        when(productQueryPort.getProducts(anyList()))
+        // 상품 조회 mock
+        when(companyQueryPort.getProducts(anyList()))
                 .thenReturn(List.of(ProductInfo.builder()
                         .productId(productId)
                         .companyId(supplierCompanyId)
@@ -103,12 +98,11 @@ class OrderServiceTest {
                         .price(BigDecimal.valueOf(1000))
                         .build()));
 
-        // 4️⃣ 허브 재고 조회 mock
+        // 허브 재고 조회 mock
         when(hubQueryPort.getStockQuantities(anyList()))
                 .thenReturn(Map.of(productId, 100));
 
-        // 5️⃣ 도메인 주문 생성 mock
-        // createOrder()는 7개의 인자를 받도록 변경됨
+        // 도메인 주문 생성 mock
         when(orderDomainService.createOrder(
                 any(UUID.class),    // supplierCompanyId
                 any(UUID.class),    // receiverCompanyId
@@ -131,7 +125,7 @@ class OrderServiceTest {
                 ))
                 .build());
 
-        // 6️⃣ 배송 생성 mock
+        // 배송 생성 mock
         when(deliveryCommandPort.createDelivery(any()))
                 .thenReturn(DeliveryCreatedInfo.builder()
                         .message("배송 요청 완료")
@@ -140,7 +134,7 @@ class OrderServiceTest {
 
     // ==================== 테스트 ====================
 
-    // 1️⃣ 권한 및 승인 검증
+    // 권한 및 승인 검증
     @Test
     void validateUserPermissionAndApproval() {
         orderService.createOrderAndSendDelivery(command);
@@ -152,19 +146,19 @@ class OrderServiceTest {
         verify(userQueryPort).isUserApproved(userId);
     }
 
-    // 2️⃣ 상품 조회 및 재고 확인
+    // 상품 조회 및 재고 확인
     @Test
     void getProductsAndStockQuantities() {
         orderService.createOrderAndSendDelivery(command);
 
         // 상품 조회 확인
-        verify(productQueryPort).getProducts(anyList());
+        verify(companyQueryPort).getProducts(anyList());
 
         // 허브 재고 조회 확인
         verify(hubQueryPort).getStockQuantities(anyList());
     }
 
-    // 3️⃣ 업체 조회 및 허브 ID 추출
+    // 업체 조회 및 허브 ID 추출
     @Test
     void getCompanyInfo_hubIdExtraction() {
         orderService.createOrderAndSendDelivery(command);
@@ -173,7 +167,7 @@ class OrderServiceTest {
         verify(companyQueryPort).getCompanyById(receiverCompanyId);
     }
 
-    // 4️⃣ 도메인 주문 생성 및 저장
+    // 도메인 주문 생성 및 저장
     @Test
     void createOrderDomainEntity() {
         orderService.createOrderAndSendDelivery(command);
@@ -188,11 +182,11 @@ class OrderServiceTest {
                 any(UUID.class)
         );
 
-        // 주문 저장 확인
-        verify(orderRepository).save(any());
+        // Port 기반 저장 검증
+        verify(orderCommandPort).save(any(Order.class));
     }
 
-    // 5️⃣ 배송 생성 호출 및 메시지 검증
+    // 배송 생성 호출 및 메시지 검증
     @Test
     void createDeliveryCall() {
         OrderCreateResult result = orderService.createOrderAndSendDelivery(command);
@@ -203,7 +197,7 @@ class OrderServiceTest {
         assertThat(result.getMessage()).isEqualTo("주문이 완료되었습니다.");
     }
 
-    // 6️⃣ 허브 재고 차감 확인
+    // 허브 재고 차감 확인
     @Test
     void deductHubStock() {
         // given: 업체 정보 재설정
