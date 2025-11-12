@@ -23,7 +23,7 @@ import com.delivery_signal.eureka.client.hub.application.command.UpdateHubComman
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateStockCommand;
 import com.delivery_signal.eureka.client.hub.application.dto.HubResult;
-import com.delivery_signal.eureka.client.hub.application.dto.HubRouteDetailResult;
+import com.delivery_signal.eureka.client.hub.application.dto.HubRouteResult;
 import com.delivery_signal.eureka.client.hub.application.dto.StockResult;
 import com.delivery_signal.eureka.client.hub.domain.mapper.StockSearchCondition;
 import com.delivery_signal.eureka.client.hub.domain.model.Hub;
@@ -163,7 +163,7 @@ public class HubService {
 	 * @return Page<HubRouteResult> 허브 경로 검색 결과
 	 */
 	@Transactional(readOnly = true)
-	public Page<HubRouteDetailResult> searchHubRoutes(SearchHubRouteCommand command) {
+	public Page<HubRouteResult> searchHubRoutes(SearchHubRouteCommand command) {
 		HubRouteSearchCondition condition = HubRouteSearchCondition.of(
 			command.departureHubName(),
 			command.arrivalHubName(),
@@ -173,7 +173,7 @@ public class HubService {
 			command.direction()
 		);
 		return hubRouteQueryRepository.searchHubRoutes(condition)
-			.map(HubRouteDetailResult::from);
+			.map(HubRouteResult::from);
 	}
 
 	/**
@@ -183,10 +183,10 @@ public class HubService {
 	 * @return 허브 이동정보 조회 결과
 	 */
 	@Transactional(readOnly = true)
-	public HubRouteDetailResult getHubRoute(UUID hubId, UUID hubRouteId) {
+	public HubRouteResult getHubRoute(UUID hubId, UUID hubRouteId) {
 		Hub hub = getHubWithRoutesOrThrow(hubId);
 		HubRoute route = hub.getHubRoute(hubRouteId);
-		return HubRouteDetailResult.from(route);
+		return HubRouteResult.from(route);
 	}
 
 	/**
@@ -197,12 +197,12 @@ public class HubService {
 	 * @return 수정된 허브 이동정보 결과
 	 */
 	@CacheEvict(value = "hubRoutes", allEntries = true)
-	public HubRouteDetailResult updateHubRoute(UUID hubId, UUID hubRouteId, UpdateHubRouteCommand command) {
+	public HubRouteResult updateHubRoute(UUID hubId, UUID hubRouteId, UpdateHubRouteCommand command) {
 		Hub hub = getHubWithRoutesOrThrow(hubId);
 		Distance distance = Distance.of(command.distance());
 		Duration transitTime = Duration.of(command.transitTime());
 		HubRoute route = hub.updateHubRoute(hubRouteId, distance, transitTime);
-		return HubRouteDetailResult.from(route);
+		return HubRouteResult.from(route);
 	}
 
 	/**
