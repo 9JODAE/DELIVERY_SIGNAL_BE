@@ -32,6 +32,8 @@ public class ProductService {
     // 외부 MSA 포트
     private final CompanyQueryPort companyQueryPort;
 
+    private final CompanyService companyService;
+
     // 도메인 / 검증 / 매퍼
     private final ProductDomainService productDomainService;
     private final ProductPermissionValidator productPermissionValidator;
@@ -43,24 +45,21 @@ public class ProductService {
      */
     public ProductCreateResult createProduct(CreateProductCommand command) {
 
-        // 1️⃣ 사용자 권한 체크
         productPermissionValidator.validateCreate(command.getUserId(),command.getCompanyId(),command.getHubId());
 
-        CompanyDetailResult companyInfo = companyQueryPort.getCompanyById(command.getCompanyId());
+        CompanyDetailResult companyInfo = companyService.getCompanyById(command.getCompanyId());
         if (companyInfo == null) {
             throw new NotFoundException("업체", command.getCompanyId());
         }
 
-        // 4️⃣ 도메인 엔티티 생성
         Product product = productDomainService.createProduct(
                 command.getProductName(),
                 command.getPrice(),
-                command.getProductId(),
                 command.getCompanyId(),
+                command.getHubId(),
                 command.getUserId()
         );
 
-        // 5️⃣ 저장
         productRepository.save(product);
 
         log.info("상품 생성 완료: {}", product.getProductId());
@@ -69,8 +68,9 @@ public class ProductService {
                 .productId(UUID.randomUUID())
                 .productName(product.getProductName())
                 .price(product.getPrice())
-                .companyId(command.getCompanyId())
-                .hubId(command.getHubId())
+                .companyId(product.getCompanyId())
+                .hubId(product.getHubId())
+                .createdAt(product.getCreatedAt())
                 .build();
     }
 
@@ -108,13 +108,13 @@ public class ProductService {
         productPermissionValidator.validateUpdate(command.getUserId(),product.getCompanyId(),product.getHubId());
 
         // 소속 업체 검증
-        CompanyDetailResult companyresult = companyQueryPort.getCompanyById(product.getCompanyId());
+        CompanyDetailResult companyresult = companyService.getCompanyById(product.getCompanyId());
         if (companyresult == null) {
             throw new NotFoundException("업체", product.getCompanyId());
         }
 
         // 도메인 로직 호출
-        product.updateInfo(command.getProductName(), command.getPrice());
+        product.updateInfo(command.getProductName(), command.getPrice(), command.getUserId());
 
         productRepository.save(product);
 
@@ -139,7 +139,7 @@ public class ProductService {
         productPermissionValidator.validateDelete(command.getUserId(),command.getHubId());
 
         // 삭제 처리 (soft delete)
-        product.markAsDeleted(LocalDateTime.now());
+        product.softDelete(command.getUserId());
         productRepository.save(product);
 
         log.info("상품 삭제 완료: {}", product.getProductName());
