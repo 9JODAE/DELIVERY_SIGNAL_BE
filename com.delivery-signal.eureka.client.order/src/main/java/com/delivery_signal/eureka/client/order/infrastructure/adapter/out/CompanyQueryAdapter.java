@@ -3,10 +3,12 @@ package com.delivery_signal.eureka.client.order.infrastructure.adapter.out;
 import com.delivery_signal.eureka.client.order.application.port.out.CompanyQueryPort;
 import com.delivery_signal.eureka.client.order.common.NotFoundException;
 import com.delivery_signal.eureka.client.order.domain.vo.company.CompanyInfo;
+import com.delivery_signal.eureka.client.order.domain.vo.product.ProductInfo;
 import com.delivery_signal.eureka.client.order.infrastructure.client.company.CompanyClient;
 import feign.FeignException;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -26,5 +28,10 @@ public class CompanyQueryAdapter implements CompanyQueryPort {
         } catch (FeignException.NotFound e) {
             throw new NotFoundException("업체", companyId);
         }
+    }
+
+    @Override
+    public List<ProductInfo> getProducts(List<UUID> productIds) {
+        return companyClient.getProducts(productIds);
     }
 }

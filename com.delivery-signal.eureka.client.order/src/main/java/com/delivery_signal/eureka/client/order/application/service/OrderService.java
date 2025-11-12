@@ -37,7 +37,6 @@ public class OrderService {
 
     private final HubQueryPort hubQueryPort;
     private final CompanyQueryPort companyQueryPort;
-    private final ProductQueryPort productQueryPort;
     private final UserQueryPort userQueryPort;
     private final OrderQueryPort orderQueryPort;
 
@@ -46,13 +45,12 @@ public class OrderService {
     private final OrderProductRepository orderProductRepository;
     private final OrderPermissionValidator orderPermissionValidator;
 
-    public OrderService(DeliveryCommandPort deliveryCommandPort, HubCommandPort hubCommandPort, OrderCommandPort orderCommandPort, HubQueryPort hubQueryPort, CompanyQueryPort companyQueryPort, ProductQueryPort productQueryPort, UserQueryPort userQueryPort, OrderQueryPort orderQueryPort, OrderDomainService orderDomainService, OrderQueryMapper orderQueryMapper, OrderProductRepository orderProductRepository, OrderPermissionValidator orderPermissionValidator) {
+    public OrderService(DeliveryCommandPort deliveryCommandPort, HubCommandPort hubCommandPort, OrderCommandPort orderCommandPort, HubQueryPort hubQueryPort, CompanyQueryPort companyQueryPort, UserQueryPort userQueryPort, OrderQueryPort orderQueryPort, OrderDomainService orderDomainService, OrderQueryMapper orderQueryMapper, OrderProductRepository orderProductRepository, OrderPermissionValidator orderPermissionValidator) {
         this.deliveryCommandPort = deliveryCommandPort;
         this.hubCommandPort = hubCommandPort;
         this.orderCommandPort = orderCommandPort;
         this.hubQueryPort = hubQueryPort;
         this.companyQueryPort = companyQueryPort;
-        this.productQueryPort = productQueryPort;
         this.userQueryPort = userQueryPort;
         this.orderQueryPort = orderQueryPort;
         this.orderDomainService = orderDomainService;
@@ -84,7 +82,7 @@ public class OrderService {
                 .toList();
 
         // 상품 정보 조회
-        List<ProductInfo> productInfos = productQueryPort.getProducts(productIds);
+        List<ProductInfo> productInfos = companyQueryPort.getProducts(productIds);
 
         // 상품 검증: 각 상품이 공급업체에 속하는지 확인
         productInfos.stream()

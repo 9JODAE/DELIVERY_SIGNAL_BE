@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.order.infrastructure.adapter;
+package com.delivery_signal.eureka.client.order.infrastructure.adapter.out;
 
 import com.delivery_signal.eureka.client.order.application.port.out.OrderQueryPort;
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
