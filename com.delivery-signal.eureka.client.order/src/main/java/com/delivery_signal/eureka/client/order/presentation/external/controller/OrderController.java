@@ -35,43 +35,43 @@ public class OrderController {
 
     @Operation(summary = "주문 생성", description = "새로운 주문을 등록합니다.")
     @PostMapping
-    public ResponseEntity<OrderCreateResponseDto> createOrder(
+    public ResponseEntity<ApiResponse<OrderCreateResponseDto>> createOrder(
             @RequestBody CreateOrderRequestDto requestDto,
             @RequestHeader(value = "x-user-id", required = false) Long userId) {
 
         CreateOrderCommand command = CreateOrderMapper.toCommand(requestDto, userId);
         OrderCreateResult result = orderService.createOrderAndSendDelivery(command);
         OrderCreateResponseDto responseDto = OrderResponseMapper.toCreateResponse(result);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(responseDto));
     }
 
     // 단건 조회 (Read one)
     @Operation(summary = "주문 조회", description = "주문 조회(개별)")
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderDetailResponseDto> getOrderById(
+    public ResponseEntity<ApiResponse<OrderDetailResponseDto>> getOrderById(
             @PathVariable UUID orderId,
             @RequestHeader(value = "x-user-id", required = false) Long userId) {
         OrderDetailResult result = orderService.getOrderById(orderId, userId);
         OrderDetailResponseDto responseDto = OrderResponseMapper.toDetailResponse(result);
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
     }
 
     // 전체 조회 (Read all)
     @Operation(summary = "주문 전체 조회", description = "관리자용")
     @GetMapping
-    public ResponseEntity<List<OrderListResponseDto>> getAllOrders(
+    public ResponseEntity<ApiResponse<List<OrderListResponseDto>>> getAllOrders(
             @RequestHeader(value = "x-user-id", required = false) Long userId) {
         List<OrderListResult> result = orderService.getAllOrders(userId);
         List<OrderListResponseDto> responseDto = result.stream()
                 .map(OrderResponseMapper::toListResponse)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(responseDto));
     }
 
     // 허브별 주문 조회 (관리자, 허브 담당자용)
     @Operation(summary = "허브별 주문 조회", description = "관리자, 허브 담당자용")
     @GetMapping("/hub/{hubId}")
-    public ResponseEntity<List<OrderListResponseDto>> getAllOrdersByHubId(
+    public ResponseEntity<ApiResponse<List<OrderListResponseDto>>> getAllOrdersByHubId(
             @PathVariable UUID hubId,
             @RequestHeader(value = "x-user-id", required = false) Long userId) {
 
@@ -81,14 +81,14 @@ public class OrderController {
                 .map(OrderResponseMapper::toListResponse)
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(responseDto));
     }
 
 
     // 수정 (Update)
     @Operation(summary = "주문 수정", description = "주문 수정")
     @PutMapping("/{orderId}")
-    public ResponseEntity<OrderUpdateResponseDto> updateOrder(
+    public ResponseEntity<ApiResponse<OrderUpdateResponseDto>> updateOrder(
             @PathVariable UUID orderId,
             @RequestBody UpdateOrderRequestDto requestDto,
             @RequestHeader(value = "x-user-id", required = false) Long userId
@@ -96,31 +96,31 @@ public class OrderController {
         UpdateOrderCommand command = UpdateOrderMapper.toCommand(orderId, requestDto, userId);
         OrderUpdateResult result = orderService.updateOrder(command);
         OrderUpdateResponseDto response =OrderResponseMapper.toUpdateResponse(result);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 
     // 삭제 (Delete)
     @Operation(summary = "주문 삭제", description = "주문 삭제")
     @DeleteMapping("/{orderId}")
-    public ResponseEntity<OrderDeleteResponseDto> deleteOrder(
+    public ResponseEntity<ApiResponse<OrderDeleteResponseDto>> deleteOrder(
             @PathVariable UUID orderId,
             @RequestHeader(value = "x-user-id", required = false) Long userId) {
         DeleteOrderCommand command = OrderDeleteMapper.toCommand(orderId, userId);
         OrderDeleteResult result = orderService.deleteOrder(command);
         OrderDeleteResponseDto responseDto = OrderResponseMapper.toDeleteResponse(result);
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(responseDto));
     }
 
     @Operation(summary = "주문 취소", description = "주문 및 연관된 배송을 취소합니다.")
     @PostMapping("/{orderId}/cancel")
-    public ResponseEntity<OrderCancelResponseDto> cancelOrder(
+    public ResponseEntity<ApiResponse<OrderCancelResponseDto>> cancelOrder(
             @PathVariable UUID orderId,
             @RequestHeader(value = "x-user-id", required = false) Long userId) {
 
         OrderCancelCommand command = OrderCancelMapper.toCommand(orderId, userId);
         OrderCancelResult result = orderService.cancelOrder(command);
         OrderCancelResponseDto response = OrderResponseMapper.toCancelResponse(result);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 
 }

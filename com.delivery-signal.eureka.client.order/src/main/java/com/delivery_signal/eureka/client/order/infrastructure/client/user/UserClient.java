@@ -1,8 +1,10 @@
 package com.delivery_signal.eureka.client.order.infrastructure.client.user;
 
 import com.delivery_signal.eureka.client.order.domain.vo.user.UserAuthorizationInfo;
+import com.delivery_signal.eureka.client.order.presentation.external.dto.response.ApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -15,6 +17,6 @@ public interface UserClient {
     /**
      * 사용자 검증 + Role 정보 조회
      */
-    @GetMapping("/open-api/v1/users/authorization")
-    UserAuthorizationInfo getUserAuthorizationInfo(@RequestParam("userId") Long userId);
+    @GetMapping("/open-api/v1/auth/authorization")
+    ApiResponse<UserAuthorizationInfo> getUserAuthorizationInfo(@RequestHeader("x-user-id") Long userId);
 }

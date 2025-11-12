@@ -2,6 +2,7 @@ package com.delivery_signal.eureka.client.order.presentation.internal.controller
 
 import com.delivery_signal.eureka.client.order.application.service.internal.InternalOrderService;
 import com.delivery_signal.eureka.client.order.application.result.OrderForDeliveryResult;
+import com.delivery_signal.eureka.client.order.presentation.external.dto.response.ApiResponse;
 import com.delivery_signal.eureka.client.order.presentation.internal.dto.response.DeliveryCreateResponseDto;
 import com.delivery_signal.eureka.client.order.presentation.internal.dto.response.OrderPongResponseDto;
 import com.delivery_signal.eureka.client.order.presentation.internal.mapper.OrderDeliveryResponseMapper;
@@ -30,7 +31,7 @@ public class OrderInternalController {
 
     @Operation(summary = "헬스체크", description = "통신 체크")
     @GetMapping("/ping")
-    public ResponseEntity<OrderPongResponseDto> ping(
+    public ResponseEntity<ApiResponse<OrderPongResponseDto>> ping(
             @RequestParam(required = false) String from // optional
     ) {
         log.info("Ping received : {}", from != null ? from : "unknown");
@@ -40,30 +41,31 @@ public class OrderInternalController {
                 "OK",
                 Instant.now()
         );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 
     // TEST 엔드포인트
     @Operation(summary = "test", description = "배송용 test")
     @GetMapping
-    public ResponseEntity<String> test() {
-        return ResponseEntity.status(HttpStatus.OK).body("Delivery Service 통신 성공");
+    public ResponseEntity<ApiResponse<String>> test() {
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("통신 성공"));
     }
 
     @Operation(
-            summary = "배송 서비스용 주문 조회",
+            summary = "외부 서비스용 주문 조회",
             description = """
-                배송 서비스가 주문 정보를 가져갈 때 사용하는 API입니다.
+                외부서비스용 주문 조회입니다.
                 게이트웨이를 통해 접근할 경우 URL은 다음과 같습니다:
 
-                **GET /api/v1/orders/external/{order-id}**
+                **GET /open-api/v1/orders/{order-id}**
                 """)
     @GetMapping("/{order-id}")
-    public ResponseEntity<DeliveryCreateResponseDto> getOrderForDelivery(@PathVariable("order-id") UUID orderId) {
+    public ResponseEntity<ApiResponse<DeliveryCreateResponseDto>> getOrderForDelivery(@PathVariable("order-id") UUID orderId) {
         log.info("배송 서비스에서 주문 조회 요청: {}", orderId);
 
         OrderForDeliveryResult result = internalOrderService.getOrderForDelivery(orderId); // Application Layer 호출
         DeliveryCreateResponseDto responseDto = OrderDeliveryResponseMapper.toResponse(result);
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(responseDto));
     }
 }

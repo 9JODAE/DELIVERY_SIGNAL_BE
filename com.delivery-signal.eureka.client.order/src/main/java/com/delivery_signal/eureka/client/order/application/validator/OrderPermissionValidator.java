@@ -18,12 +18,12 @@ import java.util.UUID;
  * ┌───────────────────────────────┬───────────────┐
  * │        액션(Action)          │     권한       │
  * ├──────────────────────────────┼───────────────┤
- * │ 생성(Create)                 │ COMPANY_MANAGER, MASTER_ADMIN │
- * │ 수정(Update)                 │ HUB_ADMIN(자기 허브), MASTER_ADMIN │
- * │ 취소(Cancel)                 │ COMPANY_MANAGER(본인 주문), HUB_ADMIN(자기 허브), MASTER_ADMIN │
- * │ 삭제(Delete - 논리삭제)       │ HUB_ADMIN(자기 허브), MASTER_ADMIN │
- * │ 조회(Read)                   │ COMPANY_MANAGER(본인 주문), HUB_ADMIN(자기 허브), MASTER_ADMIN │
- * │ 허브별 조회(ReadByHub)         │ HUB_ADMIN(자기 허브), MASTER_ADMIN │
+ * │ 생성(Create)                 │ SUPPLIER_MANAGER, MASTER │
+ * │ 수정(Update)                 │ HUB_MANAGER(자기 허브), MASTER │
+ * │ 취소(Cancel)                 │ SUPPLIER_MANAGER(본인 주문), HUB_MANAGER(자기 허브), MASTER │
+ * │ 삭제(Delete - 논리삭제)       │ HUB_MANAGER(자기 허브), MASTER │
+ * │ 조회(Read)                   │ SUPPLIER_MANAGER(본인 주문), HUB_MANAGER(자기 허브), MASTER │
+ * │ 허브별 조회(ReadByHub)         │ HUB_MANAGER(자기 허브), MASTER │
  * └───────────────────────────────┴───────────────┘
  */
 @Component
@@ -39,23 +39,23 @@ public class OrderPermissionValidator {
     // PUBLIC API — 권한 검증
     // ================================================================
 
-    /** 주문 생성 권한 검증 - COMPANY_MANAGER, MASTER_ADMIN */
+    /** 주문 생성 권한 검증 - SUPPLIER_MANAGER, MASTER */
     public void validateCreate(Long userId) {
         UserAuthorizationInfo userInfo = getUserInfo(userId);
         UserRole role = userInfo.getRole();
 
-        if (role != UserRole.COMPANY_MANAGER && role != UserRole.MASTER_ADMIN) {
+        if (role != UserRole.SUPPLIER_MANAGER && role != UserRole.MASTER) {
             throw new ForbiddenException("주문 생성 권한이 없습니다. (업체 담당자 또는 마스터만 가능합니다)");
         }
     }
 
-    /** 주문 수정 권한 검증 - MASTER_ADMIN 전체 / HUB_ADMIN 자기 허브만 가능 */
+    /** 주문 수정 권한 검증 - MASTER 전체 / HUB_MANAGER 자기 허브만 가능 */
     public void validateUpdate(Long userId, UUID orderHubId) {
         UserAuthorizationInfo userInfo = getUserInfo(userId);
         UserRole role = userInfo.getRole();
 
-        if (role == UserRole.MASTER_ADMIN) return;
-        if (role == UserRole.HUB_ADMIN) {
+        if (role == UserRole.MASTER) return;
+        if (role == UserRole.HUB_MANAGER) {
             checkOrganizationPermission(orderHubId, userInfo.getOrganizationId(), "수정");
             return;
         }
@@ -68,22 +68,22 @@ public class OrderPermissionValidator {
         UserRole role = userInfo.getRole();
 
         switch (role) {
-            case MASTER_ADMIN -> {
+            case MASTER -> {
                 // 전체 취소 가능
             }
-            case HUB_ADMIN -> checkOrganizationPermission(orderHubId, userInfo.getOrganizationId(), "취소");
-            case COMPANY_MANAGER -> checkUserPermission(orderCompanyManagerId, userId, "본인 주문만 취소 가능합니다.");
+            case HUB_MANAGER -> checkOrganizationPermission(orderHubId, userInfo.getOrganizationId(), "취소");
+            case SUPPLIER_MANAGER -> checkUserPermission(orderCompanyManagerId, userId, "본인 주문만 취소 가능합니다.");
             default -> throwForbidden(role, "주문 취소");
         }
     }
 
-    /** 주문 삭제 권한 검증 - MASTER_ADMIN / HUB_ADMIN */
+    /** 주문 삭제 권한 검증 - MASTER / HUB_MANAGER */
     public void validateDelete(Long userId, UUID orderHubId) {
         UserAuthorizationInfo userInfo = getUserInfo(userId);
         UserRole role = userInfo.getRole();
 
-        if (role == UserRole.MASTER_ADMIN) return;
-        if (role == UserRole.HUB_ADMIN) {
+        if (role == UserRole.MASTER) return;
+        if (role == UserRole.HUB_MANAGER) {
             checkOrganizationPermission(orderHubId, userInfo.getOrganizationId(), "삭제");
             return;
         }
@@ -96,11 +96,11 @@ public class OrderPermissionValidator {
         UserRole role = userInfo.getRole();
 
         switch (role) {
-            case MASTER_ADMIN -> {
+            case MASTER -> {
                 // 전체 조회 가능
             }
-            case HUB_ADMIN -> checkOrganizationPermission(orderHubId, userInfo.getOrganizationId(), "조회");
-            case COMPANY_MANAGER -> checkUserPermission(orderCompanyManagerId, userId, "본인 주문만 조회 가능합니다.");
+            case HUB_MANAGER -> checkOrganizationPermission(orderHubId, userInfo.getOrganizationId(), "조회");
+            case SUPPLIER_MANAGER -> checkUserPermission(orderCompanyManagerId, userId, "본인 주문만 조회 가능합니다.");
             default -> throwForbidden(role, "주문 조회");
         }
     }
@@ -110,8 +110,8 @@ public class OrderPermissionValidator {
         UserAuthorizationInfo userInfo = getUserInfo(userId);
         UserRole role = userInfo.getRole();
 
-        if (role == UserRole.MASTER_ADMIN) return;
-        if (role == UserRole.HUB_ADMIN) {
+        if (role == UserRole.MASTER) return;
+        if (role == UserRole.HUB_MANAGER) {
             checkOrganizationPermission(orderHubId, userInfo.getOrganizationId(), "허브별 조회");
             return;
         }
