@@ -62,9 +62,13 @@ public class UserService {
     @Transactional
     public GetUserAuthorizationResponse checkUser(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+        if (user.isDeleted()) {
+            return null;
+        }
         UserRoleType userRole = UserRoleType.from(user.getRole());
         String organization = user.getOrganization();
         UUID organizationId = user.getOrganizationId();
+
         return new GetUserAuthorizationResponse(userId, userRole, organization, organizationId);
     }
 

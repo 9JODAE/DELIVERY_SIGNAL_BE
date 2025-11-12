@@ -53,6 +53,9 @@ public class UserController {
     @Operation(summary="사용자의 본인 프로필 조회", description="본인의 정보를 조회합니다")
     public ResponseEntity<ApiResponse<GetUserResponse>> getProfile(@RequestHeader("x-user-id") String x_user_id) {
         GetUserResponse responseDto = userService.getUser(Long.parseLong(x_user_id));
+        if (responseDto == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.message("사용자가 존재하지 않습니다(soft Delete)"));
+        }
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
     }
 
@@ -81,7 +84,7 @@ public class UserController {
         GetUserResponse responseDto = userService.getUser(userId);
 
         if (responseDto == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.message("사용자가 존재하지 않습니다"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.message("사용자가 존재하지 않습니다(soft Delete)"));
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
@@ -234,7 +237,7 @@ public class UserController {
         GetUserResponse responseDto = userService.updateUser(userId, requestDto);
 
         if (responseDto == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.message("사용자가 존재하지 않습니다"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.message("사용자가 존재하지 않습니다(soft Delete)"));
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(responseDto));
@@ -252,7 +255,7 @@ public class UserController {
         Boolean deleted = userService.softDeleteUser(userId);
 
         if (!deleted) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.message("사용자가 존재하지 않습니다"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.message("사용자가 존재하지 않습니다(soft Delete)"));
         }
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
     }
