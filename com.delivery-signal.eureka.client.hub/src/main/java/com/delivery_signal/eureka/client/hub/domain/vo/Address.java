@@ -17,7 +17,7 @@ public class Address {
 
 	private String value;
 
-	public Address(String address) {
+	private Address(String address) {
 		validateAddress(address);
 		this.value = address;
 	}
