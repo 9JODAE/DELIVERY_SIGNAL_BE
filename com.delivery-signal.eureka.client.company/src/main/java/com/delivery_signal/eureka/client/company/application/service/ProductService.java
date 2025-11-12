@@ -6,7 +6,6 @@ import com.delivery_signal.eureka.client.company.application.command.DeleteProdu
 import com.delivery_signal.eureka.client.company.application.command.UpdateProductCommand;
 import com.delivery_signal.eureka.client.company.application.mapper.ProductQueryMapper;
 import com.delivery_signal.eureka.client.company.application.port.out.CompanyQueryPort;
-import com.delivery_signal.eureka.client.company.application.port.out.UserQueryPort;
 import com.delivery_signal.eureka.client.company.application.result.*;
 import com.delivery_signal.eureka.client.company.application.validator.ProductPermissionValidator;
 import com.delivery_signal.eureka.client.company.common.NotFoundException;
@@ -32,7 +31,6 @@ public class ProductService {
 
     // 외부 MSA 포트
     private final CompanyQueryPort companyQueryPort;
-    private final UserQueryPort userQueryPort;
 
     // 도메인 / 검증 / 매퍼
     private final ProductDomainService productDomainService;
@@ -48,12 +46,6 @@ public class ProductService {
         // 1️⃣ 사용자 권한 체크
         productPermissionValidator.validateCreate(command.getUserId(),command.getCompanyId(),command.getHubId());
 
-        // 2️⃣ 유저 승인 여부 확인
-        if (!userQueryPort.isUserApproved(command.getUserId())) {
-            throw new NotFoundException("",command.getUserId());
-        }
-
-        // 3️⃣ 소속 업체 존재 여부 확인
         CompanyDetailResult companyInfo = companyQueryPort.getCompanyById(command.getCompanyId());
         if (companyInfo == null) {
             throw new NotFoundException("업체", command.getCompanyId());

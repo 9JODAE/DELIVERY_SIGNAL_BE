@@ -31,9 +31,9 @@ server:
 
 internal:
   hub:
-    url: http://localhost:19093
+    url: http://localhost/open-api/v1
   user:
-    url: http://localhost:19092
+    url: http://localhost/open-api/v1
 
 springdoc:
   api-docs:

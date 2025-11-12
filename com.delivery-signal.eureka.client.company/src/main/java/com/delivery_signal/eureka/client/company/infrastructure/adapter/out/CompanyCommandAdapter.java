@@ -31,7 +31,6 @@ public class CompanyCommandAdapter implements CompanyCommandPort {
                 .companyName(command.getName())
                 .companyType(command.getType())
                 .address(command.getAddress())
-                .createdAt(LocalDateTime.now())
                 .build();
 
         Company entity = toEntity(company);
@@ -49,7 +48,8 @@ public class CompanyCommandAdapter implements CompanyCommandPort {
                 command.getCompanyName(),
                 command.getAddress(),
                 command.getCompanyType(),
-                command.getHubId());
+                command.getUserId()
+                );
 
         repository.save(entity);
 
@@ -61,8 +61,7 @@ public class CompanyCommandAdapter implements CompanyCommandPort {
         Company entity = repository.findById(command.getCompanyId())
                 .orElseThrow(() -> new IllegalArgumentException("업체를 찾을 수 없습니다."));
 
-        entity.setDeletedAt(LocalDateTime.now());
-        entity.setDeletedBy(entity.getDeletedBy());
+        entity.softDelete(command.getUserId());
 
         repository.save(entity);
 
@@ -76,10 +75,6 @@ public class CompanyCommandAdapter implements CompanyCommandPort {
                 .hubId(c.getHubId())
                 .companyType(c.getCompanyType())
                 .address(c.getAddress())
-                .createdAt(c.getCreatedAt())
-                .updatedAt(c.getUpdatedAt())
-                .deletedAt(c.getDeletedAt())
-                .deletedBy(c.getDeletedBy())
                 .build();
     }
 
@@ -90,7 +85,6 @@ public class CompanyCommandAdapter implements CompanyCommandPort {
                 .companyName(e.getCompanyName())
                 .type(e.getCompanyType())
                 .address(e.getAddress())
-                .createdAt(e.getCreatedAt())
                 .build();
     }
 
@@ -100,7 +94,6 @@ public class CompanyCommandAdapter implements CompanyCommandPort {
                 .companyName(e.getCompanyName())
                 .type(e.getCompanyType())
                 .address(e.getAddress())
-                .updatedAt(e.getUpdatedAt())
                 .build();
     }
 

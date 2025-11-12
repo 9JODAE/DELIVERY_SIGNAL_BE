@@ -34,9 +34,10 @@ public class CompanyController {
     @Operation(summary = "업체 등록", description = "신규 업체를 등록합니다.")
     @PostMapping
     public ResponseEntity<CompanyCreateResponseDto> createCompany(
+            @RequestHeader("x-user-id") String userId,
             @RequestBody CompanyCreateRequestDto request) {
         CreateCompanyCommand command = CompanyCreateMapper.toCommand(request);
-        CompanyCreateResult result = companyService.createCompany(command);
+        CompanyCreateResult result = companyService.createCompany(command,  userId);
         CompanyCreateResponseDto response = CompanyResponseMapper.toCreateResponse(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -75,19 +76,23 @@ public class CompanyController {
     @PutMapping("/{companyId}")
     public ResponseEntity<CompanyUpdateResponseDto> updateCompany(
             @PathVariable UUID companyId,
+            @RequestHeader("x-user-id") String userId,
             @RequestBody CompanyUpdateRequestDto request) {
 
         UpdateCompanyCommand command = CompanyUpdateMapper.toCommand(companyId, request);
-        CompanyUpdateResult result = companyService.updateCompany(command);
+        CompanyUpdateResult result = companyService.updateCompany(command,userId);
         CompanyUpdateResponseDto response = CompanyResponseMapper.toUpdateResponse(result);
         return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "업체 삭제", description = "업체를 삭제합니다.")
     @DeleteMapping("/{companyId}")
-    public ResponseEntity<CompanyDeleteResponseDto> deleteCompany(@PathVariable UUID companyId) {
+    public ResponseEntity<CompanyDeleteResponseDto> deleteCompany(
+            @RequestHeader("x-user-id") String userId,
+            @PathVariable UUID companyId) {
+
         DeleteCompanyCommand command = CompanyDeleteMapper.toCommand(companyId);
-        CompanyDeleteResult result = companyService.deleteCompany(command);
+        CompanyDeleteResult result = companyService.deleteCompany(command, userId);
         CompanyDeleteResponseDto response = CompanyResponseMapper.toDeleteResponse(result);
         return ResponseEntity.ok(response);
     }
