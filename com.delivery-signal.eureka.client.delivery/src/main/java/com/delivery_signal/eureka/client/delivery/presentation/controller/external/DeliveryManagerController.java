@@ -22,9 +22,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-// TODO: 추후 /api/v1/... 로 바꿀 예정
 @RestController
-@RequestMapping("/open-api/v1/deliveries/managers")
+@RequestMapping("/api/v1/deliveries/managers")
 public class DeliveryManagerController {
 
     private final DeliveryManagerService deliveryManagerService;
@@ -54,9 +53,6 @@ public class DeliveryManagerController {
         @RequestHeader(USER_ROLE_HEADER) String role,
         @RequestHeader(value = USER_HUB_ID_HEADER, required = false) UUID userHubId
     ) {
-        // TODO: Role 추후에 ENUM으로 수정
-        // TODO: 권한 체크 -> 마스터 관리자 또는 허브 관리자 (담당 허브) 로직 추가 필요
-
         // Presentation DTO를 Application 커맨드 변환
         CreateDeliveryManagerCommand command = CreateDeliveryManagerCommand.builder()
             .managerId(request.managerId())
@@ -66,7 +62,7 @@ public class DeliveryManagerController {
             .build();
         // Service 호출 및 Application 쿼리 리스폰스 반환
         ManagerQueryResponse response = deliveryManagerService.registerManager(currUserId,
-            command, role, userHubId);
+            command);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(deliveryManagerMapper.toResponse(response)));
     }
 
@@ -80,7 +76,7 @@ public class DeliveryManagerController {
         @RequestHeader(USER_ROLE_HEADER) String role
     ) {
         ManagerQueryResponse response = deliveryManagerService.getDeliveryManagerInfo(managerId,
-            currUserId, role);
+            currUserId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(deliveryManagerMapper.toResponse(response)));
     }
 
@@ -114,5 +110,17 @@ public class DeliveryManagerController {
     ) {
         deliveryManagerService.softDeleteManager(managerId, currUserId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
+    }
+
+    /**
+     * 다음 배송 담당자 배정
+     */
+    @PostMapping("/assign")
+    public ResponseEntity<ApiResponse<Long>> assignNextManager(
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        Long deliveryManagerId = deliveryManagerService.assignNextDeliveryManager(currUserId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(deliveryManagerId));
     }
 }
