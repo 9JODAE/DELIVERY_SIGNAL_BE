@@ -1,15 +1,19 @@
 package com.delivery_signal.eureka.client.order.presentation.external.dto.request;
 
-import com.delivery_signal.eureka.client.order.application.dto.response.OrderSummaryRequestDto;
+import com.delivery_signal.eureka.client.order.presentation.external.dto.response.OrderProductResponseDto;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateOrderRequestDto {
 
     @Schema(description = "공급업체", example = "d8b2f5a0-0ac3-4f72-8c43-bb9149a1c9a2")
@@ -20,6 +24,6 @@ public class CreateOrderRequestDto {
 
     @Schema(description = "요청 메모", example = "빠른 배송 부탁드립니다.")
     private String requestNote;
-    private List<OrderSummaryRequestDto> orderProducts;
+    private List<OrderProductResponseDto> orderProducts;
 
 }

@@ -1,12 +1,14 @@
-package com.delivery_signal.eureka.client.order.presentation.mapper;
+package com.delivery_signal.eureka.client.order.presentation.external.mapper.command;
 
 import com.delivery_signal.eureka.client.order.application.command.UpdateOrderCommand;
 import com.delivery_signal.eureka.client.order.presentation.external.dto.request.UpdateOrderRequestDto;
 import java.util.UUID;
 
 public class UpdateOrderMapper {
-    public static UpdateOrderCommand toCommand(UUID orderId, UpdateOrderRequestDto dto) {
+    public static UpdateOrderCommand toCommand(UUID orderId, UpdateOrderRequestDto dto, Long userId) {
         return UpdateOrderCommand.builder()
+                .userId(userId)
+                .orderId(orderId)
                 .productId(dto.getProductId())
                 .transferQuantity(dto.getTransferQuantity())
                 .requestNote(dto.getRequestNote())

@@ -1,8 +1,9 @@
-package com.delivery_signal.eureka.client.order.application.dto.response;
+package com.delivery_signal.eureka.client.order.application.result;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -11,13 +12,14 @@ import java.util.UUID;
 
 @Getter
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
-public class OrderListResponseDto {
+public class OrderListResult {
     private UUID orderId;
     private UUID supplierCompanyId;
     private UUID receiverCompanyId;
     private UUID deliveryId;
-    private List<OrderQueryResponseDto> products;
+    private List<OrderProductResult> products;
     private BigDecimal totalPrice;
     private String requestNote;
     private LocalDateTime createdAt;

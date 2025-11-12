@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.order.application.dto.response;
+package com.delivery_signal.eureka.client.order.presentation.external.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +17,7 @@ public class OrderDetailResponseDto {
     private UUID supplierCompanyId;
     private UUID receiverCompanyId;
     private UUID deliveryId;
-    private List<OrderQueryResponseDto> products;
+    private List<OrderProductResponseDto> products;
     private BigDecimal totalPrice;
     private String requestNote;
     private LocalDateTime createdAt;

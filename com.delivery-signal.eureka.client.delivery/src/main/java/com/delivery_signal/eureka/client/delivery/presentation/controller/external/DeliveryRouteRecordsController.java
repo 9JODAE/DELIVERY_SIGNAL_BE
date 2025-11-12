@@ -7,6 +7,7 @@ import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.RouteRecordUpdateRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryPresentationMapper;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/open-api/v1/delivery-route-records")
+@RequestMapping("/open-api/v1/deliveries/route/records")
 public class DeliveryRouteRecordsController {
     private final DeliveryService deliveryService;
     private final DeliveryPresentationMapper deliveryPresentationMapper;
@@ -52,6 +53,20 @@ public class DeliveryRouteRecordsController {
             request);
         RouteRecordQueryResponse response = deliveryService.recordHubMovement(routeId,
             command, currUserId, role);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
+    }
+
+    /**
+     * 특정 배송의 경로 이력 조회
+     */
+    @GetMapping("/{delivery-id}/routes")
+    public ResponseEntity<ApiResponse<List<RouteRecordQueryResponse>>> getDeliveryRoutes(
+        @PathVariable("delivery-id") UUID deliveryId,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role
+    ) {
+        List<RouteRecordQueryResponse> response = deliveryService.getDeliveryRoutes(deliveryId,
+            currUserId, role);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
     }
 }

@@ -47,8 +47,8 @@ public class Hub extends AggregateRootEntity<Hub> {
 
 	@Embedded
 	@AttributeOverrides({
-		@AttributeOverride(name = "latitude", column = @Column(name = "latitude")),
-		@AttributeOverride(name = "longitude", column = @Column(name = "longitude"))
+		@AttributeOverride(name = "latitude", column = @Column(name = "latitude", nullable = false)),
+		@AttributeOverride(name = "longitude", column = @Column(name = "longitude", nullable = false))
 	})
 	private Coordinate coordinate;
 
