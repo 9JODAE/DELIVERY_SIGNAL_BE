@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -14,4 +15,5 @@ public class ProductCreateResult {
     private UUID hubId;
     private String productName;
     private BigDecimal price;
+    private LocalDateTime createdAt;
 }

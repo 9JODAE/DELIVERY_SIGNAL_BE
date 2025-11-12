@@ -20,7 +20,7 @@ public class ProductCreateRequestDto {
     private String name;
 
     @Schema(description = "상품 소속 업체 ID", example = "1")
-    private Long companyId;
+    private UUID companyId;
 
     @Schema(description = "상품 관리 허브 ID", example = "d5a2b3f7-1234-4a56-9abc-ef7890d12345")
     private UUID hubId;

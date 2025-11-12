@@ -24,7 +24,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/products")
+@RequestMapping("/api/v1/companies/products")
 @Tag(name = "Product API", description = "상품 관련 API")
 @RequiredArgsConstructor
 public class ProductController {

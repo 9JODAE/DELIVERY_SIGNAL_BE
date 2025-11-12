@@ -38,6 +38,7 @@ public class Company extends BaseEntity{
         this.companyType = type;
         this.setUpdatedBy(userId);
     }
+
     public void softDelete(Long userId){
         if (this.isDeleted()) {
             return;

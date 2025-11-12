@@ -11,6 +11,7 @@ public class ProductResponseMapper {
                 .name(result.getProductName())
                 .companyId(result.getCompanyId())
                 .hubId(result.getHubId())
+                .createdAt(result.getCreatedAt())
                 .build();
     }
 

@@ -1,10 +1,8 @@
 package com.delivery_signal.eureka.client.company.domain.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.java.Log;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,9 +15,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Product {
+public class Product extends BaseEntity{
+
     @Id
-    @Column(name = "product_id")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID productId;
 
     @Column(name = "company_id")
@@ -34,34 +33,21 @@ public class Product {
     @Column(name = "상품가격")
     private BigDecimal price;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "created_by")
-    private Long createdBy;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "updated_by")
-    private Long updatedBy;
-
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
 
 
     @Column(name = "deleted_by")
     private Long deletedBy;
 
-    public void updateInfo(String productName, BigDecimal price) {
+    public void updateInfo(String productName, BigDecimal price, Long userId) {
         this.productName = productName;
         this.price = price;
-        this.updatedAt = LocalDateTime.now();
-        // updatedBy는 service 쪽에서 주입받거나 auditor로 처리
+        this.setUpdatedBy(userId);
     }
 
-    public void markAsDeleted(LocalDateTime now) {
-        deletedAt = LocalDateTime.now();
+    public void softDelete(Long userId){
+        if (this.isDeleted()) {
+            return;
+        }
+        this.delete(userId);
     }
 }

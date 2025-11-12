@@ -25,19 +25,19 @@ import java.util.UUID;
 public class ProductPermissionValidator {
 
     private final UserQueryPort userQueryPort;
-    private final HubQueryPort hubQueryPort;
-    private final CompanyQueryPort companyQueryPort;
+//    private final HubQueryPort hubQueryPort;
+//    private final CompanyQueryPort companyQueryPort;
 
     public ProductPermissionValidator(UserQueryPort userQueryPort, HubQueryPort hubQueryPort, CompanyQueryPort companyQueryPort) {
         this.userQueryPort = userQueryPort;
-        this.hubQueryPort = hubQueryPort;
-        this.companyQueryPort = companyQueryPort;
+//        this.hubQueryPort = hubQueryPort;
+//        this.companyQueryPort = companyQueryPort;
     }
 
     public void validateCreate(Long userId, UUID companyId, UUID hubId) {
         UserAuthDto user = getActiveUser(userId);
-        checkHubExists(hubId);
-        checkCompanyExists(companyId);
+//        checkHubExists(hubId);
+//        checkCompanyExists(companyId);
 
         switch (user.role()) {
             case "MASTER" -> {}
@@ -76,17 +76,17 @@ public class ProductPermissionValidator {
     // ================================================================
     // Private Utilities
     // ================================================================
-    private void checkHubExists(UUID hubId) {
-        if (!hubQueryPort.existsByHubId(hubId)) {
-            throw new ForbiddenException("존재하지 않는 허브입니다.");
-        }
-    }
+//    private void checkHubExists(UUID hubId) {
+//        if (!hubQueryPort.existsByHubId(hubId)) {
+//            throw new ForbiddenException("존재하지 않는 허브입니다.");
+//        }
+//    }
 
-    private void checkCompanyExists(UUID companyId) {
-        if (companyQueryPort.getCompanyById(companyId) == null) {
-            throw new ForbiddenException("존재하지 않는 업체입니다.");
-        }
-    }
+//    private void checkCompanyExists(UUID companyId) {
+//        if (companyQueryPort.getCompanyById(companyId) == null) {
+//            throw new ForbiddenException("존재하지 않는 업체입니다.");
+//        }
+//    }
 
     private void checkHubPermission(UUID userHubId, UUID targetHubId, String action) {
         if (userHubId == null || !userHubId.equals(targetHubId)) {
