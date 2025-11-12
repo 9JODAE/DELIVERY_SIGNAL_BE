@@ -10,6 +10,7 @@ import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryR
 import com.delivery_signal.eureka.client.delivery.domain.vo.DeliverySearchCondition;
 import com.delivery_signal.eureka.client.delivery.application.dto.RouteRecordQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.mapper.DeliveryDomainMapper;
+import com.delivery_signal.eureka.client.delivery.application.validator.DeliveryPermissionValidator;
 import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryRouteRecords;
 import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryStatus;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryQueryRepository;
@@ -42,18 +43,20 @@ public class DeliveryService {
     private final UserServiceClient userServiceClient;
     private final OrderServiceClient orderServiceClient;
     private final DeliveryDomainMapper deliveryDomainMapper;
+    private final DeliveryPermissionValidator permissionValidator;
 
     public DeliveryService(DeliveryRepository deliveryRepository,
         DeliveryQueryRepository deliveryQueryRepository,
         DeliveryRouteRecordsRepository deliveryRouteRecordsRepository, UserServiceClient userServiceClient,
         OrderServiceClient orderServiceClient,
-        DeliveryDomainMapper deliveryDomainMapper) {
+        DeliveryDomainMapper deliveryDomainMapper, DeliveryPermissionValidator permissionValidator) {
         this.deliveryRepository = deliveryRepository;
         this.deliveryRouteRecordsRepository = deliveryRouteRecordsRepository;
         this.deliveryQueryRepository = deliveryQueryRepository;
         this.userServiceClient = userServiceClient;
         this.orderServiceClient = orderServiceClient;
         this.deliveryDomainMapper = deliveryDomainMapper;
+        this.permissionValidator = permissionValidator;
     }
 
     /**
@@ -185,9 +188,7 @@ public class DeliveryService {
         Delivery delivery = getDelivery(deliveryId);
 
         // 수정 권한: 마스터, 해당 허브 관리자, 해당 배송 담당자만 가능
-        if (!hasUpdatePermission(delivery, updatorId, UserRole.valueOf(role))) {
-            throw new RuntimeException("배송 상태를 수정할 권한이 없습니다. (ROLE: " + role + ")");
-        }
+        permissionValidator.hasUpdatePermission(delivery, updatorId);
 
         delivery.update(command.address(), command.recipient(), command.recipientSlackId(), updatorId);
         return deliveryDomainMapper.toResponse(delivery);
@@ -204,9 +205,7 @@ public class DeliveryService {
         DeliveryStatus newStatus = DeliveryStatus.valueOf(command.newStatus());
 
         // 수정 권한: 마스터, 해당 허브 관리자, 해당 배송 담당자만 가능
-        if (!hasUpdatePermission(delivery, updatorId, UserRole.valueOf(role))) {
-            throw new RuntimeException("배송 상태를 수정할 권한이 없습니다. (ROLE: " + role + ")");
-        }
+        permissionValidator.hasUpdatePermission(delivery, updatorId);
 
         // 상태 유효성 검사 : 마지막 최종 목적지 허브까지 배송이 완료된 시점(DELIVERING)이 아닐 경우 예외 처리
         if (!newStatus.equals(DeliveryStatus.DELIVERY_COMPLETED)) {
@@ -230,10 +229,7 @@ public class DeliveryService {
         DeliveryRouteRecords record = getDeliveryRouteRecords(routeId);
 
         Delivery delivery = getDelivery(record.getDelivery().getDeliveryId());
-
-        if (!hasHubMovementPermission(record, updatorId, UserRole.valueOf(role))) {
-            throw new RuntimeException("해당 허브 이동 정보를 기록/수정할 권한이 없습니다.");
-        }
+        permissionValidator.hasHubMovementPermission(record, updatorId);
 
         DeliveryStatus newStatus = DeliveryStatus.valueOf(command.newStatus());
 
@@ -283,10 +279,7 @@ public class DeliveryService {
             throw new RuntimeException("이미 삭제된 배송 정보입니다.");
         }
 
-        if (!hasDeletePermission(delivery, currUserId, UserRole.valueOf(role))) {
-            throw new RuntimeException("배송 정보를 삭제할 권한이 없습니다. (ROLE: " + role + ")");
-        }
-
+        permissionValidator.hasDeletePermission(delivery, currUserId);
         delivery.softDelete(currUserId);
     }
 
@@ -299,9 +292,7 @@ public class DeliveryService {
     public List<RouteRecordQueryResponse> getDeliveryRoutes(UUID deliveryId, Long currUserId, String role) {
         Delivery delivery = getDelivery(deliveryId);
         // 조회 및 검색 권한: 모든 로그인 사용자 가능, 단 배송 담당자는 자신이 담당하는 배송만 조회 가능
-        if (!hasReadPermission(delivery, currUserId, UserRole.valueOf(role))) {
-            throw new RuntimeException("해당 배송의 경로 이력을 조회할 권한이 없습니다.");
-        }
+        permissionValidator.hasReadPermission(delivery, currUserId);
 
         // 배송별 경로 이력 리스트 조회 (논리적 삭제되지 않은 데이터만 조회됨)
         List<DeliveryRouteRecords> records = deliveryRouteRecordsRepository.findAllByDeliveryIdOrderBySequence(
