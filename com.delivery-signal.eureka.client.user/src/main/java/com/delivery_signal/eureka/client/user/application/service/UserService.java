@@ -195,7 +195,11 @@ public class UserService {
             user.updateOrganization(requestDto.organization());
         }
 
-//        if (requestDto.role() != null) { user.updateRole(requestDto.role()); }
+        if (requestDto.organizationId() != null) {
+            user.updateOrganizationId(requestDto.organizationId());
+        }
+
+        if (requestDto.role() != null) { user.updateUserRole(requestDto.role()); }
 
         return userMapper.from(user);
     }

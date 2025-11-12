@@ -5,6 +5,8 @@ import com.delivery_signal.eureka.client.user.domain.entity.UserRole;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+import java.util.UUID;
+
 public record UpdateUserRequest(
 
         @Size(min = 3, max = 10, message = "이름은 3~10자로 입력해야 합니다")
@@ -24,6 +26,7 @@ public record UpdateUserRequest(
         // 다른 서비스에 변경 알림 여부 논의 필요
         String slackId,
         String organization,
+        UUID organizationId,
 
         UserRole role
 ) {}
