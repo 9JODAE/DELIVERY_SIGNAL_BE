@@ -29,9 +29,9 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: http://localhost:19090/eureka/
+  instance:
+    appname: order-service  # 대문자화 방지: 이 이름 그대로 등록됨
 
-gateway:
-  base-url: http://localhost:80
 
 server:
   port: 19099
