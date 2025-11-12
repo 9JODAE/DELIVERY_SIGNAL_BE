@@ -2,6 +2,7 @@ package com.delivery_signal.eureka.client.delivery.presentation.controller.inter
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
+import com.delivery_signal.eureka.client.delivery.application.port.HubPort;
 import com.delivery_signal.eureka.client.delivery.application.service.DeliveryService;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
@@ -19,8 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
  * 부가 설명
  * /open-api/ : 로그인 정보 없이 통신할 때 쓰는 프리픽스
  * /api/ : 통신 시 로그인 인가가 필요할 때 쓰는 프리픽스
- *
- * => delivery의 경우 추후에 /api/ 프리픽스로 바꾸어야함 (로그인 정보 가지고 와서 해야할 경우 대비)
  */
 @RestController
 @RequestMapping("/open-api/v1/deliveries")
@@ -28,6 +27,7 @@ public class DeliveryInternalController {
 
     private final DeliveryService deliveryService;
     private final DeliveryPresentationMapper deliveryPresentationMapper;
+    private final HubPort hubPort;
 
     // API Gateway에서 인증 후, USER ID와 ROLE을 헤더에 담아 전달
     private static final String USER_ID_HEADER = "X-User-Id";
@@ -35,9 +35,11 @@ public class DeliveryInternalController {
     // 담당 허브 ID
     private static final String USER_HUB_ID_HEADER = "X-User-Hub-Id";
 
-    public DeliveryInternalController(DeliveryService deliveryService, DeliveryPresentationMapper deliveryPresentationMapper) {
+    public DeliveryInternalController(DeliveryService deliveryService, DeliveryPresentationMapper deliveryPresentationMapper,
+        HubPort hubPort) {
         this.deliveryService = deliveryService;
         this.deliveryPresentationMapper = deliveryPresentationMapper;
+        this.hubPort = hubPort;
     }
 
     @PostMapping
