@@ -3,6 +3,7 @@ package com.delivery_signal.eureka.client.company.presentation.external.dto.resp
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -22,8 +23,8 @@ public class ProductUpdateResponseDto {
     @Schema(description = "수정된 상품명")
     private String name;
 
-    @Schema(description = "수정된 설명")
-    private String description;
+    @Schema(description = "가격", example = "1000")
+    private BigDecimal price;
 
     @Schema(description = "수정 시각")
     private LocalDateTime updatedAt;

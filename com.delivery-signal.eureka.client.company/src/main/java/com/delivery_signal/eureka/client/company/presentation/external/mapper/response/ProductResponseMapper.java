@@ -35,7 +35,9 @@ public class ProductResponseMapper {
     public static ProductUpdateResponseDto toUpdateResponse(ProductUpdateResult result) {
         return ProductUpdateResponseDto.builder()
                 .id(result.getProductId())
+                .updatedAt(result.getUpdateAt())
                 .name(result.getProductName())
+                .price(result.getPrice())
                 .build();
     }
 

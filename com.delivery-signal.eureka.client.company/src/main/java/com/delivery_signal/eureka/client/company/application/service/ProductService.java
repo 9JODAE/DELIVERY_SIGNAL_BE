@@ -117,6 +117,8 @@ public class ProductService {
 
         return ProductUpdateResult.builder()
                 .productId(product.getProductId())
+                .price(product.getPrice())
+                .productName(product.getProductName())
                 .updatedBy(product.getUpdatedBy())
                 .updateAt(product.getUpdatedAt())
                 .message("상품 정보가 수정되었습니다.")
