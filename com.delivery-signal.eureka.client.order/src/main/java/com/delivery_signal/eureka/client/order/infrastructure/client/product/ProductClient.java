@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import java.util.UUID;
 
-@FeignClient(name = "product-service", url = "${internal.company.url}")
+@FeignClient(name = "company-service", url = "${internal.company.url}")
 public interface ProductClient {
 
     /**
