@@ -19,6 +19,7 @@ import com.delivery_signal.eureka.client.delivery.application.dto.PagedDeliveryR
 import com.delivery_signal.eureka.client.delivery.common.UserRole;
 import com.delivery_signal.eureka.client.delivery.domain.entity.Delivery;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRepository;
+import com.delivery_signal.eureka.client.delivery.domain.vo.HubIdentifier;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -40,21 +41,16 @@ public class DeliveryService {
     private final DeliveryRepository deliveryRepository;
     private final DeliveryRouteRecordsRepository deliveryRouteRecordsRepository;
     private final DeliveryQueryRepository deliveryQueryRepository;
-    private final UserServiceClient userServiceClient;
-    private final OrderServiceClient orderServiceClient;
     private final DeliveryDomainMapper deliveryDomainMapper;
     private final DeliveryPermissionValidator permissionValidator;
 
     public DeliveryService(DeliveryRepository deliveryRepository,
         DeliveryQueryRepository deliveryQueryRepository,
-        DeliveryRouteRecordsRepository deliveryRouteRecordsRepository, UserServiceClient userServiceClient,
-        OrderServiceClient orderServiceClient,
+        DeliveryRouteRecordsRepository deliveryRouteRecordsRepository,
         DeliveryDomainMapper deliveryDomainMapper, DeliveryPermissionValidator permissionValidator) {
         this.deliveryRepository = deliveryRepository;
         this.deliveryRouteRecordsRepository = deliveryRouteRecordsRepository;
         this.deliveryQueryRepository = deliveryQueryRepository;
-        this.userServiceClient = userServiceClient;
-        this.orderServiceClient = orderServiceClient;
         this.deliveryDomainMapper = deliveryDomainMapper;
         this.permissionValidator = permissionValidator;
     }
@@ -65,7 +61,11 @@ public class DeliveryService {
      */
     @Transactional
     public DeliveryQueryResponse createDelivery(CreateDeliveryCommand command, Long creatorId) {
-        // TODO: 허브 유효성 검사 (Hub 존재 여부 등) - CLIENT 통신 필요
+        // 출발지 허브 ID 기준 허브 유효성 검사
+        if (!permissionValidator.validateHubExistence(HubIdentifier.of(command.departureHubId()), creatorId, "MASTER")) {
+            throw new IllegalArgumentException("유효하지 않거나 활성화되지 않은 허브 ID입니다: " + command.departureHubId());
+        }
+
         // TODO: 배송 경로 기록은 추후에 추가 예정
         Delivery delivery = Delivery.create(command.orderId(),
             command.companyId(),
@@ -137,7 +137,7 @@ public class DeliveryService {
 
         // 권한 확인은 QueryRepository 내부에서 필터링으로 처리
         UserRole userRole = UserRole.valueOf(role);
-        DeliverySearchCondition searchCondition = refineSearchCondition(condition, currUserId, userRole);
+        DeliverySearchCondition searchCondition = permissionValidator.refineSearchCondition(condition, currUserId);
         PageRequest pageable = query.toPageable();
 
         Page<Delivery> deliveryPage = deliveryQueryRepository.searchDeliveries(currUserId, searchCondition,
@@ -177,7 +177,6 @@ public class DeliveryService {
 
         return PagedDeliveryResponse.from(deliveryPage, responses);
     }
-
 
     /**
      * 배송 정보 수정
@@ -283,7 +282,6 @@ public class DeliveryService {
         delivery.softDelete(currUserId);
     }
 
-
     /**
      * 배송 경로 이력 조회
      * 권한: 모든 로그인 사용자 (단, 허브 관리자와 배송 담당자는 자신이 담당하는 허브/배송만)
@@ -309,11 +307,8 @@ public class DeliveryService {
     @Transactional(readOnly = true)
     public DeliveryQueryResponse getDeliveryInfo(UUID deliveryId, Long currUserId, String role) {
         Delivery delivery = getDelivery(deliveryId);
-
-        if (!hasReadPermission(delivery, currUserId, UserRole.valueOf(role))) {
-            throw new RuntimeException("해당 배송 정보를 조회할 권한이 없습니다.");
-        }
-
+        // 조회 및 검색 권한: 모든 로그인 사용자 가능, 단 배송 담당자는 자신이 담당하는 배송만 조회 가능
+        permissionValidator.hasReadPermission(delivery, currUserId);
         return deliveryDomainMapper.toResponse(delivery);
     }
 
@@ -331,126 +326,5 @@ public class DeliveryService {
     private DeliveryRouteRecords getDeliveryRouteRecords(UUID routeId) {
         return deliveryRouteRecordsRepository.findActiveById(routeId)
             .orElseThrow(() -> new NoSuchElementException("배송 경로 기록을 찾을 수 없습니다."));
-    }
-
-    /**
-     * 배송 업데이트 권한: 마스터 관리자, 해당 허브 관리자, 해당 배송 담당자만 가능
-     */
-    private boolean hasUpdatePermission(Delivery delivery, Long updatorId, UserRole role) {
-        if (role.equals(UserRole.MASTER)) {
-            return true;
-        }
-
-        // TODO: 허브 관리자는 delivery의 fromHubId/toHubId 중 하나를 관리하는지 확인 (허브 FeignClient 필요)
-        if (role.equals(UserRole.HUB_MANAGER)) {
-            // return hubService.isManagingHub(currUserId, delivery.getFromHubId())
-            //         || hubService.isManagingHub(currUserId, delivery.getToHubId());
-            return true; // 임시 허용
-        }
-
-        if (role.equals(UserRole.DELIVERY_MANAGER)) {
-            return delivery.getDeliveryManagerId().equals(updatorId);
-        }
-
-        return false;
-    }
-
-    /**
-     * 배송 경로 기록 업데이트(이력 추가) 권한 : 마스터, 허브 관리자, 허브 배송 담당자만 가능
-     */
-    private boolean hasHubMovementPermission(DeliveryRouteRecords record, Long currUserId, UserRole role) {
-        if (role == UserRole.MASTER) return true;
-
-        // TODO: 허브 FeignClient 호출을 통해 currUserId가 record.departureHubId 또는 record.destinationHubId를 담당하는지 확인
-        if (role.equals(UserRole.HUB_MANAGER)) {
-            // return hubService.isManagingHub(currUserId, record.getFromHubId())
-            //         || hubService.isManagingHub(currUserId, record.getToHubId());
-            return true; // 임시 허용
-        }
-
-        if (role == UserRole.DELIVERY_MANAGER) {
-            // 배송 담당자일 경우, 해당 경로에 할당된 허브 배송 담당자여야 함
-            // 허브 배송 담당자는 해당 경로에 할당된 hubDeliveryManagerId와 일치해야 함
-            return record.getHubDeliveryManagerId() != null && record.getHubDeliveryManagerId().equals(currUserId);
-        }
-        return false;
-    }
-
-    /**
-     * 배송 삭제 권한: 마스터 관리자, 허브 관리자(담당 허브)
-     */
-    private boolean hasDeletePermission(Delivery delivery, Long deletorId, UserRole role) {
-        if (role.equals(UserRole.MASTER)) {
-            return true;
-        }
-
-        // TODO: 허브 관리자는 delivery의 fromHubId/toHubId 중 하나를 관리하는지 확인 (허브 FeignClient 필요)
-        if (role.equals(UserRole.HUB_MANAGER)) {
-            // return hubService.isManagingHub(currUserId, delivery.getFromHubId())
-            //         || hubService.isManagingHub(currUserId, delivery.getToHubId());
-            return true; // 임시 허용
-        }
-        return false;
-    }
-
-    /**
-     * 배송 조회 권한: 모든 로그인 사용자 (단, 허브 관리자와 배송 담당자는 자신이 담당하는 허브/배송만)
-     */
-    private boolean hasReadPermission(Delivery delivery, Long currUserid, UserRole role) {
-//        if (role == UserRole.MASTER_ADMIN || role == UserRole.HUB_ADMIN || role == UserRole.PARTNER_AGENT) {
-//            return true;
-//        }
-
-        if (role.equals(UserRole.MASTER) || role.equals(UserRole.SUPPLIER_MANAGER)) {
-            return true;
-        }
-
-        // TODO: 허브 관리자는 delivery의 fromHubId/toHubId 중 하나를 관리하는지 확인 (허브 FeignClient 필요)
-        if (role.equals(UserRole.HUB_MANAGER)) {
-            // return hubService.isManagingHub(currUserId, delivery.getFromHubId())
-            //         || hubService.isManagingHub(currUserId, delivery.getToHubId());
-            return true; // 임시 허용
-        }
-
-        if (role == UserRole.DELIVERY_MANAGER) {
-            return delivery.getDeliveryManagerId().equals(currUserid);
-        }
-        return true;
-    }
-
-    /**
-     * 권한에 따른 검색 조건 보정
-     */
-    private DeliverySearchCondition refineSearchCondition(
-        DeliverySearchCondition originalCondition,
-        Long currUserId,
-        UserRole role
-    ) {
-        if (role.equals(UserRole.MASTER) || role.equals(UserRole.SUPPLIER_MANAGER)) {
-            return originalCondition;
-        }
-
-        // TODO: 허브 관리자는 delivery의 fromHubId/toHubId 중 하나를 관리하는지 확인 (허브 FeignClient 필요)
-        if (role.equals(UserRole.HUB_MANAGER)) {
-            // return hubService.isManagingHub(currUserId, delivery.getFromHubId())
-            //         || hubService.isManagingHub(currUserId, delivery.getToHubId());
-            return originalCondition; // 임시 허용
-        }
-
-        // 배송 담당자: 본인 담당 배송만 검색 가능하도록 조건 강제
-        if (role.equals(UserRole.DELIVERY_MANAGER)) {
-            if (originalCondition.deliveryManagerId() != null &&
-                    !originalCondition.deliveryManagerId().equals(currUserId)) {
-                throw new RuntimeException("배송 담당자는 본인의 배송 목록만 검색할 수 있습니다.");
-            }
-
-            return DeliverySearchCondition.builder()
-                .hubId(originalCondition.hubId())
-                .companyId(originalCondition.companyId())
-                .deliveryManagerId(currUserId)
-                .status(originalCondition.status())
-                .build();
-        }
-        return originalCondition;
     }
 }

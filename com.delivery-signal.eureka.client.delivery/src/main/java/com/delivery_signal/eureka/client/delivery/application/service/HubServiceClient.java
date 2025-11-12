@@ -1,9 +1,27 @@
 package com.delivery_signal.eureka.client.delivery.application.service;
 
+import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 
-@FeignClient(name = "hub-service", path = "/v1/hubs")
+@FeignClient(name = "hub-service", path = "${internal.hub.url}")
 public interface HubServiceClient {
+    String USER_ID_HEADER = "X-User-Id";
+    String USER_ROLE_HEADER = "X-User-Role";
+
+    /**
+     * 허브의 존재 여부 확인 API
+     * @param hubId 확인할 허브 ID
+     * @param currUserId 현재 요청 사용자 ID (인가/감사 목적)
+     * @param role 현재 요청 사용자 역할 (인가 목적)
+     */
+    @GetMapping("/open-api/v1/hubs/{hubId}")
+    boolean existsById(
+        @PathVariable("hubId") UUID hubId,
+        @RequestHeader(USER_ID_HEADER) Long currUserId,
+        @RequestHeader(USER_ROLE_HEADER) String role);
 
     /**
      * 허브 이동 정보 목록 조회 (존재 여부 확인 및 정보 획득)
