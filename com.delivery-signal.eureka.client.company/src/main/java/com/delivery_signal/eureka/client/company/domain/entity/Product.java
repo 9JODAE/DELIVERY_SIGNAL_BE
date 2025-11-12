@@ -3,6 +3,7 @@ package com.delivery_signal.eureka.client.company.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.java.Log;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class Product extends BaseEntity{
 
     @Id
@@ -32,8 +34,6 @@ public class Product extends BaseEntity{
 
     @Column(name = "상품가격")
     private BigDecimal price;
-
-
 
     @Column(name = "deleted_by")
     private Long deletedBy;

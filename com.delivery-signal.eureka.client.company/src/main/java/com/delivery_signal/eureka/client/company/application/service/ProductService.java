@@ -9,6 +9,7 @@ import com.delivery_signal.eureka.client.company.application.port.out.CompanyQue
 import com.delivery_signal.eureka.client.company.application.result.*;
 import com.delivery_signal.eureka.client.company.application.validator.ProductPermissionValidator;
 import com.delivery_signal.eureka.client.company.common.NotFoundException;
+import com.delivery_signal.eureka.client.company.domain.entity.Company;
 import com.delivery_signal.eureka.client.company.domain.entity.Product;
 import com.delivery_signal.eureka.client.company.domain.repository.ProductRepository;
 import com.delivery_signal.eureka.client.company.domain.service.ProductDomainService;
@@ -135,11 +136,11 @@ public class ProductService {
                 .orElseThrow(() -> new NotFoundException("",command.getProductId()));
 
         // 권한 검증
-        productPermissionValidator.validateDelete(command.getUserId(),command.getHubId());
+        productPermissionValidator.validateDelete(command.getUserId(),product.getCompanyId());
 
         // 삭제 처리 (soft delete)
         product.softDelete(command.getUserId());
-        productRepository.save(product);
+        product.setDeletedBy(command.getUserId());
 
         log.info("상품 삭제 완료: {}", product.getProductName());
 

@@ -6,9 +6,10 @@ import java.util.UUID;
 
 public class ProductDeleteMapper {
 
-    public static DeleteProductCommand toCommand(UUID productId) {
+    public static DeleteProductCommand toCommand(UUID productId, Long userId) {
         return DeleteProductCommand.builder()
                 .productId(productId)
+                .userId(userId)
                 .build();
     }
 }

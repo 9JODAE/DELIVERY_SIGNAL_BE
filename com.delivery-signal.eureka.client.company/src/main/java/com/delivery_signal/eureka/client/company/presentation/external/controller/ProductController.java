@@ -75,8 +75,10 @@ public class ProductController {
 
     @Operation(summary = "상품 삭제", description = "상품을 삭제합니다.")
     @DeleteMapping("/{productId}")
-    public ResponseEntity<ProductDeleteResponseDto> deleteProduct(@PathVariable UUID productId) {
-        DeleteProductCommand command = ProductDeleteMapper.toCommand(productId);
+    public ResponseEntity<ProductDeleteResponseDto> deleteProduct(
+            @PathVariable UUID productId,
+            @RequestHeader(value = "x-user-id", required = false) Long userId) {
+        DeleteProductCommand command = ProductDeleteMapper.toCommand(productId, userId);
         ProductDeleteResult result = productService.deleteProduct(command);
         ProductDeleteResponseDto response = ProductResponseMapper.toDeleteResponse(result);
         return ResponseEntity.ok(response);

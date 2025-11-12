@@ -58,12 +58,12 @@ public class ProductPermissionValidator {
         }
     }
 
-    public void validateDelete(Long userId, UUID hubId) {
+    public void validateDelete(Long userId, UUID companyId) {
         UserAuthDto user = getActiveUser(userId);
 
         switch (user.role()) {
             case "MASTER" -> {}
-            case "HUB_ADMIN" -> checkHubPermission(user.organizationId(), hubId, "삭제");
+            case "HUB_MANAGER" -> {}
             default -> throwForbidden(user.role(), "상품 삭제");
         }
     }
@@ -88,9 +88,9 @@ public class ProductPermissionValidator {
 //        }
 //    }
 
-    private void checkHubPermission(UUID userHubId, UUID targetHubId, String action) {
-        if (userHubId == null || !userHubId.equals(targetHubId)) {
-            throw new ForbiddenException("해당 허브의 상품만 " + action + " 가능합니다.");
+    private void checkHubPermission(UUID userHubId, UUID targetCompanyId, String action) {
+        if (userHubId == null || !userHubId.equals(targetCompanyId)) {
+            throw new ForbiddenException("해당 업체의 상품만 " + action + " 가능합니다.");
         }
     }
 
