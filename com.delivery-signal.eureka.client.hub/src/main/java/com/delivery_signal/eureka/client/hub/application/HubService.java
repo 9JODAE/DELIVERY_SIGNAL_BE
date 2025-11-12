@@ -42,6 +42,7 @@ import com.delivery_signal.eureka.client.hub.domain.vo.Duration;
 import com.delivery_signal.eureka.client.hub.domain.mapper.HubRouteSearchCondition;
 import com.delivery_signal.eureka.client.hub.domain.mapper.HubSearchCondition;
 import com.delivery_signal.eureka.client.hub.domain.vo.ProductId;
+import com.delivery_signal.eureka.client.hub.common.annotation.CacheEvict;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -128,6 +129,7 @@ public class HubService {
 	 * 허브 삭제
 	 * @param hubId 허브 아이디
 	 */
+	@CacheEvict(value = "hubRoutes", allEntries = true)
 	public void deleteHub(UUID hubId) {
 		Hub hub = getHubOrThrow(hubId);
 		hub.delete(1L); // TODO 유저 서비스 개발 완료 시 변경
@@ -143,6 +145,7 @@ public class HubService {
 	 * @param command 허브 경로 생성 커맨드
 	 * @return 생성된 허브 경로 아이디
 	 */
+	@CacheEvict(value = "hubRoutes", allEntries = true)
 	public UUID createHubRoute(CreateHubRouteCommand command) {
 		Hub departureHub = getHubOrThrow(command.departureHubId());
 		Hub arrivalHub = getHubOrThrow(command.arrivalHubId());
@@ -193,6 +196,7 @@ public class HubService {
 	 * @param command 허브 이동정보 수정 커맨드
 	 * @return 수정된 허브 이동정보 결과
 	 */
+	@CacheEvict(value = "hubRoutes", allEntries = true)
 	public HubRouteDetailResult updateHubRoute(UUID hubId, UUID hubRouteId, UpdateHubRouteCommand command) {
 		Hub hub = getHubWithRoutesOrThrow(hubId);
 		Distance distance = Distance.of(command.distance());
@@ -206,6 +210,7 @@ public class HubService {
 	 * @param hubId 출발 허브 아이디
 	 * @param hubRouteId 허브 이동정보 아이디
 	 */
+	@CacheEvict(value = "hubRoutes", allEntries = true)
 	public void deleteHubRoute(UUID hubId, UUID hubRouteId) {
 		Hub hub = getHubWithRoutesOrThrow(hubId);
 		hub.deleteHubRoute(hubRouteId, 1L); // TODO 유저 서비스 개발 완료 시 변경
