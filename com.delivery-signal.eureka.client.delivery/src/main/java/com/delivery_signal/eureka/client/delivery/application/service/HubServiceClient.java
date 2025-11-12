@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "hub-service")
+@FeignClient(name = "hub-service", path = "/open-api/v1/hubs")
 public interface HubServiceClient {
     String USER_ID_HEADER = "X-User-Id";
     String USER_ROLE_HEADER = "X-User-Role";
@@ -20,7 +20,7 @@ public interface HubServiceClient {
      * @param currUserId 현재 요청 사용자 ID (인가/감사 목적)
      * @param role 현재 요청 사용자 역할 (인가 목적)
      */
-    @GetMapping("/open-api/v1/hubs/{hubId}")
+    @GetMapping("/{hubId}")
     boolean existsById(
         @PathVariable("hubId") UUID hubId,
         @RequestHeader(USER_ID_HEADER) Long currUserId,

@@ -5,10 +5,10 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "external-service")
+@FeignClient(name = "external-service", path = "/open-api/v1/externals/slacks")
 public interface ExternalServiceClient {
 
-    @GetMapping("/open-api/v1/externals/slacks/message")
+    @GetMapping("/message")
     ApiResponse<String> sendSlackMessage(
         @RequestBody CreateSlackMessageRequest request);
 
