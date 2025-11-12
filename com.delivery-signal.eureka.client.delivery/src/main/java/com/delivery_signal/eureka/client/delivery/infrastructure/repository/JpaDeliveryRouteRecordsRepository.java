@@ -25,4 +25,7 @@ public interface JpaDeliveryRouteRecordsRepository extends JpaRepository<Deliver
 
     // 특정 배송 ID에 대한 모든 활성 경로 기록을 배송 순번대로 조회
     List<DeliveryRouteRecords> findAllByDeliveryDeliveryIdAndDeletedAtIsNullOrderBySequenceAsc(UUID deliveryDeliveryId);
+
+    // deliveryId 기준, createdAt 오름차순으로 정렬하여 가장 처음 만들어진 기록 조회
+    Optional<DeliveryRouteRecords> findTopByDelivery_DeliveryIdAndDeletedAtIsNullOrderByCreatedAtAsc(UUID deliveryId);
 }

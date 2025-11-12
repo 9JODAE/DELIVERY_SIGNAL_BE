@@ -39,8 +39,11 @@ public class HubServiceAdapter implements HubPort {
         // 인프라 DTO -> 도메인 VO로 변환 (ACL 역할)
         return responses.data().stream()
             .map(pathResponse -> new HubRouteInfo(
+                pathResponse.departureHubId(),
+                pathResponse.arrivalHubId(),
                 pathResponse.departureHubName(),
                 pathResponse.arrivalHubName(),
+                pathResponse.distance(),
                 pathResponse.transitTime()
             ))
             .collect(Collectors.toList());

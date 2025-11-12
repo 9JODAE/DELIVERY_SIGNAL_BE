@@ -25,6 +25,7 @@ import com.delivery_signal.eureka.client.delivery.domain.entity.Delivery;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRepository;
 import com.delivery_signal.eureka.client.delivery.domain.vo.HubIdentifier;
 import com.delivery_signal.eureka.client.delivery.domain.vo.HubRouteInfo;
+import com.delivery_signal.eureka.client.delivery.domain.vo.SlackMessageDetails;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -49,15 +50,17 @@ public class DeliveryService {
     private final DeliveryManagerRepository deliveryManagerRepository;
     private final DeliveryDomainMapper deliveryDomainMapper;
     private final DeliveryPermissionValidator permissionValidator;
-    private final HubPort hubPort;
     private final DeliveryAssignmentService deliveryAssignmentService;
+    private final DeliveryNotificationService deliveryNotificationService;
+    private final HubPort hubPort;
 
     public DeliveryService(DeliveryRepository deliveryRepository,
         DeliveryQueryRepository deliveryQueryRepository,
         DeliveryRouteRecordsRepository deliveryRouteRecordsRepository,
         DeliveryManagerRepository deliveryManagerRepository,
         DeliveryDomainMapper deliveryDomainMapper, DeliveryPermissionValidator permissionValidator,
-        HubPort hubPort, DeliveryAssignmentService deliveryAssignmentService) {
+        HubPort hubPort, DeliveryAssignmentService deliveryAssignmentService,
+        DeliveryNotificationService deliveryNotificationService) {
         this.deliveryRepository = deliveryRepository;
         this.deliveryRouteRecordsRepository = deliveryRouteRecordsRepository;
         this.deliveryQueryRepository = deliveryQueryRepository;
@@ -66,6 +69,7 @@ public class DeliveryService {
         this.permissionValidator = permissionValidator;
         this.hubPort = hubPort;
         this.deliveryAssignmentService = deliveryAssignmentService;
+        this.deliveryNotificationService = deliveryNotificationService;
     }
 
     /**
@@ -110,7 +114,9 @@ public class DeliveryService {
                     delivery,
                     initialHubManager.getDeliverySequence(),
                     segment.departureHubId(),
+                    segment.departureHubName(),
                     segment.arrivalHubId(),
+                    segment.arrivalHubName(),
                     segment.distance(),
                     segment.transitTime(),
                     initialHubManagerId,
@@ -215,7 +221,6 @@ public class DeliveryService {
 
         delivery.updateStatus(newStatus, updatorId);
 
-        // TODO (확인 필요) : PARTNER_MOVING -> COMPLETED로 변경 시, 주문 서비스에 최종 완료 알림 전송 (AI/SLACK 서비스 feign client)
         return deliveryDomainMapper.toResponse(delivery);
     }
 
@@ -238,9 +243,28 @@ public class DeliveryService {
         record.update(newStatus, command.actualDistance(),
             command.actualTime(), updatorId);
 
+        // 최초 허브 출발 시 슬랙 메시지 전송 요청 로직 (최초 배송 출발 시)
         // 최초 허브 출발 시 (첫번째 시퀀스, HUB_MOVING) : Delivery 상태를 HUB_MOVING으로 변경
-        if (record.getSequence() == 0 && newStatus.equals(DeliveryStatus.HUB_MOVING)) {
-            delivery.updateStatus(newStatus, updatorId);
+        if (newStatus.equals(DeliveryStatus.HUB_MOVING)) {
+            delivery.updateStatus(DeliveryStatus.HUB_MOVING, updatorId);
+
+            // 경로 정보 통합: 경유지 목록 생성, 첫번째 시퀀스 찾기
+            List<DeliveryRouteRecords> allRecords = deliveryRouteRecordsRepository.findAllByDeliveryIdOrderBySequence(
+                delivery.getDeliveryId()
+            );
+
+            if (!allRecords.isEmpty()) {
+                // 슬랙 메시지 상세 정보 VO 생성
+                SlackMessageDetails messageDetails = deliveryNotificationService.createSlackMessageDetails(
+                    delivery, allRecords);
+                try {
+                    // 슬랙 메시지 전송 요청
+                    deliveryNotificationService.requestSendSlackMessage(messageDetails);
+                } catch (Exception e) {
+                    // 알림은 핵심 비즈니스 로직(배송 기록)이 아니므로, 실패해도 트랜잭션을 롤백시키지 않고 로깅만
+                    System.err.println("WARN: Slack 메시지 전송 요청 실패. 로깅 필요. 메시지: " + e.getMessage());
+                }
+            }
         }
 
         // 최종 허브 도착 시 (마지막 시퀀스, HUB_ARRIVED) : Delivery 상태는 아직 HUB_MOVING 유지
@@ -251,7 +275,6 @@ public class DeliveryService {
             Pageable limitOne = PageRequest.of(0, 1);
 
             // 해당 경로 기록이 마지막 경로인지 확인
-
             List<DeliveryRouteRecords> lastRecordList = deliveryRouteRecordsRepository.findLastRouteRecord(
                 record.getDelivery().getDeliveryId(),
                 limitOne
