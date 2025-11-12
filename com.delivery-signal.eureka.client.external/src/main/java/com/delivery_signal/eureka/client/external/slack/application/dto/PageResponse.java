@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.external.global.response;
+package com.delivery_signal.eureka.client.external.slack.application.dto;
 
 import org.springframework.data.domain.Page;
 
