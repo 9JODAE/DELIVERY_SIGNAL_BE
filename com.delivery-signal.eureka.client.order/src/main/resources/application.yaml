@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: order-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/delivery_signal
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: 1234
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+      hibernate:
+        default_schema: order
+      format_sql: true
+      use_sql_comments: true
+    show-sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+  instance:
+    appname: order-service  # 대문자화 방지: 이 이름 그대로 등록됨
+
+
+server:
+  port: 19099
+
+internal:
+  company:
+    url: http://localhost:19095
+  hub:
+    url: http://localhost:19093
+  delivery:
+    url: http://localhost:19091
+  user:
+    url: http://localhost:19092
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui
+
+management:
+  zipkin:
+    tracing:
+      endpoint: "http://localhost:9411/api/v2/spans"
+  tracing:
+    sampling:
+      probability: 1.0

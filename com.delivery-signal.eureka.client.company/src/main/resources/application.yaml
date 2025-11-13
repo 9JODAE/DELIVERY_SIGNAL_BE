@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: company-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/delivery_signal
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: 1234
+
+  jpa:
+    properties:
+      hibernate:
+        default_schema: company
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+
+server:
+  port: 19095
+
+internal:
+  hub:
+    url: http://localhost/open-api/v1
+  user:
+    url: http://localhost/open-api/v1
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui
+
+management:
+  zipkin:
+    tracing:
+      endpoint: "http://localhost:9411/api/v2/spans"
+  tracing:
+    sampling:
+      probability: 1.0
+
