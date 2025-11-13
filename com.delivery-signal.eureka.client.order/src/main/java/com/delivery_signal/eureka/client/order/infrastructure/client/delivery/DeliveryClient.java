@@ -15,7 +15,11 @@ public interface DeliveryClient {
      * 배송 생성 요청
      */
     @PostMapping
-    ApiResponseDto<DeliveryCreatedInfo> createDelivery(@RequestBody DeliveryCreateRequestDto request);
+    ApiResponseDto<DeliveryCreatedInfo>  createDelivery(
+            @RequestBody DeliveryCreateRequestDto request,
+            @RequestHeader("X-USER-ID") Long currUserId,
+            @RequestHeader("X-USER-ROLE") String role
+    );;
 
     /**
      * 배송 취소 요청 (논리 삭제)

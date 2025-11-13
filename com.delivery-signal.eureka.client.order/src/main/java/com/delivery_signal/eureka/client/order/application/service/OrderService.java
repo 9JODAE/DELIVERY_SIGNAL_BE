@@ -68,8 +68,8 @@ public class OrderService {
      */
     public OrderCreateResult createOrderAndSendDelivery(CreateOrderCommand command) {
 
-        // 로그인 및 최소 권한 체크
-        orderPermissionValidator.validateCreate(command.getUserId());
+        // 로그인 및 최소 권한 체크 및 권한 정보 반환
+        String userRole =  orderPermissionValidator.validateCreate(command.getUserId());
 
         // 상품 ID 리스트
         List<UUID> productIds = command.getProducts().stream()
@@ -139,13 +139,17 @@ public class OrderService {
 
         // 배송 생성 요청
         CreateDeliveryCommand deliveryRequest = CreateDeliveryCommand.builder()
+                .userId(command.getUserId())
+                .userRole(userRole)
                 .deliveryId(deliveryId)
                 .orderId(order.getId())
                 .supplierCompanyId(command.getSupplierCompanyId())
                 .receiverCompanyId(command.getReceiverCompanyId())
-                .fromHubId(supplier.getHubId())
-                .toHubId(receiver.getHubId())
+                .departureHubId(supplier.getHubId())
+                .destinationHubId(receiver.getHubId())
                 .address(receiver.getAddress())
+                .recipient(command.getRecipient())
+                .recipientSlackId(command.getRecipientSlackId())
                 .build();
 
         DeliveryCreatedInfo deliveryInfo = deliveryCommandPort.createDelivery(deliveryRequest);
@@ -191,7 +195,7 @@ public class OrderService {
     public List<OrderListResult> getAllOrders(Long userId) {
         List<Order> orders = orderQueryPort.findAllWithOrderProducts();
 
-        // null을 전달하면 validateReadByHub에서 MASTER_ADMIN만 통과시키도록 설계되어 있음
+        // null을 전달하면 validateReadByHub에서 MASTER만 통과시키도록 설계되어 있음
         orderPermissionValidator.validateReadByHub(userId, null);
 
         return orderQueryMapper.toListDtos(orders);
