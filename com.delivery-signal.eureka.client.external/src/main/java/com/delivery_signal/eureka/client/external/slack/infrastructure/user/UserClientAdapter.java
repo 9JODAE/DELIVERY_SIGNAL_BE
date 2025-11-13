@@ -14,7 +14,7 @@ public class UserClientAdapter implements UserConnector {
 
     @Override
     public UserAuthorizationInfoDto getUserAuthorizationInfo(Long userId) {
-        UserAuthorizationResponse response = feignClient.getUserAuthorizationInfo(userId);
+        UserAuthorizationResponse response = feignClient.getUserAuthorizationInfo(userId).data();
         return response.toDto();
     }
 
