@@ -25,16 +25,21 @@ public class DeliveryCommandAdapter implements DeliveryCommandPort {
 
     @Override
     public DeliveryCreatedInfo createDelivery(CreateDeliveryCommand command) {
+
         DeliveryCreateRequestDto requestDto = DeliveryCreateRequestDto.builder()
-                .deliveryId(command.getDeliveryId())
                 .orderId(command.getOrderId())
-                .supplierCompanyId(command.getSupplierCompanyId())
-                .receiverCompanyId(command.getReceiverCompanyId())
-                .fromHubId(command.getFromHubId())
-                .toHubId(command.getToHubId())
+                .companyId(command.getSupplierCompanyId())
+                .departureHubId(command.getDepartureHubId())
+                .destinationHubId(command.getDestinationHubId())
+                .recipient(command.getRecipient())
+                .address(command.getAddress())
+                .recipientSlackId(command.getRecipientSlackId())
+                .status("허브 대기중")
                 .build();
-        return deliveryClient.createDelivery(requestDto).getData();
+
+        return deliveryClient.createDelivery(requestDto,command.getUserId(),command.getUserRole()).getData();
     }
+
 
     @Override
     public void cancelDelivery(UUID deliveryId) {

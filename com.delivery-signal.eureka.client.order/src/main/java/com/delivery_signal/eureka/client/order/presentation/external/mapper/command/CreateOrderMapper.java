@@ -20,6 +20,8 @@ public class CreateOrderMapper {
                 .userId(userId)
                 .supplierCompanyId(dto.getSupplierCompanyId())
                 .receiverCompanyId(dto.getReceiverCompanyId())
+                .recipient(dto.getRecipient())
+                .recipientSlackId(dto.getRecipientSlackId())
                 .requestNote(dto.getRequestNote())
                 .products(products)
                 .build();

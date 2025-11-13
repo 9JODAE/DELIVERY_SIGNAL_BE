@@ -26,4 +26,7 @@ public class CreateOrderRequestDto {
     private String requestNote;
     private List<OrderProductResponseDto> orderProducts;
 
+    private String recipient;          //주문자 이름 (임의로 쓰기 가능)
+    private String recipientSlackId;   // 슬랙id (배송 정보 받을 slack id이므로 이쪽도 임의로 쓰기 가능)
+
 }
