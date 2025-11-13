@@ -20,11 +20,11 @@ import lombok.Getter;
 public abstract class AggregateRootEntity<T extends AggregateRootEntity<T>> extends AbstractAggregateRoot<T> {
 
 	@CreatedDate
-	@Column(updatable = false)
+	@Column(updatable = false, nullable = false)
 	private LocalDateTime createdAt;
 
 	@CreatedBy
-	@Column(updatable = false)
+	@Column(updatable = false, nullable = false)
 	private Long createdBy;
 
 	@LastModifiedDate
