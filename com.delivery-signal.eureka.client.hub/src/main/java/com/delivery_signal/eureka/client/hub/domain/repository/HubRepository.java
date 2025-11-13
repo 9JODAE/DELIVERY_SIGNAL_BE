@@ -3,7 +3,7 @@ package com.delivery_signal.eureka.client.hub.domain.repository;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.delivery_signal.eureka.client.hub.domain.model.Hub;
+import com.delivery_signal.eureka.client.hub.domain.entity.Hub;
 
 public interface HubRepository {
 

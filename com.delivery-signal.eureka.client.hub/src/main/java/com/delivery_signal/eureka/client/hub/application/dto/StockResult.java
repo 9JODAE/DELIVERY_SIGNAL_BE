@@ -2,7 +2,7 @@ package com.delivery_signal.eureka.client.hub.application.dto;
 
 import java.util.UUID;
 
-import com.delivery_signal.eureka.client.hub.domain.model.Stock;
+import com.delivery_signal.eureka.client.hub.domain.entity.Stock;
 
 /**
  * 재고 결과 DTO

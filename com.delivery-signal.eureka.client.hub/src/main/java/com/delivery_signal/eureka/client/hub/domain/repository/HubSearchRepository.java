@@ -2,10 +2,10 @@ package com.delivery_signal.eureka.client.hub.domain.repository;
 
 import org.springframework.data.domain.Page;
 
-import com.delivery_signal.eureka.client.hub.domain.model.Hub;
-import com.delivery_signal.eureka.client.hub.domain.mapper.HubSearchCondition;
+import com.delivery_signal.eureka.client.hub.domain.entity.Hub;
+import com.delivery_signal.eureka.client.hub.domain.condition.HubSearchCondition;
 
-public interface HubQueryRepository {
+public interface HubSearchRepository {
 
 	/**
 	 * 허브 검색

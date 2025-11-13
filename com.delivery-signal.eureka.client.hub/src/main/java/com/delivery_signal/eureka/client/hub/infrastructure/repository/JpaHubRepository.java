@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import com.delivery_signal.eureka.client.hub.domain.model.Hub;
+import com.delivery_signal.eureka.client.hub.domain.entity.Hub;
 
 import io.lettuce.core.dynamic.annotation.Param;
 
