@@ -19,11 +19,11 @@ import lombok.Getter;
 public abstract class BaseEntity {
 
 	@CreatedDate
-	@Column(updatable = false)
+	@Column(updatable = false, nullable = false)
 	private LocalDateTime createdAt;
 
 	@CreatedBy
-	@Column(updatable = false)
+	@Column(updatable = false, nullable = false)
 	private Long createdBy;
 
 	@LastModifiedDate
