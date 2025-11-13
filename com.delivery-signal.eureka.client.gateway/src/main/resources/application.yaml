@@ -126,7 +126,7 @@ spring:
                 - Path=/open-api/v1/externals/**,/api/v1/externals/**
 
             - id: external-docs
-              uri: lb://hub-service
+              uri: lb://external-service
               predicates:
                 - Path=/externals/v3/api-docs
               filters:
