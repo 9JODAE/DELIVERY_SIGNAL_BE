@@ -14,6 +14,7 @@ import com.delivery_signal.eureka.client.external.slack.presentation.dto.request
 import com.delivery_signal.eureka.client.external.slack.presentation.dto.request.UpdateSlackRecordRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +23,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/externals/slacks")
 @RequiredArgsConstructor
-public class SlackRecordControllerV1 {
+public class SlackRecordControllerV1 implements SlackRecordApiV1{
 
     private final SlackRecordServiceV1 serviceV1;
     private final SlackMessageServiceV1 messageServiceV1;
@@ -36,7 +37,7 @@ public class SlackRecordControllerV1 {
         CreateSlackRecordResponse response = CreateSlackRecordResponse.from(
                 serviceV1.createSlackRecord(request.getRecipientId(), request.getMessage(), userId)
         );
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 
     @GetMapping("/{id}")
@@ -64,7 +65,6 @@ public class SlackRecordControllerV1 {
     }
 
 
-
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<UpdateSlackRecordResponse>> updateSlackRecord(
             @PathVariable UUID id,
@@ -76,6 +76,7 @@ public class SlackRecordControllerV1 {
         );
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<DeleteSlackRecordResponse>> softDeleteSlackRecord(
