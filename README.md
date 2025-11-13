@@ -49,7 +49,7 @@ Delivery Signal 물류 시스템은</br>
 
 | **구분** | **기술** |
 |-----------|-----------|
-| **Architecture** | Spring Cloud (Eureka, Gateway, Config, Feign Client) |
+| **Architecture** | Spring Cloud (Eureka, Gateway, Feign Client) |
 | **Monitoring / 운영 관리** | Spring Boot Actuator, Resilience4J (Circuit Breaker) |
 | **Security** | Spring Security / JWT |
 | **AOP / 공통처리** | Spring AOP (로깅, 권한 검사, 트랜잭션 관리 등) |
@@ -108,7 +108,11 @@ MSA 기반의 서비스 간 데이터 연동 및 확장성을 확보하고, 인�
 - 주문 등록 / 조회 / 수정 / 삭제 처리
 
 ###  허브 (Hub)
-- 허브 등록 / 조회 / 수정 / 삭제 처리
+- 허브 등록 / 검색 / 조회 / 수정 / 삭제 처리
+- 재고 등록 / 검색 / 조회 / 수정 / 삭제 / 차감 / 복구 처리
+  - Redisson Lock 적용
+- 이동 정보 등록 / 검색 / 조회 / 수정 / 삭제 처리
+  - Redis를 사용하여 캐싱 적용, 경로 알고리즘 Dijkstra 적용
 
 ###  외부서비스 (External)
 - Google ai geminai 연동
