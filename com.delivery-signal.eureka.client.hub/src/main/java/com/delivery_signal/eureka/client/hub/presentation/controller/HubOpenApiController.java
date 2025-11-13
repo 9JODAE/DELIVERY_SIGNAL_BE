@@ -20,7 +20,7 @@ import com.delivery_signal.eureka.client.hub.application.command.DeductStockQuan
 import com.delivery_signal.eureka.client.hub.application.command.GetHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.RestoreStockQuantityCommand;
 import com.delivery_signal.eureka.client.hub.application.facade.HubRouteFacade;
-import com.delivery_signal.eureka.client.hub.application.facade.StockFacade;
+import com.delivery_signal.eureka.client.hub.application.facade.StockUpdateFacade;
 import com.delivery_signal.eureka.client.hub.common.api.ApiResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.DeductStockQuantityRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.GetStockQuantitiesRequest;
@@ -37,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class HubOpenApiController {
 
 	private final HubService hubService;
-	private final StockFacade stockFacade;
+	private final StockUpdateFacade stockFacade;
 	private final HubRouteFacade hubRouteFacade;
 
 	@PostMapping("/stocks")

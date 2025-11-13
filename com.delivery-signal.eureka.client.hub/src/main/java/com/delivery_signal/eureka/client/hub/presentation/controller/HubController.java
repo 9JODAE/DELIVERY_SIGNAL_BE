@@ -27,8 +27,8 @@ import com.delivery_signal.eureka.client.hub.application.command.SearchStockComm
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.command.UpdateStockCommand;
+import com.delivery_signal.eureka.client.hub.application.facade.StockUpdateFacade;
 import com.delivery_signal.eureka.client.hub.application.facade.StockFacade;
-import com.delivery_signal.eureka.client.hub.application.facade.StockSearchFacade;
 import com.delivery_signal.eureka.client.hub.common.api.ApiResponse;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRequest;
 import com.delivery_signal.eureka.client.hub.presentation.dto.request.CreateHubRouteRequest;
@@ -57,8 +57,8 @@ import lombok.extern.slf4j.Slf4j;
 public class HubController {
 
 	private final HubService hubService;
-	private final StockFacade stockFacade;
-	private final StockSearchFacade stockSearchFacade;
+	private final StockUpdateFacade stockFacade;
+	private final StockFacade stockSearchFacade;
 
 	/**
 	 * 허브 생성

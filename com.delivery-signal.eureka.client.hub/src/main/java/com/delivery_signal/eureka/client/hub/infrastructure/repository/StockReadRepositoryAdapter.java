@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
-import com.delivery_signal.eureka.client.hub.domain.model.Stock;
+import com.delivery_signal.eureka.client.hub.domain.entity.Stock;
 import com.delivery_signal.eureka.client.hub.domain.repository.StockReadRepository;
 
 import lombok.RequiredArgsConstructor;

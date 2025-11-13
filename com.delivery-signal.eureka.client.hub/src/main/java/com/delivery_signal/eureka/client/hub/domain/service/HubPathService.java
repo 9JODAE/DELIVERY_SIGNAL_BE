@@ -4,7 +4,7 @@ import java.util.*;
 
 import org.springframework.stereotype.Service;
 
-import com.delivery_signal.eureka.client.hub.domain.model.HubRoute;
+import com.delivery_signal.eureka.client.hub.domain.entity.HubRoute;
 
 import lombok.extern.slf4j.Slf4j;
 

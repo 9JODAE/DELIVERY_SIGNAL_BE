@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -35,12 +37,15 @@ import com.delivery_signal.eureka.client.hub.application.command.UpdateStockComm
 import com.delivery_signal.eureka.client.hub.application.dto.HubResult;
 import com.delivery_signal.eureka.client.hub.application.dto.HubRouteResult;
 import com.delivery_signal.eureka.client.hub.application.dto.StockResult;
-import com.delivery_signal.eureka.client.hub.domain.model.Hub;
-import com.delivery_signal.eureka.client.hub.domain.model.HubRoute;
-import com.delivery_signal.eureka.client.hub.domain.model.Stock;
-import com.delivery_signal.eureka.client.hub.domain.repository.HubQueryRepository;
+import com.delivery_signal.eureka.client.hub.common.auth.UserContextHolder;
+import com.delivery_signal.eureka.client.hub.common.exception.NotFoundException;
+import com.delivery_signal.eureka.client.hub.common.exception.OutOfStockException;
+import com.delivery_signal.eureka.client.hub.domain.entity.Hub;
+import com.delivery_signal.eureka.client.hub.domain.entity.HubRoute;
+import com.delivery_signal.eureka.client.hub.domain.entity.Stock;
+import com.delivery_signal.eureka.client.hub.domain.repository.HubSearchRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRepository;
-import com.delivery_signal.eureka.client.hub.domain.repository.HubRouteQueryRepository;
+import com.delivery_signal.eureka.client.hub.domain.repository.HubRouteSearchRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRouteReadRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.StockReadRepository;
 import com.delivery_signal.eureka.client.hub.domain.vo.Address;
@@ -48,8 +53,6 @@ import com.delivery_signal.eureka.client.hub.domain.vo.Coordinate;
 import com.delivery_signal.eureka.client.hub.domain.vo.Distance;
 import com.delivery_signal.eureka.client.hub.domain.vo.Duration;
 import com.delivery_signal.eureka.client.hub.domain.vo.ProductId;
-
-import jakarta.persistence.EntityManager;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("HubService 테스트")
@@ -59,10 +62,10 @@ class HubServiceTest {
 	private HubRepository hubRepository;
 
 	@Mock
-	private HubQueryRepository hubQueryRepository;
+	private HubSearchRepository hubQueryRepository;
 
 	@Mock
-	private HubRouteQueryRepository hubRouteQueryRepository;
+	private HubRouteSearchRepository hubRouteQueryRepository;
 
 	@Mock
 	private HubRouteReadRepository hubRouteReadRepository;
@@ -73,7 +76,7 @@ class HubServiceTest {
 	@InjectMocks
 	private HubService hubService;
 
-	private EntityManager entityManager;
+	private MockedStatic<UserContextHolder> userContextHolder;
 
 	private Hub testHub;
 	private UUID testHubId;
@@ -87,6 +90,16 @@ class HubServiceTest {
 			Address.of("서울특별시 강남구 테헤란로 123"),
 			Coordinate.of(37.5665, 126.9780)
 		);
+
+		userContextHolder = mockStatic(UserContextHolder.class);
+		userContextHolder.when(UserContextHolder::getUserId).thenReturn("1");
+	}
+
+	@AfterEach
+	void tearDown() {
+		if (userContextHolder != null) {
+			userContextHolder.close();
+		}
 	}
 
 	private Hub createHubWithId(UUID hubId, String name, Address address, Coordinate coordinate) {
@@ -160,8 +173,7 @@ class HubServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> hubService.getHub(testHubId))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("허브를 찾을 수 없습니다");
+				.isInstanceOf(NotFoundException.class);
 		}
 	}
 
@@ -550,7 +562,7 @@ class HubServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> hubService.getRoutes(routeIds))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(NotFoundException.class)
 				.hasMessageContaining("일부 허브 이동정보를 찾을 수 없습니다");
 		}
 	}
@@ -649,7 +661,7 @@ class HubServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> hubService.deductStocks(command, productToStockId))
-				.isInstanceOf(IllegalStateException.class)
+				.isInstanceOf(OutOfStockException.class)
 				.hasMessageContaining("재고가 부족합니다");
 		}
 	}
@@ -750,7 +762,7 @@ class HubServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> hubService.getStockQuantities(productIds))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(NotFoundException.class)
 				.hasMessageContaining("일부 재고를 찾을 수 없습니다");
 		}
 	}

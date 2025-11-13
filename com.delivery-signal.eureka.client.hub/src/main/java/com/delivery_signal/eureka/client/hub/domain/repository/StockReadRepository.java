@@ -3,7 +3,7 @@ package com.delivery_signal.eureka.client.hub.domain.repository;
 import java.util.List;
 import java.util.UUID;
 
-import com.delivery_signal.eureka.client.hub.domain.model.Stock;
+import com.delivery_signal.eureka.client.hub.domain.entity.Stock;
 
 public interface StockReadRepository {
 

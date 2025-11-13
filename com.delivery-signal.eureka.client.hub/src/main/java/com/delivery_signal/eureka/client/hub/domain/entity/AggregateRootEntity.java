@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.hub.domain.model;
+package com.delivery_signal.eureka.client.hub.domain.entity;
 
 import java.time.LocalDateTime;
 

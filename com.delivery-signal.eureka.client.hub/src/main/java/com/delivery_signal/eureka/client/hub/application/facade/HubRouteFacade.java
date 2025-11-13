@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 import com.delivery_signal.eureka.client.hub.application.HubService;
 import com.delivery_signal.eureka.client.hub.application.command.GetHubRouteCommand;
 import com.delivery_signal.eureka.client.hub.application.dto.HubRouteResult;
-import com.delivery_signal.eureka.client.hub.domain.model.Hub;
-import com.delivery_signal.eureka.client.hub.domain.model.HubRoute;
+import com.delivery_signal.eureka.client.hub.domain.entity.Hub;
+import com.delivery_signal.eureka.client.hub.domain.entity.HubRoute;
 import com.delivery_signal.eureka.client.hub.domain.service.HubPathService;
 import com.delivery_signal.eureka.client.hub.common.annotation.Cacheable;
 

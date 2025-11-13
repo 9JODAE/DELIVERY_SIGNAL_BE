@@ -2,7 +2,7 @@ package com.delivery_signal.eureka.client.hub.application.dto;
 
 import java.util.UUID;
 
-import com.delivery_signal.eureka.client.hub.domain.model.Hub;
+import com.delivery_signal.eureka.client.hub.domain.entity.Hub;
 
 /**
  * 허브 조회 결과 DTO

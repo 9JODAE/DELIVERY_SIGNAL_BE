@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 import com.delivery_signal.eureka.client.hub.application.dto.external.ProductInfo;
-import com.delivery_signal.eureka.client.hub.domain.model.Stock;
+import com.delivery_signal.eureka.client.hub.domain.entity.Stock;
 
 /**
  * 재고 상세 결과 DTO (상품 정보 포함)

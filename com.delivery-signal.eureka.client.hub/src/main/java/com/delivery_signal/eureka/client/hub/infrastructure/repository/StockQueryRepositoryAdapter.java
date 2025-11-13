@@ -8,11 +8,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import com.delivery_signal.eureka.client.hub.domain.mapper.StockSearchCondition;
-import com.delivery_signal.eureka.client.hub.domain.model.QHub;
-import com.delivery_signal.eureka.client.hub.domain.model.QStock;
-import com.delivery_signal.eureka.client.hub.domain.model.Stock;
-import com.delivery_signal.eureka.client.hub.domain.repository.StockQueryRepository;
+import com.delivery_signal.eureka.client.hub.domain.condition.StockSearchCondition;
+import com.delivery_signal.eureka.client.hub.domain.entity.QHub;
+import com.delivery_signal.eureka.client.hub.domain.entity.QStock;
+import com.delivery_signal.eureka.client.hub.domain.entity.Stock;
+import com.delivery_signal.eureka.client.hub.domain.repository.StockSearchRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class StockQueryRepositoryImpl extends BaseQueryRepository implements StockQueryRepository {
+public class StockQueryRepositoryAdapter extends BaseQueryRepository implements StockSearchRepository {
 
 	private static final QStock STOCK = QStock.stock;
 	private static final QHub HUB = QHub.hub;
