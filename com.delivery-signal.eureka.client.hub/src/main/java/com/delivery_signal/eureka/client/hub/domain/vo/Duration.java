@@ -16,7 +16,7 @@ public class Duration {
 
 	private int minutes;
 
-	public Duration(int minutes) {
+	private Duration(int minutes) {
 		validateDuration(minutes);
 		this.minutes = minutes;
 	}

@@ -17,7 +17,7 @@ public class Distance {
 
 	private double kilometers;
 
-	public Distance(double kilometers) {
+	private Distance(double kilometers) {
 		validateDistance(kilometers);
 		this.kilometers = kilometers;
 	}

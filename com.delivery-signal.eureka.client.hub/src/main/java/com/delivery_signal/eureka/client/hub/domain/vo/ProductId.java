@@ -19,14 +19,18 @@ public class ProductId {
 
 	private UUID value;
 
-	public ProductId(UUID productId) {
-		if (productId == null) {
-			throw new IllegalArgumentException("유효하지 않은 상품 ID입니다");
-		}
+	private ProductId(UUID productId) {
+		validateProductId(productId);
 		this.value = productId;
 	}
 
 	public static  ProductId of(UUID productId) {
 		return new ProductId(productId);
+	}
+
+	private void validateProductId(UUID productId) {
+		if (productId == null) {
+			throw new IllegalArgumentException("유효하지 않은 상품 ID입니다");
+		}
 	}
 }
