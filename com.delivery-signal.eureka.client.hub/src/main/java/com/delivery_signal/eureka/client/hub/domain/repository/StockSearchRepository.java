@@ -2,10 +2,10 @@ package com.delivery_signal.eureka.client.hub.domain.repository;
 
 import org.springframework.data.domain.Page;
 
-import com.delivery_signal.eureka.client.hub.domain.mapper.StockSearchCondition;
-import com.delivery_signal.eureka.client.hub.domain.model.Stock;
+import com.delivery_signal.eureka.client.hub.domain.condition.StockSearchCondition;
+import com.delivery_signal.eureka.client.hub.domain.entity.Stock;
 
-public interface StockQueryRepository {
+public interface StockSearchRepository {
 
 	/**
 	 * 재고 검색

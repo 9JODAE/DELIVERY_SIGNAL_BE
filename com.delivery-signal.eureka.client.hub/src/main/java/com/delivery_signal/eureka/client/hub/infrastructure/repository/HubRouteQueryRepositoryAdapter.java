@@ -8,11 +8,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
-import com.delivery_signal.eureka.client.hub.domain.model.HubRoute;
-import com.delivery_signal.eureka.client.hub.domain.model.QHub;
-import com.delivery_signal.eureka.client.hub.domain.model.QHubRoute;
-import com.delivery_signal.eureka.client.hub.domain.repository.HubRouteQueryRepository;
-import com.delivery_signal.eureka.client.hub.domain.mapper.HubRouteSearchCondition;
+import com.delivery_signal.eureka.client.hub.domain.entity.HubRoute;
+import com.delivery_signal.eureka.client.hub.domain.entity.QHub;
+import com.delivery_signal.eureka.client.hub.domain.entity.QHubRoute;
+import com.delivery_signal.eureka.client.hub.domain.repository.HubRouteSearchRepository;
+import com.delivery_signal.eureka.client.hub.domain.condition.HubRouteSearchCondition;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class HubRouteQueryRepositoryImpl extends BaseQueryRepository implements HubRouteQueryRepository {
+public class HubRouteQueryRepositoryAdapter extends BaseQueryRepository implements HubRouteSearchRepository {
 
 	private static final QHubRoute ROUTE = QHubRoute.hubRoute;
 	private static final QHub DEPARTURE_HUB = new QHub("departureHub");

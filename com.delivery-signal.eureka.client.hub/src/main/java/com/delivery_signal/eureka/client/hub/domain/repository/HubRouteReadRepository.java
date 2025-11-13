@@ -1,10 +1,9 @@
 package com.delivery_signal.eureka.client.hub.domain.repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
-import com.delivery_signal.eureka.client.hub.domain.model.HubRoute;
+import com.delivery_signal.eureka.client.hub.domain.entity.HubRoute;
 
 public interface HubRouteReadRepository {
 

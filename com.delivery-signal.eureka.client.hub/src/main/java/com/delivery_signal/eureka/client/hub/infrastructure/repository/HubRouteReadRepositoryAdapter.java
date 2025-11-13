@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
-import com.delivery_signal.eureka.client.hub.domain.model.HubRoute;
+import com.delivery_signal.eureka.client.hub.domain.entity.HubRoute;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRouteReadRepository;
 
 import lombok.RequiredArgsConstructor;

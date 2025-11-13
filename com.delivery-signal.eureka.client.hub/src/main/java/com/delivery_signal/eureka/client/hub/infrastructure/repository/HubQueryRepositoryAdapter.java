@@ -1,9 +1,9 @@
 package com.delivery_signal.eureka.client.hub.infrastructure.repository;
 
-import com.delivery_signal.eureka.client.hub.domain.model.Hub;
-import com.delivery_signal.eureka.client.hub.domain.model.QHub;
-import com.delivery_signal.eureka.client.hub.domain.repository.HubQueryRepository;
-import com.delivery_signal.eureka.client.hub.domain.mapper.HubSearchCondition;
+import com.delivery_signal.eureka.client.hub.domain.entity.Hub;
+import com.delivery_signal.eureka.client.hub.domain.entity.QHub;
+import com.delivery_signal.eureka.client.hub.domain.repository.HubSearchRepository;
+import com.delivery_signal.eureka.client.hub.domain.condition.HubSearchCondition;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -20,7 +20,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class HubQueryRepositoryImpl extends BaseQueryRepository implements HubQueryRepository {
+public class HubQueryRepositoryAdapter extends BaseQueryRepository implements HubSearchRepository {
 
 	private static final QHub HUB = QHub.hub;
 	private final JPAQueryFactory queryFactory;

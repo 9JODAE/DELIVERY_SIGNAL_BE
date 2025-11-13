@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.hub.domain.mapper;
+package com.delivery_signal.eureka.client.hub.domain.condition;
 
 public record HubRouteSearchCondition(
 	String departureHubName,

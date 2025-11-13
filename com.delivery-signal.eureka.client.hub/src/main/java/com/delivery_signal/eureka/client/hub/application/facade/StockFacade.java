@@ -1,82 +1,120 @@
 package com.delivery_signal.eureka.client.hub.application.facade;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.data.domain.Page;
 
 import com.delivery_signal.eureka.client.hub.application.HubService;
-import com.delivery_signal.eureka.client.hub.application.command.DeductStockQuantityCommand;
-import com.delivery_signal.eureka.client.hub.application.command.RestoreStockQuantityCommand;
-import com.delivery_signal.eureka.client.hub.application.command.UpdateStockCommand;
-import com.delivery_signal.eureka.client.hub.application.dto.StockResult;
-import com.delivery_signal.eureka.client.hub.domain.model.Stock;
-import com.delivery_signal.eureka.client.hub.domain.repository.DistributedLockManager;
+import com.delivery_signal.eureka.client.hub.application.command.CreateStockCommand;
+import com.delivery_signal.eureka.client.hub.application.command.SearchStockCommand;
+import com.delivery_signal.eureka.client.hub.application.dto.StockDetailResult;
+import com.delivery_signal.eureka.client.hub.application.dto.external.ProductInfo;
+import com.delivery_signal.eureka.client.hub.application.port.ProductClient;
+import com.delivery_signal.eureka.client.hub.common.error.HubErrorCode;
+import com.delivery_signal.eureka.client.hub.common.exception.NotFoundException;
+import com.delivery_signal.eureka.client.hub.domain.entity.Stock;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
+@Service
 @RequiredArgsConstructor
 public class StockFacade {
-	private static final String STOCK_LOCK_PREFIX = "STOCK:";
 
 	private final HubService hubService;
-	private final DistributedLockManager distributedLockManager;
+	private final ProductClient productClient;
 
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public StockResult updateStock(UpdateStockCommand command) {
-		String lockKey = STOCK_LOCK_PREFIX + command.stockId();
+	/**
+	 * 재고 생성 - 상품 서비스와 연동
+	 */
+	public UUID createStock(CreateStockCommand command) {
+		if (!productClient.exists(command.productId())) {
+			throw new NotFoundException(HubErrorCode.NOT_FOUND, "상품 ID: " + command.productId());
+		}
 
-		return distributedLockManager.executeWithLock(lockKey,
-			() -> hubService.updateStock(command));
+		return hubService.createStock(command);
 	}
 
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public void deductStocks(DeductStockQuantityCommand command) {
-		executeWithDistributedLock(command.items().keySet().stream().toList(),
-			productToStock -> hubService.deductStocks(command, productToStock));
+	/**
+	 * 재고 검색 - 상품 서비스와 연동
+	 */
+	@CircuitBreaker(name = "stockSearchCircuitBreaker", fallbackMethod = "searchStocksFallback")
+	public Page<StockDetailResult> searchStocks(SearchStockCommand command) {
+		Map<UUID, ProductInfo> productInfos = getProducts(command);
+		Page<Stock> stocks = hubService.findStocks(command, productInfos.keySet().stream().toList());
+		return mapToResults(stocks, productInfos);
 	}
 
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public void restoreStocks(RestoreStockQuantityCommand command) {
-		executeWithDistributedLock(command.items().keySet().stream().toList(),
-			productToStock -> hubService.restoreStocks(command, productToStock));
+	/**
+	 * CircuitBreaker fallback - 상품 서비스 호출 실패 시 재고 정보만 반환
+	 */
+	public Page<StockDetailResult> searchStocksFallback(SearchStockCommand command, Throwable throwable) {
+		log.error("상품 서비스 호출 실패: {}, 요청 정보 - 허브 ID: {}, 상품명: {}",
+			throwable.getMessage(),
+			command.hubId(),
+			command.productName());
+
+		try {
+			Page<Stock> stocks = hubService.findStocks(command, List.of());
+			return mapToResults(stocks);
+		} catch (Exception e) {
+			log.error("Fallback 처리 중 오류 발생 : {}", e.getMessage());
+			return Page.empty();
+		}
 	}
 
-	private void executeWithDistributedLock(List<UUID> productIds, StockOperation operation) {
-		Map<UUID, UUID> productToStock = fetchProductToStockMapping(productIds);
-		List<String> lockKeys = createSortedLockKeys(productToStock);
+	private Map<UUID, ProductInfo> getProducts(SearchStockCommand command) {
+		if (!StringUtils.hasText(command.productName())) {
+			return Map.of();
+		}
 
-		distributedLockManager.executeWithLocks(lockKeys, () -> {
-			operation.execute(productToStock);
-			return null;
-		});
+		return productClient.searchProducts(command.hubId(), command.productName());
 	}
 
-	private Map<UUID, UUID> fetchProductToStockMapping(List<UUID> productIds) {
-		List<Stock> stocks = hubService.getStocksByProductIdsOrThrow(productIds);
-		return stocks.stream()
-			.collect(Collectors.toMap(
-				stock -> stock.getProductId().getValue(),
-				Stock::getStockId
-			));
-	}
+	private Page<StockDetailResult> mapToResults(Page<Stock> stocks, Map<UUID, ProductInfo> productInfos) {
+		if (stocks.isEmpty()) {
+			return Page.empty();
+		}
 
-	private List<String> createSortedLockKeys(Map<UUID, UUID> productToStock) {
-		return productToStock.values().stream()
-			.map(stockId -> STOCK_LOCK_PREFIX + stockId)
-			.sorted()
+		List<StockDetailResult> results = stocks.stream()
+			.map(stock -> createStockResult(stock, productInfos))
+			.filter(Objects::nonNull)
 			.toList();
+
+		return new PageImpl<>(results, stocks.getPageable(), stocks.getTotalElements());
 	}
 
-	@FunctionalInterface
-	private interface StockOperation {
-		void execute(Map<UUID, UUID> productToStock);
+	private StockDetailResult createStockResult(Stock stock, Map<UUID, ProductInfo> productInfos) {
+		UUID productId = stock.getProductId().getValue();
+		ProductInfo productInfo = productInfos.get(productId);
+		return productInfo != null ? StockDetailResult.from(stock, productInfo) : null;
 	}
+
+	private Page<StockDetailResult> mapToResults(Page<Stock> stocks) {
+		if (stocks.isEmpty()) {
+			return Page.empty();
+		}
+
+		List<StockDetailResult> results = stocks.stream()
+			.map(stock -> StockDetailResult.of(
+				stock.getStockId(),
+				stock.getProductId().getValue(),
+				"상품 정보 조회 불가",
+				BigDecimal.valueOf(-1),
+				stock.getQuantity()
+			))
+			.toList();
+
+		return new PageImpl<>(results, stocks.getPageable(), stocks.getTotalElements());
+	}
+
 }
