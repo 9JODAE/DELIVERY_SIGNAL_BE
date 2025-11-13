@@ -8,6 +8,7 @@ import com.delivery_signal.eureka.client.delivery.application.command.UpdateRout
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.port.HubPort;
+import com.delivery_signal.eureka.client.delivery.common.exception.PermissionDeniedException;
 import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryManager;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryManagerRepository;
 import com.delivery_signal.eureka.client.delivery.domain.service.DeliveryAssignmentService;
@@ -80,7 +81,7 @@ public class DeliveryService {
     public DeliveryQueryResponse createDelivery(CreateDeliveryCommand command, Long creatorId) {
         // 출발지 허브 ID 기준 허브 유효성 검사
         if (!permissionValidator.validateHubExistence(HubIdentifier.of(command.departureHubId()), creatorId, "MASTER")) {
-            throw new IllegalArgumentException("유효하지 않거나 활성화되지 않은 허브 ID입니다: " + command.departureHubId());
+            throw new IllegalStateException("유효하지 않거나 활성화되지 않은 허브 ID입니다: " + command.departureHubId());
         }
 
         // 배송 담당자 할당 로직 수정 필요
@@ -168,7 +169,7 @@ public class DeliveryService {
 
         // 권한 확인 : 배송 담당자는 자신이 담당하는 배송만 조회 가능
         if (!Objects.equals(role, UserRole.DELIVERY_MANAGER.name())) {
-            throw new RuntimeException("담당 배송 목록을 조회할 권한이 없습니다. (ROLE: " + role + ")");
+            throw new PermissionDeniedException("담당 배송 목록을 조회할 권한이 없습니다. (ROLE: " + role + ")");
         }
 
         Sort sort = Sort.by(query.direction(), query.sortBy());
@@ -216,7 +217,7 @@ public class DeliveryService {
 
         // 상태 유효성 검사 : 마지막 최종 목적지 허브까지 배송이 완료된 시점(DELIVERING)이 아닐 경우 예외 처리
         if (!newStatus.equals(DeliveryStatus.DELIVERY_COMPLETED)) {
-            throw new IllegalArgumentException("허용되지 않은 상태 변경입니다: " + newStatus.name());
+            throw new IllegalStateException("허용되지 않은 상태 변경입니다: " + newStatus.name());
         }
 
         delivery.updateStatus(newStatus, updatorId);
@@ -300,7 +301,7 @@ public class DeliveryService {
         Delivery delivery = getDelivery(deliveryId);
 
         if (delivery.isDeleted()) {
-            throw new RuntimeException("이미 삭제된 배송 정보입니다.");
+            throw new NoSuchElementException("이미 삭제된 배송 정보입니다.");
         }
 
         permissionValidator.hasDeletePermission(delivery, currUserId);
