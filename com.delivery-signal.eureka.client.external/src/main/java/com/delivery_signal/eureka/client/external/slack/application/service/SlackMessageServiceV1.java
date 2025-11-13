@@ -19,12 +19,12 @@ public class SlackMessageServiceV1 {
         return slackNotifier.notifyUser(targetSlackUserId, message);
     }
 
-    public String notificationMessageSend(CreateSlackMessageRequestDto requestDto){
+    public String notificationMessageSend(CreateSlackMessageRequestDto requestDto, Long userId){
         String prompt = createPromptFromDto(requestDto);
         String response;
         try {
             response = geminiAiCallable.getResponse(prompt);
-            slackRecordServiceV1.createSlackRecord(requestDto.getSlackUserId(),response);
+            slackRecordServiceV1.createSlackRecord(requestDto.getSlackUserId(),response, userId);
         } catch (Exception e) {
             System.err.println(e.getMessage());
             e.printStackTrace();

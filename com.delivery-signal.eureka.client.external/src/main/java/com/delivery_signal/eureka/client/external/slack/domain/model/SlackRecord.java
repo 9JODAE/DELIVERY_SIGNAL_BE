@@ -3,6 +3,7 @@ package com.delivery_signal.eureka.client.external.slack.domain.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.java.Log;
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -36,16 +37,17 @@ public class SlackRecord extends BaseEntity {
                 .build();
     }
 
-    public void update(String recipientId, String message){
+    public void update(String recipientId, String message, Long userId){
         this.recipientId = recipientId;
         this.message = message;
+        this.updatedBy(userId);
     }
 
-    public void softDelete(){
+    public void softDelete(Long userId){
         if (this.isDeleted()) {
             return;
         }
-        this.delete();
+        this.delete(userId);
     }
 
 }

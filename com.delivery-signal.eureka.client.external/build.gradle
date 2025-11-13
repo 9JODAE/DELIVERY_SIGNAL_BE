@@ -29,6 +29,8 @@ ext {
 }
 
 dependencies {
+
+    implementation 'org.glassfish.jersey.core:jersey-common:3.1.5'
 	// Google Ai
 	implementation("com.google.genai:google-genai:1.8.0")
 
@@ -45,6 +47,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

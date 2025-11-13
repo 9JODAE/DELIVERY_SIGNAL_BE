@@ -1,5 +1,7 @@
 package com.delivery_signal.eureka.client.external.slack.infrastructure.slack;
 
+import com.delivery_signal.eureka.client.external.slack.common.exception.ErrorCode;
+import com.delivery_signal.eureka.client.external.slack.common.exception.GlobalException;
 import com.delivery_signal.eureka.client.external.slack.domain.service.SlackNotifier;
 import com.slack.api.Slack;
 import com.slack.api.methods.MethodsClient;
@@ -37,11 +39,11 @@ public class SlackApiAdapter implements SlackNotifier {
                 return message;
             } else {
                 System.err.println("❌ Slack DM 전송 실패. Error: " + response.getError());
-                return "❌ Slack DM 전송 실패. Error: " + response.getError();
+                throw new GlobalException(ErrorCode.SLACK_NOTIFICATION_FAILED);
             }
         } catch (Exception e) {
             System.err.println("❌ Slack API 호출 중 오류 발생: " + e.getMessage());
-            return "❌ Slack API 호출 중 오류 발생: " + e.getMessage();
+            throw new GlobalException(ErrorCode.SLACK_API_CALL_ERROR);
         }
     }
 
