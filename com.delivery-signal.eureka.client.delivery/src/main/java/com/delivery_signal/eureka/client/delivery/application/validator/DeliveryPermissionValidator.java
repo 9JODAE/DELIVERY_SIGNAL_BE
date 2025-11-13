@@ -3,11 +3,13 @@ package com.delivery_signal.eureka.client.delivery.application.validator;
 import com.delivery_signal.eureka.client.delivery.application.port.HubPort;
 import com.delivery_signal.eureka.client.delivery.application.port.UserAuthPort;
 import com.delivery_signal.eureka.client.delivery.common.UserRole;
+import com.delivery_signal.eureka.client.delivery.common.exception.PermissionDeniedException;
 import com.delivery_signal.eureka.client.delivery.domain.entity.Delivery;
 import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryRouteRecords;
 import com.delivery_signal.eureka.client.delivery.domain.vo.AuthorizedUser;
 import com.delivery_signal.eureka.client.delivery.domain.vo.DeliverySearchCondition;
 import com.delivery_signal.eureka.client.delivery.domain.vo.HubIdentifier;
+import java.util.NoSuchElementException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -37,12 +39,12 @@ public class DeliveryPermissionValidator {
         if (role.equals(UserRole.HUB_MANAGER)) {
             // 출발 허브 유효성 검증
             if (!validateHubExistence(HubIdentifier.of(delivery.getDepartureHubId()), updatorId, authorizedUser.role())) {
-                throw new IllegalArgumentException("출발 허브 ID가 유효하지 않습니다.");
+                throw new IllegalStateException("출발 허브 ID가 유효하지 않습니다.");
             }
 
             // 목적지 허브 유효성 검증
             if (!validateHubExistence(HubIdentifier.of(delivery.getDestinationHubId()), updatorId, authorizedUser.role())) {
-                throw new IllegalArgumentException("목적지 허브 ID가 유효하지 않습니다.");
+                throw new IllegalStateException("목적지 허브 ID가 유효하지 않습니다.");
             }
             return;
         }
@@ -50,7 +52,7 @@ public class DeliveryPermissionValidator {
         if (role.equals(UserRole.DELIVERY_MANAGER) && delivery.getDeliveryManagerId().equals(updatorId)) {
            return;
         }
-        throw new RuntimeException("배송 상태를 수정할 권한이 없습니다. (ROLE: " + role + ")");
+        throw new PermissionDeniedException("배송 상태를 수정할 권한이 없습니다. (ROLE: " + role + ")");
     }
 
     /**
@@ -59,7 +61,7 @@ public class DeliveryPermissionValidator {
     private AuthorizedUser getAuthorizedUser(Long userId) {
         AuthorizedUser user = userAuthPort.fetchUserAuthorizationInfo(userId);
         if (user == null) {
-            throw new RuntimeException("사용자가 존재하지 않습니다.");
+            throw new NoSuchElementException("사용자가 존재하지 않습니다.");
         }
         return user;
     }
@@ -71,7 +73,7 @@ public class DeliveryPermissionValidator {
     public boolean validateHubExistence(HubIdentifier hubId, Long currUserId, String role) {
         boolean exists = hubPort.existsById(hubId, currUserId, role);
         if (!exists) {
-            throw new IllegalArgumentException("유효하지 않거나 활성화되지 않은 허브 ID입니다: " + hubId);
+            throw new IllegalStateException("유효하지 않거나 활성화되지 않은 허브 ID입니다: " + hubId);
         } else {
             return true;
         }
@@ -92,12 +94,12 @@ public class DeliveryPermissionValidator {
         if (role.equals(UserRole.HUB_MANAGER)) {
             // 출발 허브 유효성 검증
             if (!validateHubExistence(HubIdentifier.of(record.getDepartureHubId()), currUserId, authorizedUser.role())) {
-                throw new IllegalArgumentException("출발 허브 ID가 유효하지 않습니다.");
+                throw new IllegalStateException("출발 허브 ID가 유효하지 않습니다.");
             }
 
             // 목적지 허브 유효성 검증
             if (!validateHubExistence(HubIdentifier.of(record.getDestinationHubId()), currUserId, authorizedUser.role())) {
-                throw new IllegalArgumentException("목적지 허브 ID가 유효하지 않습니다.");
+                throw new IllegalStateException("목적지 허브 ID가 유효하지 않습니다.");
             }
             return;
         }
@@ -107,7 +109,7 @@ public class DeliveryPermissionValidator {
             return;
         }
 
-        throw new RuntimeException("해당 허브 이동 정보를 기록/수정할 권한이 없습니다.");
+        throw new PermissionDeniedException("해당 허브 이동 정보를 기록/수정할 권한이 없습니다.");
     }
     /**
      * 배송 삭제 권한: 마스터 관리자, 허브 관리자(담당 허브)
@@ -124,17 +126,17 @@ public class DeliveryPermissionValidator {
         if (role.equals(UserRole.HUB_MANAGER)) {
             // 출발 허브 유효성 검증
             if (!validateHubExistence(HubIdentifier.of(delivery.getDepartureHubId()), deletorId, authorizedUser.role())) {
-                throw new IllegalArgumentException("출발 허브 ID가 유효하지 않습니다.");
+                throw new IllegalStateException("출발 허브 ID가 유효하지 않습니다.");
             }
 
             // 목적지 허브 유효성 검증
             if (!validateHubExistence(HubIdentifier.of(delivery.getDestinationHubId()), deletorId, authorizedUser.role())) {
-                throw new IllegalArgumentException("목적지 허브 ID가 유효하지 않습니다.");
+                throw new IllegalStateException("목적지 허브 ID가 유효하지 않습니다.");
             }
             return;
         }
 
-        throw new RuntimeException("배송 정보를 삭제할 권한이 없습니다. (ROLE: " + role + ")");
+        throw new PermissionDeniedException("배송 정보를 삭제할 권한이 없습니다. (ROLE: " + role + ")");
     }
 
     /**
@@ -152,12 +154,12 @@ public class DeliveryPermissionValidator {
         if (role.equals(UserRole.HUB_MANAGER)) {
             // 출발 허브 유효성 검증
             if (!validateHubExistence(HubIdentifier.of(delivery.getDepartureHubId()), currUserid, authorizedUser.role())) {
-                throw new IllegalArgumentException("출발 허브 ID가 유효하지 않습니다.");
+                throw new IllegalStateException("출발 허브 ID가 유효하지 않습니다.");
             }
 
             // 목적지 허브 유효성 검증
             if (!validateHubExistence(HubIdentifier.of(delivery.getDestinationHubId()), currUserid, authorizedUser.role())) {
-                throw new IllegalArgumentException("목적지 허브 ID가 유효하지 않습니다.");
+                throw new IllegalStateException("목적지 허브 ID가 유효하지 않습니다.");
             }
             return;
         }
@@ -165,7 +167,7 @@ public class DeliveryPermissionValidator {
         if (role.equals(UserRole.DELIVERY_MANAGER) && delivery.getDeliveryManagerId().equals(currUserid)) {
             return;
         }
-        throw new RuntimeException("해당 배송의 경로 이력을 조회할 권한이 없습니다.");
+        throw new PermissionDeniedException("해당 배송의 경로 이력을 조회할 권한이 없습니다.");
     }
 
     /**
@@ -184,7 +186,7 @@ public class DeliveryPermissionValidator {
 
         if (role.equals(UserRole.HUB_MANAGER)) {
             if (!validateHubExistence(HubIdentifier.of(originalCondition.hubId()), currUserId, authorizedUser.role())) {
-                throw new IllegalArgumentException("허브 ID가 유효하지 않습니다.");
+                throw new IllegalStateException("허브 ID가 유효하지 않습니다.");
             }
             return originalCondition;
         }
@@ -193,7 +195,7 @@ public class DeliveryPermissionValidator {
         if (role.equals(UserRole.DELIVERY_MANAGER)) {
             if (originalCondition.deliveryManagerId() != null &&
                 !originalCondition.deliveryManagerId().equals(currUserId)) {
-                throw new RuntimeException("배송 담당자는 본인의 배송 목록만 검색할 수 있습니다.");
+                throw new PermissionDeniedException("배송 담당자는 본인의 배송 목록만 검색할 수 있습니다.");
             }
 
             return DeliverySearchCondition.builder()

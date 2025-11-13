@@ -33,7 +33,7 @@ public class DeliveryManagerService {
         permissionValidator.hasRegisterPermission(command.hubId(), userId);
 
         if (command.type() == DeliveryManagerType.PARTNER_DELIVERY && command.hubId() == null) {
-            throw new IllegalArgumentException("업체 배송 담당자는 소속 허브 ID가 필수입니다.");
+            throw new IllegalStateException("업체 배송 담당자는 소속 허브 ID가 필수입니다.");
         }
 
         // 새로운 배송 담당자가 추가되면 가장 마지막 순번으로 설정
@@ -78,7 +78,7 @@ public class DeliveryManagerService {
         DeliveryManager manager = getDeliveryManagerByManagerId(managerId);
         permissionValidator.hasDeletePermission(manager, deletedByUserId);
         if (manager.isDeleted()) {
-            throw new RuntimeException("이미 삭제된 배송 담당자입니다.");
+            throw new NoSuchElementException("이미 삭제된 배송 담당자입니다.");
         }
         // 논리적 삭제 처리
         manager.softDelete(deletedByUserId);
