@@ -43,6 +43,19 @@ Delivery Signal 물류 시스템은</br>
 
 ![IntelliJ IDEA](https://img.shields.io/badge/IntelliJ%20IDEA-000000?logo=intellijidea&logoColor=white)
 
+---
+
+### 🛠️ 사용한 기술
+[X] Sprnig Cloud
+[X] Actuator
+[X] Resilience4J (Circuit Breaker)
+[X] Spring Security/JWT
+[X] Spring AOP
+[X] QueryDSL
+[X] Redis / Redisson
+[X] Swagger
+[X] Gemini AI / Slack 등 External API
+[X] Feign Client
 
 ---
 
@@ -54,13 +67,13 @@ Delivery Signal 물류 시스템은</br>
 | **민송경** | 배송 | 배송,경로 |
 | **고민정** | 유저 | 유저,인증 |
 | **진주양** | 주문 | 주문    |
-| **양지웅** | 허브 | 허브    | 
-| **박용재** | 외부 | 슬랙,Ai |
+| **양지웅** | 허브 | 허브, 게이트웨이 | 
+| **박용재** | 외부 | 슬랙, AI |
 
 ---
 ## 아키텍쳐
 MSA 기반의 서비스 간 데이터 연동 및 확장성을 확보하고, 인증, 권한, 트랜잭션 등 
-엔터프라이즈급 백엔드 기술 통합으로 “운영 중심의 물류 관리 시스템” 설계를 완성하였습니다
+엔터프라이즈급 백엔드 기술 통합으로 </br> “운영 중심의 물류 관리 시스템” 설계를 완성하였습니다
 <img width="892" height="567" alt="Image" src="https://teamsparta.notion.site/image/attachment%3Aba4c633a-1b57-4c1e-8a50-705902a8e154%3Aimage.png?table=block&id=2a02dc3e-f514-808e-a4bc-ef8e6650a4ad&spaceId=83c75a39-3aba-4ba4-a792-7aefe4b07895&width=2000&userId=&cache=v2" />
 
 ### 🔗 ERD
