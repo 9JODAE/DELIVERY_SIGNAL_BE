@@ -45,17 +45,20 @@ Delivery Signal 물류 시스템은</br>
 
 ---
 
-### 🛠️ 사용한 기술
-[X] Sprnig Cloud
-[X] Actuator
-[X] Resilience4J (Circuit Breaker)
-[X] Spring Security/JWT
-[X] Spring AOP
-[X] QueryDSL
-[X] Redis / Redisson
-[X] Swagger
-[X] Gemini AI / Slack 등 External API
-[X] Feign Client
+### 🛠️ 사용 기술 스택
+
+| **구분** | **기술** |
+|-----------|-----------|
+| **Architecture** | Spring Cloud (Eureka, Gateway, Config, Feign Client) |
+| **Monitoring / 운영 관리** | Spring Boot Actuator, Resilience4J (Circuit Breaker) |
+| **Security** | Spring Security / JWT |
+| **AOP / 공통처리** | Spring AOP (로깅, 권한 검사, 트랜잭션 관리 등) |
+| **Persistence Layer** | JPA / QueryDSL |
+| **Cache / 동시성 제어** | Redis / Redisson |
+| **API 문서화** | Swagger (Springdoc OpenAPI 3) |
+| **외부 연동** | Gemini API, Slack API 등 External API |
+| **통신** | Spring Cloud OpenFeign (MSA 간 REST 통신) |
+
 
 ---
 
