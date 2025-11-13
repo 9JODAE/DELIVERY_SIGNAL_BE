@@ -2,7 +2,27 @@
 
 > MSA 기반 국내 B2B 물류 관리 및 배송 시스템
 
+---
 
+💡 프로젝트 배경
+국내 물류 산업은 다양한 지역 허브를 중심으로 복잡한 공급망 구조를 가지고 있습니다. 
+특히, 기업 간 거래(B2B)에서는 대량 물류, 다수의 허브 운영, 재고 이동, 권한 기반 관리가 필수적이며 복잡한 프로세스를 요구합니다.
+기존 시스템은 이러한 복잡성을 수동으로 관리하여 효율이 떨어졌습니다.
+
+🧭 프로젝트 개요
+국내 B2B(Business to Business) 물류 운영을 효율적으로 관리하기 위한 MSA 기반 물류 및 배송 시스템입니다.
+기업 간 거래 환경에서 발생하는 허브 간 재고 이동, 주문 처리, 배송 관리, 사용자 권한 제어 등을 통합적으로 관리할 수 있도록 설계되었습니다.
+
+Delivery Signal 물류 시스템은
+“허브 간 이동부터 최종 배송까지의 모든 물류 흐름을 자동화하고 추적할 수 있는 시스템”
+을 목표로 합니다.
+
+✅ 물류 운영 효율화 – 허브 간 재고 이동, 배송 경로 자동화
+✅ 업무 투명성 강화 – Slack 메시지 알림으로 주문부터 배송까지 전 단계 추적 가능
+✅ 확장성 높은 구조 – MSA 기반의 독립 배포 및 유지보수 용이
+✅ 보안 강화 – JWT 기반 인증과 역할별 접근 제어로 안정성 확보
+
+--- 
 
 ### 🛠️ 개발 환경
 ![Java](https://img.shields.io/badge/Java-17-007396?logo=java&logoColor=white)
@@ -39,9 +59,12 @@
 
 ---
 ## 아키텍쳐
+MSA 기반의 서비스 간 데이터 연동 및 확장성을 확보하고, 인증, 권한, 트랜잭션 등 
+엔터프라이즈급 백엔드 기술 통합으로 “운영 중심의 물류 관리 시스템” 설계를 완성하였습니다
 <img width="892" height="567" alt="Image" src="https://teamsparta.notion.site/image/attachment%3Aba4c633a-1b57-4c1e-8a50-705902a8e154%3Aimage.png?table=block&id=2a02dc3e-f514-808e-a4bc-ef8e6650a4ad&spaceId=83c75a39-3aba-4ba4-a792-7aefe4b07895&width=2000&userId=&cache=v2" />
 
 ### 🔗 ERD
+도메인 주도 설계(DDD) 방식을 적용위한 바운디드 컨텍스트 구분
 <img width="892" height="567" alt="Image" src="https://teamsparta.notion.site/image/attachment%3A85e49242-5052-4349-9b28-11fbaab0e067%3Aimage.png?table=block&id=2a02dc3e-f514-805c-84b6-d1cd27bf4903&spaceId=83c75a39-3aba-4ba4-a792-7aefe4b07895&width=2000&userId=&cache=v2" />
 
 ---
