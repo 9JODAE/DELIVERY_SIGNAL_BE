@@ -11,6 +11,7 @@ public class ProductResponseMapper {
                 .name(result.getProductName())
                 .companyId(result.getCompanyId())
                 .hubId(result.getHubId())
+                .createdAt(result.getCreatedAt())
                 .build();
     }
 
@@ -20,6 +21,7 @@ public class ProductResponseMapper {
                 .name(result.getProductName())
                 .companyId(result.getCompanyId())
                 .hubId(result.getHubId())
+                .createdAt(result.getCreatedAt())
                 .build();
     }
 
@@ -33,7 +35,9 @@ public class ProductResponseMapper {
     public static ProductUpdateResponseDto toUpdateResponse(ProductUpdateResult result) {
         return ProductUpdateResponseDto.builder()
                 .id(result.getProductId())
+                .updatedAt(result.getUpdateAt())
                 .name(result.getProductName())
+                .price(result.getPrice())
                 .build();
     }
 

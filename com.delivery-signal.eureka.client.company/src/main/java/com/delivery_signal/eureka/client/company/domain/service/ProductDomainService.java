@@ -17,14 +17,10 @@ public class ProductDomainService {
         validateName(name);
 
         return Product.builder()
-                .productId(UUID.randomUUID())
                 .productName(name)
                 .price(price)
                 .companyId(companyId)
                 .hubId(hubId)
-                .createdBy(createdBy)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .build();
     }
 

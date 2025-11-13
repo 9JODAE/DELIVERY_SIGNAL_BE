@@ -37,6 +37,7 @@ public class ProductQueryMapper {
                 .productName(product.getProductName())
                 .companyId(product.getCompanyId())
                 .hubId(product.getHubId())
+                .createdAt(product.getCreatedAt())
                 .build();
     }
 }

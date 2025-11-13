@@ -1,9 +1,9 @@
 package com.delivery_signal.eureka.client.company.application.validator;
 
+import com.delivery_signal.eureka.client.company.application.dto.UserAuthDto;
 import com.delivery_signal.eureka.client.company.application.port.out.CompanyQueryPort;
 import com.delivery_signal.eureka.client.company.application.port.out.HubQueryPort;
 import com.delivery_signal.eureka.client.company.application.port.out.UserQueryPort;
-import com.delivery_signal.eureka.client.company.domain.vo.user.UserAuthorizationInfo;
 import jakarta.ws.rs.ForbiddenException;
 import org.springframework.stereotype.Component;
 
@@ -25,86 +25,83 @@ import java.util.UUID;
 public class ProductPermissionValidator {
 
     private final UserQueryPort userQueryPort;
-    private final HubQueryPort hubQueryPort;
-    private final CompanyQueryPort companyQueryPort;
+//    private final HubQueryPort hubQueryPort;
+//    private final CompanyQueryPort companyQueryPort;
 
     public ProductPermissionValidator(UserQueryPort userQueryPort, HubQueryPort hubQueryPort, CompanyQueryPort companyQueryPort) {
         this.userQueryPort = userQueryPort;
-        this.hubQueryPort = hubQueryPort;
-        this.companyQueryPort = companyQueryPort;
+//        this.hubQueryPort = hubQueryPort;
+//        this.companyQueryPort = companyQueryPort;
     }
 
     public void validateCreate(Long userId, UUID companyId, UUID hubId) {
-        UserAuthorizationInfo user = getActiveUser(userId);
-        checkHubExists(hubId);
-        checkCompanyExists(companyId);
+        UserAuthDto user = getActiveUser(userId);
+//        checkHubExists(hubId);
+//        checkCompanyExists(companyId);
 
-        switch (user.getRole()) {
-            case "MASTER_ADMIN" -> {}
-            case "HUB_ADMIN" -> checkHubPermission(user.getHubId(), hubId, "생성");
-            case "COMPANY_MANAGER" -> checkCompanyPermission(user, companyId, "본인 업체의 상품만 생성 가능합니다.");
-            default -> throwForbidden(user.getRole(), "상품 생성");
+        switch (user.role()) {
+            case "MASTER" -> {}
+            case "HUB_MANAGER" -> checkHubPermission(user.organizationId(), hubId, "생성");
+            case "SUPPLIER_MANAGER" -> checkCompanyPermission(user, companyId, "본인 업체의 상품만 생성 가능합니다.");
+            default -> throwForbidden(user.role(), "상품 생성");
         }
     }
 
     public void validateUpdate(Long userId, UUID companyId, UUID hubId) {
-        UserAuthorizationInfo user = getActiveUser(userId);
+        UserAuthDto user = getActiveUser(userId);
 
-        switch (user.getRole()) {
-            case "MASTER_ADMIN" -> {}
-            case "HUB_ADMIN" -> checkHubPermission(user.getHubId(), hubId, "수정");
-            case "COMPANY_MANAGER" -> checkCompanyPermission(user, companyId, "본인 업체의 상품만 수정 가능합니다.");
-            default -> throwForbidden(user.getRole(), "상품 수정");
+        switch (user.role()) {
+            case "MASTER" -> {}
+            case "HUB_MANAGER" -> checkHubPermission(user.organizationId(), hubId, "수정");
+            case "SUPPLIER_MANAGER" -> checkCompanyPermission(user, companyId, "본인 업체의 상품만 수정 가능합니다.");
+            default -> throwForbidden(user.role(), "상품 수정");
         }
     }
 
-    public void validateDelete(Long userId, UUID hubId) {
-        UserAuthorizationInfo user = getActiveUser(userId);
+    public void validateDelete(Long userId, UUID companyId) {
+        UserAuthDto user = getActiveUser(userId);
 
-        switch (user.getRole()) {
-            case "MASTER_ADMIN" -> {}
-            case "HUB_ADMIN" -> checkHubPermission(user.getHubId(), hubId, "삭제");
-            default -> throwForbidden(user.getRole(), "상품 삭제");
+        switch (user.role()) {
+            case "MASTER" -> {}
+            case "HUB_MANAGER" -> {}
+            default -> throwForbidden(user.role(), "상품 삭제");
         }
     }
 
     public void validateRead(Long userId) {
-        UserAuthorizationInfo user = getActiveUser(userId);
+        UserAuthDto user = getActiveUser(userId);
         if (user == null) throw new ForbiddenException("비활성 사용자");
     }
 
     // ================================================================
     // Private Utilities
     // ================================================================
-    private void checkHubExists(UUID hubId) {
-        if (!hubQueryPort.existsByHubId(hubId)) {
-            throw new ForbiddenException("존재하지 않는 허브입니다.");
+//    private void checkHubExists(UUID hubId) {
+//        if (!hubQueryPort.existsByHubId(hubId)) {
+//            throw new ForbiddenException("존재하지 않는 허브입니다.");
+//        }
+//    }
+
+//    private void checkCompanyExists(UUID companyId) {
+//        if (companyQueryPort.getCompanyById(companyId) == null) {
+//            throw new ForbiddenException("존재하지 않는 업체입니다.");
+//        }
+//    }
+
+    private void checkHubPermission(UUID userHubId, UUID targetCompanyId, String action) {
+        if (userHubId == null || !userHubId.equals(targetCompanyId)) {
+            throw new ForbiddenException("해당 업체의 상품만 " + action + " 가능합니다.");
         }
     }
 
-    private void checkCompanyExists(UUID companyId) {
-        if (companyQueryPort.getCompanyById(companyId) == null) {
-            throw new ForbiddenException("존재하지 않는 업체입니다.");
-        }
-    }
-
-    private void checkHubPermission(UUID userHubId, UUID targetHubId, String action) {
-        if (userHubId == null || !userHubId.equals(targetHubId)) {
-            throw new ForbiddenException("해당 허브의 상품만 " + action + " 가능합니다.");
-        }
-    }
-
-    private void checkCompanyPermission(UserAuthorizationInfo user, UUID companyId, String message) {
-        if (!companyId.equals(user.getCompanyId())) {
+    private void checkCompanyPermission(UserAuthDto user, UUID companyId, String message) {
+        if (!companyId.equals(user.organizationId())) {
             throw new ForbiddenException(message);
         }
     }
 
-    private UserAuthorizationInfo getActiveUser(Long userId) {
-        UserAuthorizationInfo info = userQueryPort.getUserAuthorizationInfo(userId);
-        if (info == null || !info.isActive())
-            throw new ForbiddenException("비활성화된 사용자이거나 존재하지 않습니다.");
-        return info;
+    private UserAuthDto getActiveUser(Long userId) {
+        return userQueryPort.getUserAuthorizationInfo(String.valueOf(userId));
     }
 
     private void throwForbidden(String role, String action) {

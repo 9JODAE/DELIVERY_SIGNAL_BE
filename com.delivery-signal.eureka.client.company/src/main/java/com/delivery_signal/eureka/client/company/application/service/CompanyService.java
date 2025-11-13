@@ -4,9 +4,7 @@ import com.delivery_signal.eureka.client.company.application.command.CreateCompa
 import com.delivery_signal.eureka.client.company.application.command.DeleteCompanyCommand;
 import com.delivery_signal.eureka.client.company.application.command.UpdateCompanyCommand;
 import com.delivery_signal.eureka.client.company.application.mapper.CompanyQueryMapper;
-import com.delivery_signal.eureka.client.company.application.port.out.CompanyQueryPort;
 import com.delivery_signal.eureka.client.company.application.port.out.HubQueryPort;
-import com.delivery_signal.eureka.client.company.application.port.out.UserQueryPort;
 import com.delivery_signal.eureka.client.company.application.result.*;
 import com.delivery_signal.eureka.client.company.application.validator.CompanyPermissionValidator;
 import com.delivery_signal.eureka.client.company.common.NotFoundException;
@@ -18,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,38 +29,25 @@ public class CompanyService {
 
     // 외부 MSA 호출용 Port
     private final HubQueryPort hubQueryPort;
-    private final UserQueryPort userQueryPort;
 
     // 도메인 및 검증, 매퍼
     private final CompanyDomainService companyDomainService;
     private final CompanyPermissionValidator companyPermissionValidator;
     private final CompanyQueryMapper companyQueryMapper;
-    private final CompanyQueryPort companyQueryPort;
 
 
     /** 업체 등록 */
-    public CompanyCreateResult createCompany(CreateCompanyCommand command) {
+    public CompanyCreateResult createCompany(CreateCompanyCommand command, String userId) {
 
         // 권한 체크
-        companyPermissionValidator.validateCreate(command.getUserId(), command.getHubId());
-
-        // 허브 존재 여부 검증
-        if (!hubQueryPort.existsByHubId(command.getHubId())) {
-            throw new NotFoundException("허브", command.getHubId());
-        }
-
-        // 유저 활성 여부 확인
-        if (!userQueryPort.isUserApproved(command.getUserId())) {
-            throw new NotFoundException("유저", command.getUserId());
-        }
+        companyPermissionValidator.validateCreate(userId, command.getHubId());
 
         // 도메인 엔티티 생성
         Company company = companyDomainService.createCompany(
                 command.getName(),
                 command.getHubId(),
                 command.getAddress(),
-                command.getType(),
-                command.getUserId()
+                command.getType()
         );
 
         companyRepository.save(company);
@@ -71,9 +55,11 @@ public class CompanyService {
 
         return CompanyCreateResult.builder()
                 .companyId(company.getCompanyId())
-                .createdBy(company.getCreatedBy())
+                .hubId(company.getHubId())
+                .address(company.getAddress())
+                .companyName(company.getCompanyName())
                 .createdAt(company.getCreatedAt())
-                .message("업체 등록이 완료되었습니다.")
+                .type(company.getCompanyType())
                 .build();
     }
 
@@ -110,45 +96,42 @@ public class CompanyService {
 
 
     /** 업체 수정 */
-    public CompanyUpdateResult updateCompany(UpdateCompanyCommand command) {
+    public CompanyUpdateResult updateCompany(UpdateCompanyCommand command, String userId) {
 
         Company company = companyRepository.findById(command.getCompanyId())
                 .orElseThrow(() -> new NotFoundException("업체", command.getCompanyId()));
 
         // 권한 체크
-        companyPermissionValidator.validateUpdate(command.getUserId(),company.getHubId(),command.getUserId());
-
-        // 허브 유효성 체크
-        if (!hubQueryPort.existsByHubId(company.getHubId())) {
-            throw new NotFoundException("허브", company.getHubId());
-        }
+        companyPermissionValidator.validateUpdate(Long.valueOf(userId),company.getHubId(),command.getUserId());
 
         company.updateInfo(
                 command.getCompanyName(),
                 command.getAddress(),
                 command.getCompanyType(),
-                command.getHubId()
+                Long.valueOf(userId)
         );
 
         companyRepository.save(company);
 
         return CompanyUpdateResult.builder()
                 .companyId(company.getCompanyId())
-                .updatedBy(company.getUpdatedBy())
+                .type(company.getCompanyType())
+                .address(company.getAddress())
+                .companyName(company.getCompanyName())
                 .updatedAt(company.getUpdatedAt())
                 .build();
     }
 
 
     /** 업체 삭제 */
-    public CompanyDeleteResult deleteCompany(DeleteCompanyCommand command) {
+    public CompanyDeleteResult deleteCompany(DeleteCompanyCommand command, String userId) {
 
         Company company = companyRepository.findById(command.getCompanyId())
                 .orElseThrow(() -> new NotFoundException("업체", command.getCompanyId()));
 
-        companyPermissionValidator.validateDelete(command.getUserId(),company.getHubId());
+        companyPermissionValidator.validateDelete(Long.valueOf(userId),company.getHubId());
 
-        company.markAsDeleted(LocalDateTime.now());
+        company.softDelete(Long.valueOf(userId));
         companyRepository.save(company);
 
         log.info("업체 삭제 완료: {}", company.getCompanyName());

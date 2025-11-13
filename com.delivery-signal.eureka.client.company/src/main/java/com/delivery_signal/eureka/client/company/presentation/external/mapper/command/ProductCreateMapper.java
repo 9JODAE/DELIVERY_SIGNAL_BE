@@ -8,6 +8,8 @@ public class ProductCreateMapper {
     public static CreateProductCommand toCommand(ProductCreateRequestDto dto,Long userId) {
         return CreateProductCommand.builder()
                 .userId(userId)
+                .companyId(dto.getCompanyId())
+                .hubId(dto.getHubId())
                 .productName(dto.getName())
                 .price(dto.getPrice())
                 .build();

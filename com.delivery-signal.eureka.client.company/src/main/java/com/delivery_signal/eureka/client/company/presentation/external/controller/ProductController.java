@@ -24,7 +24,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/products")
+@RequestMapping("/api/v1/companies/products")
 @Tag(name = "Product API", description = "상품 관련 API")
 @RequiredArgsConstructor
 public class ProductController {
@@ -64,9 +64,10 @@ public class ProductController {
     @PutMapping("/{productId}")
     public ResponseEntity<ProductUpdateResponseDto> updateProduct(
             @PathVariable UUID productId,
+            @RequestHeader(value = "x-user-id", required = false) Long userId,
             @RequestBody ProductUpdateRequestDto request) {
 
-        UpdateProductCommand command = ProductUpdateMapper.toCommand(productId, request);
+        UpdateProductCommand command = ProductUpdateMapper.toCommand(productId, request, userId);
         ProductUpdateResult result = productService.updateProduct(command);
         ProductUpdateResponseDto response = ProductResponseMapper.toUpdateResponse(result);
         return ResponseEntity.ok(response);
@@ -74,8 +75,10 @@ public class ProductController {
 
     @Operation(summary = "상품 삭제", description = "상품을 삭제합니다.")
     @DeleteMapping("/{productId}")
-    public ResponseEntity<ProductDeleteResponseDto> deleteProduct(@PathVariable UUID productId) {
-        DeleteProductCommand command = ProductDeleteMapper.toCommand(productId);
+    public ResponseEntity<ProductDeleteResponseDto> deleteProduct(
+            @PathVariable UUID productId,
+            @RequestHeader(value = "x-user-id", required = false) Long userId) {
+        DeleteProductCommand command = ProductDeleteMapper.toCommand(productId, userId);
         ProductDeleteResult result = productService.deleteProduct(command);
         ProductDeleteResponseDto response = ProductResponseMapper.toDeleteResponse(result);
         return ResponseEntity.ok(response);

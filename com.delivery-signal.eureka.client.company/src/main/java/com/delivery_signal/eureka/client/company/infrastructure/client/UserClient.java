@@ -1,9 +1,11 @@
 package com.delivery_signal.eureka.client.company.infrastructure.client;
 
-import com.delivery_signal.eureka.client.company.domain.vo.user.UserAuthorizationInfo;
+
+import com.delivery_signal.eureka.client.company.application.dto.ApiResponse;
+import com.delivery_signal.eureka.client.company.infrastructure.client.response.UserAuthResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 /**
  * User 서비스 내부 호출 클라이언트
@@ -12,9 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "user-service", url = "${internal.user.url}")
 public interface UserClient {
 
-    /**
-     * 사용자 검증 + Role 정보 조회
-     */
-    @GetMapping("/open-api/v1/users/authorization")
-    UserAuthorizationInfo getUserAuthorizationInfo(@RequestParam("userId") Long userId);
+    @GetMapping("/auth/authorization")
+    ApiResponse<UserAuthResponse> getUserAuthorizationInfo(@RequestHeader("x-user-id") String userId);
+
 }

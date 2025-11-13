@@ -1,9 +1,9 @@
 package com.delivery_signal.eureka.client.company.application.port.out;
 
-import com.delivery_signal.eureka.client.company.domain.vo.user.UserAuthorizationInfo;
+import com.delivery_signal.eureka.client.company.application.dto.UserAuthDto;
+
 
 public interface UserQueryPort {
-    boolean isUserApproved(Long userId);
 
-    UserAuthorizationInfo getUserAuthorizationInfo(Long userId);
+    UserAuthDto getUserAuthorizationInfo(String userId);
 }
