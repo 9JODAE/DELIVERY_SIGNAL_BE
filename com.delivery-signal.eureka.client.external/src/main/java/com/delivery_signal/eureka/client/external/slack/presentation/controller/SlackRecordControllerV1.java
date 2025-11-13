@@ -29,10 +29,11 @@ public class SlackRecordControllerV1 {
 
     @PostMapping
     public ResponseEntity<ApiResponse<CreateSlackRecordResponse>> createSlackRecord(
-            @RequestBody CreateSlackRecordRequest request
+            @RequestBody CreateSlackRecordRequest request,
+            @RequestHeader("x-user-id") Long userId
             ) {
         CreateSlackRecordResponse response = CreateSlackRecordResponse.from(
-                serviceV1.createSlackRecord(request.getRecipientId(),request.getMessage())
+                serviceV1.createSlackRecord(request.getRecipientId(), request.getMessage(), userId)
         );
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -50,12 +51,13 @@ public class SlackRecordControllerV1 {
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<SlackRecordResponse>>> getSlackRecordList(
+            @RequestHeader("x-user-id") Long userId,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @RequestParam(value = "sortBy", defaultValue = "createdAt") String sortBy,
             @RequestParam(value = "isAsc", defaultValue = "false") boolean isAsc
             ) {
-        Page<SlackRecordDto> slackRecordDtoPage = serviceV1.getSlackRecordList(page, size, sortBy, isAsc);
+        Page<SlackRecordDto> slackRecordDtoPage = serviceV1.getSlackRecordList(page, size, sortBy, isAsc, userId);
         Page<SlackRecordResponse> slackRecordResponsePage = slackRecordDtoPage.map(SlackRecordResponse::from);
         return ResponseEntity.ok(ApiResponse.success(PageResponse.fromPage(slackRecordResponsePage)));
     }
@@ -65,20 +67,22 @@ public class SlackRecordControllerV1 {
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<UpdateSlackRecordResponse>> updateSlackRecord(
             @PathVariable UUID id,
-            @RequestBody UpdateSlackRecordRequest request
+            @RequestBody UpdateSlackRecordRequest request,
+            @RequestHeader("x-user-id") Long userId
             ){
         UpdateSlackRecordResponse response = UpdateSlackRecordResponse.from(
-                serviceV1.updateSlackRecord(id,request.toDto())
+                serviceV1.updateSlackRecord(id, request.toDto(), userId)
         );
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<DeleteSlackRecordResponse>> softDeleteSlackRecord(
-            @PathVariable UUID id
+            @PathVariable UUID id,
+            @RequestHeader("x-user-id") Long userId
             ){
         DeleteSlackRecordResponse response = DeleteSlackRecordResponse.from(
-                serviceV1.softDeleteSlackRecord(id)
+                serviceV1.softDeleteSlackRecord(id, userId)
         );
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -92,9 +96,10 @@ public class SlackRecordControllerV1 {
 
     @PostMapping("/message")
     public ResponseEntity<ApiResponse<String>> sendSlackMessage(
-            @RequestBody CreateSlackMessageRequest request
+            @RequestBody CreateSlackMessageRequest request,
+            @RequestHeader("x-user-id") Long userId
             ){
-        return ResponseEntity.ok(ApiResponse.success(messageServiceV1.notificationMessageSend(request.toDto())));
+        return ResponseEntity.ok(ApiResponse.success(messageServiceV1.notificationMessageSend(request.toDto(), userId)));
     }
 
 
