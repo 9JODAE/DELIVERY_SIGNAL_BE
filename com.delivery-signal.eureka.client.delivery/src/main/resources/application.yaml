@@ -17,6 +17,7 @@ spring:
       hibernate:
         format_sql: true
         use_sql_comments: true
+        default_schema: delivery
     show-sql: true
 
   datasource:
@@ -32,6 +33,14 @@ eureka:
 
 server:
   port: 19091
+
+internal:
+  hub:
+    url: http://localhost:19093
+  user:
+    url: http://localhost:19092
+  external:
+    url: http://localhost:19097
 
 logging:
   level:

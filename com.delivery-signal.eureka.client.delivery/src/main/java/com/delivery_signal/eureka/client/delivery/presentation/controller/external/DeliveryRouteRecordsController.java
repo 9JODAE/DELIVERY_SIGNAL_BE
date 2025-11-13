@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/open-api/v1/deliveries/route/records")
+@RequestMapping("/api/v1/deliveries/route/records")
 public class DeliveryRouteRecordsController {
     private final DeliveryService deliveryService;
     private final DeliveryPresentationMapper deliveryPresentationMapper;

@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
  * => delivery의 경우 추후에 /api/ 프리픽스로 바꾸어야함 (로그인 정보 가지고 와서 해야할 경우 대비)
  */
 @RestController
-@RequestMapping("/open-api/v1/deliveries")
+@RequestMapping("/api/v1/deliveries")
 public class DeliveryController {
 
     private final DeliveryService deliveryService;
@@ -52,18 +52,6 @@ public class DeliveryController {
     public DeliveryController(DeliveryService deliveryService, DeliveryPresentationMapper deliveryPresentationMapper) {
         this.deliveryService = deliveryService;
         this.deliveryPresentationMapper = deliveryPresentationMapper;
-    }
-
-    @PostMapping
-    public ResponseEntity<ApiResponse<DeliveryQueryResponse>> createDelivery(
-        @Valid @RequestBody DeliveryCreateRequest request,
-        @RequestHeader(USER_ID_HEADER) Long currUserId,
-        @RequestHeader(USER_ROLE_HEADER) String role
-    ) {
-        // 권한 확인 불필요 (내부 시스템에서 호출되므로)
-        CreateDeliveryCommand command = deliveryPresentationMapper.toCreateDeliveryCommand(request);
-        DeliveryQueryResponse response = deliveryService.createDelivery(command, currUserId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 
     /**

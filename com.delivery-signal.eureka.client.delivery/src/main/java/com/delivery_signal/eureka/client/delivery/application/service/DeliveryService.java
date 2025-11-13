@@ -7,9 +7,14 @@ import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeli
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateRouteRecordCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
+import com.delivery_signal.eureka.client.delivery.application.port.HubPort;
+import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryManager;
+import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryManagerRepository;
+import com.delivery_signal.eureka.client.delivery.domain.service.DeliveryAssignmentService;
 import com.delivery_signal.eureka.client.delivery.domain.vo.DeliverySearchCondition;
 import com.delivery_signal.eureka.client.delivery.application.dto.RouteRecordQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.mapper.DeliveryDomainMapper;
+import com.delivery_signal.eureka.client.delivery.application.validator.DeliveryPermissionValidator;
 import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryRouteRecords;
 import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryStatus;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryQueryRepository;
@@ -18,6 +23,9 @@ import com.delivery_signal.eureka.client.delivery.application.dto.PagedDeliveryR
 import com.delivery_signal.eureka.client.delivery.common.UserRole;
 import com.delivery_signal.eureka.client.delivery.domain.entity.Delivery;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryRepository;
+import com.delivery_signal.eureka.client.delivery.domain.vo.HubIdentifier;
+import com.delivery_signal.eureka.client.delivery.domain.vo.HubRouteInfo;
+import com.delivery_signal.eureka.client.delivery.domain.vo.SlackMessageDetails;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -39,19 +47,29 @@ public class DeliveryService {
     private final DeliveryRepository deliveryRepository;
     private final DeliveryRouteRecordsRepository deliveryRouteRecordsRepository;
     private final DeliveryQueryRepository deliveryQueryRepository;
-    private final OrderServiceClient orderServiceClient;
+    private final DeliveryManagerRepository deliveryManagerRepository;
     private final DeliveryDomainMapper deliveryDomainMapper;
+    private final DeliveryPermissionValidator permissionValidator;
+    private final DeliveryAssignmentService deliveryAssignmentService;
+    private final DeliveryNotificationService deliveryNotificationService;
+    private final HubPort hubPort;
 
     public DeliveryService(DeliveryRepository deliveryRepository,
-        DeliveryRouteRecordsRepository deliveryRouteRecordsRepository,
         DeliveryQueryRepository deliveryQueryRepository,
-        OrderServiceClient orderServiceClient,
-        DeliveryDomainMapper deliveryDomainMapper) {
+        DeliveryRouteRecordsRepository deliveryRouteRecordsRepository,
+        DeliveryManagerRepository deliveryManagerRepository,
+        DeliveryDomainMapper deliveryDomainMapper, DeliveryPermissionValidator permissionValidator,
+        HubPort hubPort, DeliveryAssignmentService deliveryAssignmentService,
+        DeliveryNotificationService deliveryNotificationService) {
         this.deliveryRepository = deliveryRepository;
         this.deliveryRouteRecordsRepository = deliveryRouteRecordsRepository;
         this.deliveryQueryRepository = deliveryQueryRepository;
-        this.orderServiceClient = orderServiceClient;
+        this.deliveryManagerRepository = deliveryManagerRepository;
         this.deliveryDomainMapper = deliveryDomainMapper;
+        this.permissionValidator = permissionValidator;
+        this.hubPort = hubPort;
+        this.deliveryAssignmentService = deliveryAssignmentService;
+        this.deliveryNotificationService = deliveryNotificationService;
     }
 
     /**
@@ -60,8 +78,11 @@ public class DeliveryService {
      */
     @Transactional
     public DeliveryQueryResponse createDelivery(CreateDeliveryCommand command, Long creatorId) {
-        // TODO: 허브 유효성 검사 (Hub 존재 여부 등) - CLIENT 통신 필요
-        // TODO: 배송 경로 기록은 추후에 추가 예정
+        // 출발지 허브 ID 기준 허브 유효성 검사
+        if (!permissionValidator.validateHubExistence(HubIdentifier.of(command.departureHubId()), creatorId, "MASTER")) {
+            throw new IllegalArgumentException("유효하지 않거나 활성화되지 않은 허브 ID입니다: " + command.departureHubId());
+        }
+
         Delivery delivery = Delivery.create(command.orderId(),
             command.companyId(),
             command.status(),
@@ -75,19 +96,29 @@ public class DeliveryService {
         );
         Delivery savedDelivery = deliveryRepository.save(delivery);
 
-        // 배송(허브 이동) 경로 기록 엔티티 목록 생성 및 저장
-        // TODO: 배송 담당자 할당 로직 수정 필요
-        Long initialHubManagerId = assignInitialHubManager();
+        // 배송 담당자 할당 로직 수정 필요
+        DeliveryManager initialHubManager = assignInitialHubManager();
+        Long initialHubManagerId = initialHubManager.getManagerId();
 
-        List<DeliveryRouteRecords> routeRecords = command.routes().stream()
+        // 배송(허브 이동) 경로 요청 생성 및 저장
+        List<HubRouteInfo> hubRouteInfos = hubPort.searchRoutes(
+            HubIdentifier.of(command.departureHubId()), HubIdentifier.of(command.destinationHubId()));
+
+        if (hubRouteInfos.isEmpty()) {
+            throw new IllegalStateException("출발지(" + command.departureHubId() + ")에서 목적지(" + command.destinationHubId() + ")까지의 배송 경로를 찾을 수 없습니다.");
+        }
+
+        List<DeliveryRouteRecords> routeRecords = hubRouteInfos.stream()
             .map(segment ->
                 DeliveryRouteRecords.initialCreate(
                     delivery,
-                    segment.sequence(),
+                    initialHubManager.getDeliverySequence(),
                     segment.departureHubId(),
-                    segment.destinationHubId(),
-                    segment.estDistance(),
-                    segment.estTime(),
+                    segment.departureHubName(),
+                    segment.arrivalHubId(),
+                    segment.arrivalHubName(),
+                    segment.distance(),
+                    segment.transitTime(),
                     initialHubManagerId,
                     creatorId
                 ))
@@ -97,24 +128,6 @@ public class DeliveryService {
         deliveryRouteRecordsRepository.saveAll(routeRecords);
         return deliveryDomainMapper.toResponse(savedDelivery);
     }
-
-    // TODO: 테스트용, 추후 삭제 예정
-    // DeliveryService의 헬스체크나 특정 로직에서 OrderService의 상태를 확인할 때 사용
-//    public OrderServiceClient.OrderPongResponseDto checkOrderServiceStatus() {
-//        try {
-//            // FeignClient를 호출합니다. 'from' 파라미터에 호출자(DeliveryService) 명시
-//            return orderServiceClient.ping("안녕안녕안녕");
-//        } catch (Exception e) {
-//            // 통신 실패 처리 (여기서 Resilience4j가 동작합니다)
-//            // 실제 MSA에서는 이 통신이 실패해도 시스템이 멈추지 않도록 설계해야 합니다.
-//            // ... 로그 기록 및 Fallback 처리
-//            return new OrderServiceClient.OrderPongResponseDto(
-//                "Order-service 통신 실패",
-//                "ERROR",
-//                Instant.now()
-//            );
-//        }
-//    }
 
     /**
      * 배송 목록 검색 (페이징/정렬 포함)
@@ -132,7 +145,7 @@ public class DeliveryService {
 
         // 권한 확인은 QueryRepository 내부에서 필터링으로 처리
         UserRole userRole = UserRole.valueOf(role);
-        DeliverySearchCondition searchCondition = refineSearchCondition(condition, currUserId, userRole);
+        DeliverySearchCondition searchCondition = permissionValidator.refineSearchCondition(condition, currUserId);
         PageRequest pageable = query.toPageable();
 
         Page<Delivery> deliveryPage = deliveryQueryRepository.searchDeliveries(currUserId, searchCondition,
@@ -173,7 +186,6 @@ public class DeliveryService {
         return PagedDeliveryResponse.from(deliveryPage, responses);
     }
 
-
     /**
      * 배송 정보 수정
      * 권한 : 마스터, 허브 관리자(담당 허브), 배송 관리자(담당 배송)
@@ -183,9 +195,7 @@ public class DeliveryService {
         Delivery delivery = getDelivery(deliveryId);
 
         // 수정 권한: 마스터, 해당 허브 관리자, 해당 배송 담당자만 가능
-        if (!hasUpdatePermission(delivery, updatorId, UserRole.valueOf(role))) {
-            throw new RuntimeException("배송 상태를 수정할 권한이 없습니다. (ROLE: " + role + ")");
-        }
+        permissionValidator.hasUpdatePermission(delivery, updatorId);
 
         delivery.update(command.address(), command.recipient(), command.recipientSlackId(), updatorId);
         return deliveryDomainMapper.toResponse(delivery);
@@ -202,9 +212,7 @@ public class DeliveryService {
         DeliveryStatus newStatus = DeliveryStatus.valueOf(command.newStatus());
 
         // 수정 권한: 마스터, 해당 허브 관리자, 해당 배송 담당자만 가능
-        if (!hasUpdatePermission(delivery, updatorId, UserRole.valueOf(role))) {
-            throw new RuntimeException("배송 상태를 수정할 권한이 없습니다. (ROLE: " + role + ")");
-        }
+        permissionValidator.hasUpdatePermission(delivery, updatorId);
 
         // 상태 유효성 검사 : 마지막 최종 목적지 허브까지 배송이 완료된 시점(DELIVERING)이 아닐 경우 예외 처리
         if (!newStatus.equals(DeliveryStatus.DELIVERY_COMPLETED)) {
@@ -213,7 +221,6 @@ public class DeliveryService {
 
         delivery.updateStatus(newStatus, updatorId);
 
-        // TODO (확인 필요) : PARTNER_MOVING -> COMPLETED로 변경 시, 주문 서비스에 최종 완료 알림 전송 (AI/SLACK 서비스 feign client)
         return deliveryDomainMapper.toResponse(delivery);
     }
 
@@ -228,10 +235,7 @@ public class DeliveryService {
         DeliveryRouteRecords record = getDeliveryRouteRecords(routeId);
 
         Delivery delivery = getDelivery(record.getDelivery().getDeliveryId());
-
-        if (!hasHubMovementPermission(record, updatorId, UserRole.valueOf(role))) {
-            throw new RuntimeException("해당 허브 이동 정보를 기록/수정할 권한이 없습니다.");
-        }
+        permissionValidator.hasHubMovementPermission(record, updatorId);
 
         DeliveryStatus newStatus = DeliveryStatus.valueOf(command.newStatus());
 
@@ -239,9 +243,28 @@ public class DeliveryService {
         record.update(newStatus, command.actualDistance(),
             command.actualTime(), updatorId);
 
+        // 최초 허브 출발 시 슬랙 메시지 전송 요청 로직 (최초 배송 출발 시)
         // 최초 허브 출발 시 (첫번째 시퀀스, HUB_MOVING) : Delivery 상태를 HUB_MOVING으로 변경
-        if (record.getSequence() == 0 && newStatus.equals(DeliveryStatus.HUB_MOVING)) {
-            delivery.updateStatus(newStatus, updatorId);
+        if (newStatus.equals(DeliveryStatus.HUB_MOVING)) {
+            delivery.updateStatus(DeliveryStatus.HUB_MOVING, updatorId);
+
+            // 경로 정보 통합: 경유지 목록 생성, 첫번째 시퀀스 찾기
+            List<DeliveryRouteRecords> allRecords = deliveryRouteRecordsRepository.findAllByDeliveryIdOrderBySequence(
+                delivery.getDeliveryId()
+            );
+
+            if (!allRecords.isEmpty()) {
+                // 슬랙 메시지 상세 정보 VO 생성
+                SlackMessageDetails messageDetails = deliveryNotificationService.createSlackMessageDetails(
+                    delivery, allRecords);
+                try {
+                    // 슬랙 메시지 전송 요청
+                    deliveryNotificationService.requestSendSlackMessage(messageDetails);
+                } catch (Exception e) {
+                    // 알림은 핵심 비즈니스 로직(배송 기록)이 아니므로, 실패해도 트랜잭션을 롤백시키지 않고 로깅만
+                    System.err.println("WARN: Slack 메시지 전송 요청 실패. 로깅 필요. 메시지: " + e.getMessage());
+                }
+            }
         }
 
         // 최종 허브 도착 시 (마지막 시퀀스, HUB_ARRIVED) : Delivery 상태는 아직 HUB_MOVING 유지
@@ -252,7 +275,6 @@ public class DeliveryService {
             Pageable limitOne = PageRequest.of(0, 1);
 
             // 해당 경로 기록이 마지막 경로인지 확인
-
             List<DeliveryRouteRecords> lastRecordList = deliveryRouteRecordsRepository.findLastRouteRecord(
                 record.getDelivery().getDeliveryId(),
                 limitOne
@@ -281,10 +303,7 @@ public class DeliveryService {
             throw new RuntimeException("이미 삭제된 배송 정보입니다.");
         }
 
-        if (!hasDeletePermission(delivery, currUserId, UserRole.valueOf(role))) {
-            throw new RuntimeException("배송 정보를 삭제할 권한이 없습니다. (ROLE: " + role + ")");
-        }
-
+        permissionValidator.hasDeletePermission(delivery, currUserId);
         delivery.softDelete(currUserId);
     }
 
@@ -296,9 +315,7 @@ public class DeliveryService {
     public List<RouteRecordQueryResponse> getDeliveryRoutes(UUID deliveryId, Long currUserId, String role) {
         Delivery delivery = getDelivery(deliveryId);
         // 조회 및 검색 권한: 모든 로그인 사용자 가능, 단 배송 담당자는 자신이 담당하는 배송만 조회 가능
-        if (!hasReadPermission(delivery, currUserId, UserRole.valueOf(role))) {
-            throw new RuntimeException("해당 배송의 경로 이력을 조회할 권한이 없습니다.");
-        }
+        permissionValidator.hasReadPermission(delivery, currUserId);
 
         // 배송별 경로 이력 리스트 조회 (논리적 삭제되지 않은 데이터만 조회됨)
         List<DeliveryRouteRecords> records = deliveryRouteRecordsRepository.findAllByDeliveryIdOrderBySequence(
@@ -315,18 +332,21 @@ public class DeliveryService {
     @Transactional(readOnly = true)
     public DeliveryQueryResponse getDeliveryInfo(UUID deliveryId, Long currUserId, String role) {
         Delivery delivery = getDelivery(deliveryId);
-
-        if (!hasReadPermission(delivery, currUserId, UserRole.valueOf(role))) {
-            throw new RuntimeException("해당 배송 정보를 조회할 권한이 없습니다.");
-        }
-
+        // 조회 및 검색 권한: 모든 로그인 사용자 가능, 단 배송 담당자는 자신이 담당하는 배송만 조회 가능
+        permissionValidator.hasReadPermission(delivery, currUserId);
         return deliveryDomainMapper.toResponse(delivery);
     }
 
-    // TODO: Hub 배송 담당자를 할당하는 가상의 로직
-    private Long assignInitialHubManager() {
-        // TODO:  배송 순번 기준 할당 로직 호출
-        return 3L; // 임시 값
+    /**
+     * Hub 배송 담당자 할당
+     */
+    private DeliveryManager assignInitialHubManager() {
+        // 활성 담당자 수 확인 (순환 로직 기반)
+        Long activeCount = deliveryManagerRepository.countActiveManagers();
+        if (activeCount == 0) {
+            throw new IllegalStateException("현재 배정 가능한 배송 담당자가 없습니다.");
+        }
+        return deliveryAssignmentService.getNextManagerForAssignment();
     }
 
     private Delivery getDelivery(UUID deliveryId) {
@@ -337,126 +357,5 @@ public class DeliveryService {
     private DeliveryRouteRecords getDeliveryRouteRecords(UUID routeId) {
         return deliveryRouteRecordsRepository.findActiveById(routeId)
             .orElseThrow(() -> new NoSuchElementException("배송 경로 기록을 찾을 수 없습니다."));
-    }
-
-    /**
-     * 배송 업데이트 권한: 마스터 관리자, 해당 허브 관리자, 해당 배송 담당자만 가능
-     */
-    private boolean hasUpdatePermission(Delivery delivery, Long updatorId, UserRole role) {
-        if (role.equals(UserRole.MASTER)) {
-            return true;
-        }
-
-        // TODO: 허브 관리자는 delivery의 fromHubId/toHubId 중 하나를 관리하는지 확인 (허브 FeignClient 필요)
-        if (role.equals(UserRole.HUB_MANAGER)) {
-            // return hubService.isManagingHub(currUserId, delivery.getFromHubId())
-            //         || hubService.isManagingHub(currUserId, delivery.getToHubId());
-            return true; // 임시 허용
-        }
-
-        if (role.equals(UserRole.DELIVERY_MANAGER)) {
-            return delivery.getDeliveryManagerId().equals(updatorId);
-        }
-
-        return false;
-    }
-
-    /**
-     * 배송 경로 기록 업데이트(이력 추가) 권한 : 마스터, 허브 관리자, 허브 배송 담당자만 가능
-     */
-    private boolean hasHubMovementPermission(DeliveryRouteRecords record, Long currUserId, UserRole role) {
-        if (role == UserRole.MASTER) return true;
-
-        // TODO: 허브 FeignClient 호출을 통해 currUserId가 record.departureHubId 또는 record.destinationHubId를 담당하는지 확인
-        if (role.equals(UserRole.HUB_MANAGER)) {
-            // return hubService.isManagingHub(currUserId, record.getFromHubId())
-            //         || hubService.isManagingHub(currUserId, record.getToHubId());
-            return true; // 임시 허용
-        }
-
-        if (role == UserRole.DELIVERY_MANAGER) {
-            // 배송 담당자일 경우, 해당 경로에 할당된 허브 배송 담당자여야 함
-            // 허브 배송 담당자는 해당 경로에 할당된 hubDeliveryManagerId와 일치해야 함
-            return record.getHubDeliveryManagerId() != null && record.getHubDeliveryManagerId().equals(currUserId);
-        }
-        return false;
-    }
-
-    /**
-     * 배송 삭제 권한: 마스터 관리자, 허브 관리자(담당 허브)
-     */
-    private boolean hasDeletePermission(Delivery delivery, Long deletorId, UserRole role) {
-        if (role.equals(UserRole.MASTER)) {
-            return true;
-        }
-
-        // TODO: 허브 관리자는 delivery의 fromHubId/toHubId 중 하나를 관리하는지 확인 (허브 FeignClient 필요)
-        if (role.equals(UserRole.HUB_MANAGER)) {
-            // return hubService.isManagingHub(currUserId, delivery.getFromHubId())
-            //         || hubService.isManagingHub(currUserId, delivery.getToHubId());
-            return true; // 임시 허용
-        }
-        return false;
-    }
-
-    /**
-     * 배송 조회 권한: 모든 로그인 사용자 (단, 허브 관리자와 배송 담당자는 자신이 담당하는 허브/배송만)
-     */
-    private boolean hasReadPermission(Delivery delivery, Long currUserid, UserRole role) {
-//        if (role == UserRole.MASTER_ADMIN || role == UserRole.HUB_ADMIN || role == UserRole.PARTNER_AGENT) {
-//            return true;
-//        }
-
-        if (role.equals(UserRole.MASTER) || role.equals(UserRole.SUPPLIER_MANAGER)) {
-            return true;
-        }
-
-        // TODO: 허브 관리자는 delivery의 fromHubId/toHubId 중 하나를 관리하는지 확인 (허브 FeignClient 필요)
-        if (role.equals(UserRole.HUB_MANAGER)) {
-            // return hubService.isManagingHub(currUserId, delivery.getFromHubId())
-            //         || hubService.isManagingHub(currUserId, delivery.getToHubId());
-            return true; // 임시 허용
-        }
-
-        if (role == UserRole.DELIVERY_MANAGER) {
-            return delivery.getDeliveryManagerId().equals(currUserid);
-        }
-        return true;
-    }
-
-    /**
-     * 권한에 따른 검색 조건 보정
-     */
-    private DeliverySearchCondition refineSearchCondition(
-        DeliverySearchCondition originalCondition,
-        Long currUserId,
-        UserRole role
-    ) {
-        if (role.equals(UserRole.MASTER) || role.equals(UserRole.SUPPLIER_MANAGER)) {
-            return originalCondition;
-        }
-
-        // TODO: 허브 관리자는 delivery의 fromHubId/toHubId 중 하나를 관리하는지 확인 (허브 FeignClient 필요)
-        if (role.equals(UserRole.HUB_MANAGER)) {
-            // return hubService.isManagingHub(currUserId, delivery.getFromHubId())
-            //         || hubService.isManagingHub(currUserId, delivery.getToHubId());
-            return originalCondition; // 임시 허용
-        }
-
-        // 배송 담당자: 본인 담당 배송만 검색 가능하도록 조건 강제
-        if (role.equals(UserRole.DELIVERY_MANAGER)) {
-            if (originalCondition.deliveryManagerId() != null &&
-                    !originalCondition.deliveryManagerId().equals(currUserId)) {
-                throw new RuntimeException("배송 담당자는 본인의 배송 목록만 검색할 수 있습니다.");
-            }
-
-            return DeliverySearchCondition.builder()
-                .hubId(originalCondition.hubId())
-                .companyId(originalCondition.companyId())
-                .deliveryManagerId(currUserId)
-                .status(originalCondition.status())
-                .build();
-        }
-        return originalCondition;
     }
 }

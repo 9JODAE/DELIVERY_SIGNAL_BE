@@ -1,6 +1,5 @@
 package com.delivery_signal.eureka.client.delivery.application.command;
 
-import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
 
@@ -11,7 +10,6 @@ public record CreateDeliveryCommand(
     String status,
     UUID departureHubId,
     UUID destinationHubId,
-    List<RouteSegmentCommand> routes,
     String address,
     String recipient,
     String recipientSlackId,
