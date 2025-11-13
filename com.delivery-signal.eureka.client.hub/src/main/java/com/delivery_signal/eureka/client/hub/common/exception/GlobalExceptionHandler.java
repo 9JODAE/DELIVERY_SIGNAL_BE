@@ -139,10 +139,57 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error(errorResponse));
 	}
 
+	/**
+	 * 인가되지 않은 접근 예외 처리
+	 */
 	@ExceptionHandler(UnauthorizedException.class)
 	public ResponseEntity<ApiResponse<ErrorResponse>> handleUnauthorizedException(UnauthorizedException e) {
 		log.error("인가되지 않은 접근 시도: {}", e.getMessage());
 
+		ErrorResponse errorResponse = new ErrorResponse(
+			e.getErrorCode().getCode(),
+			e.getErrorCode().getMessage(),
+			e.getErrorCode().getStatus().value()
+		);
+
+		return ResponseEntity.status(e.getErrorCode().getStatus()).body(ApiResponse.error(errorResponse));
+	}
+
+	/**
+	 * 리소스 없음 예외 처리
+	 */
+	@ExceptionHandler(NotFoundException.class)
+	public ResponseEntity<ApiResponse<ErrorResponse>> handleNotFoundException(NotFoundException e) {
+		log.error("요청한 리소스를 찾을 수 없음: {}", e.getMessage());
+
+		ErrorResponse errorResponse = new ErrorResponse(
+			e.getErrorCode().getCode(),
+			e.getErrorCode().getMessage(),
+			e.getErrorCode().getStatus().value()
+		);
+
+		return ResponseEntity.status(e.getErrorCode().getStatus()).body(ApiResponse.error(errorResponse));
+	}
+
+	/**
+	 * 재고 부족 예외 처리
+	 */
+	@ExceptionHandler(OutOfStockException.class)
+	public ResponseEntity<ApiResponse<ErrorResponse>> handleOutOfStockException(OutOfStockException e) {
+		ErrorResponse errorResponse = new ErrorResponse(
+			e.getErrorCode().getCode(),
+			e.getErrorCode().getMessage(),
+			e.getErrorCode().getStatus().value()
+		);
+
+		return ResponseEntity.status(e.getErrorCode().getStatus()).body(ApiResponse.error(errorResponse));
+	}
+
+	/**
+	 * 재고 복구 실패 예외 처리
+	 */
+	@ExceptionHandler(RestoreFailedException.class)
+	public ResponseEntity<ApiResponse<ErrorResponse>> handleRestoreFailedException(RestoreFailedException e) {
 		ErrorResponse errorResponse = new ErrorResponse(
 			e.getErrorCode().getCode(),
 			e.getErrorCode().getMessage(),

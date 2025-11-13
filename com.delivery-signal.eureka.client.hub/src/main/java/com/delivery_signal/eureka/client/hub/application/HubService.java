@@ -27,22 +27,27 @@ import com.delivery_signal.eureka.client.hub.application.dto.HubRouteResult;
 import com.delivery_signal.eureka.client.hub.application.dto.StockResult;
 import com.delivery_signal.eureka.client.hub.common.annotation.PreAuthorize;
 import com.delivery_signal.eureka.client.hub.common.auth.Authority;
-import com.delivery_signal.eureka.client.hub.domain.mapper.StockSearchCondition;
-import com.delivery_signal.eureka.client.hub.domain.model.Hub;
-import com.delivery_signal.eureka.client.hub.domain.model.HubRoute;
-import com.delivery_signal.eureka.client.hub.domain.model.Stock;
+import com.delivery_signal.eureka.client.hub.common.auth.UserContextHolder;
+import com.delivery_signal.eureka.client.hub.common.error.HubErrorCode;
+import com.delivery_signal.eureka.client.hub.common.exception.NotFoundException;
+import com.delivery_signal.eureka.client.hub.common.exception.OutOfStockException;
+import com.delivery_signal.eureka.client.hub.common.exception.RestoreFailedException;
+import com.delivery_signal.eureka.client.hub.domain.condition.StockSearchCondition;
+import com.delivery_signal.eureka.client.hub.domain.entity.Hub;
+import com.delivery_signal.eureka.client.hub.domain.entity.HubRoute;
+import com.delivery_signal.eureka.client.hub.domain.entity.Stock;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRouteReadRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.StockReadRepository;
-import com.delivery_signal.eureka.client.hub.domain.repository.HubQueryRepository;
+import com.delivery_signal.eureka.client.hub.domain.repository.HubSearchRepository;
 import com.delivery_signal.eureka.client.hub.domain.repository.HubRepository;
-import com.delivery_signal.eureka.client.hub.domain.repository.HubRouteQueryRepository;
-import com.delivery_signal.eureka.client.hub.domain.repository.StockQueryRepository;
+import com.delivery_signal.eureka.client.hub.domain.repository.HubRouteSearchRepository;
+import com.delivery_signal.eureka.client.hub.domain.repository.StockSearchRepository;
 import com.delivery_signal.eureka.client.hub.domain.vo.Address;
 import com.delivery_signal.eureka.client.hub.domain.vo.Coordinate;
 import com.delivery_signal.eureka.client.hub.domain.vo.Distance;
 import com.delivery_signal.eureka.client.hub.domain.vo.Duration;
-import com.delivery_signal.eureka.client.hub.domain.mapper.HubRouteSearchCondition;
-import com.delivery_signal.eureka.client.hub.domain.mapper.HubSearchCondition;
+import com.delivery_signal.eureka.client.hub.domain.condition.HubRouteSearchCondition;
+import com.delivery_signal.eureka.client.hub.domain.condition.HubSearchCondition;
 import com.delivery_signal.eureka.client.hub.domain.vo.ProductId;
 import com.delivery_signal.eureka.client.hub.common.annotation.CacheEvict;
 
@@ -56,10 +61,10 @@ import lombok.extern.slf4j.Slf4j;
 public class HubService {
 
 	private final HubRepository hubRepository;
-	private final HubQueryRepository hubQueryRepository;
-	private final HubRouteQueryRepository hubRouteQueryRepository;
+	private final HubSearchRepository hubQueryRepository;
+	private final HubRouteSearchRepository hubRouteQueryRepository;
 	private final HubRouteReadRepository hubRouteReadRepository;
-	private final StockQueryRepository stockQueryRepository;
+	private final StockSearchRepository stockQueryRepository;
 	private final StockReadRepository stockReadRepository;
 
 	/**
@@ -139,12 +144,13 @@ public class HubService {
 	@CacheEvict(value = "hubRoutes", allEntries = true)
 	public void deleteHub(UUID hubId) {
 		Hub hub = getHubOrThrow(hubId);
-		hub.delete(1L); // TODO 유저 서비스 개발 완료 시 변경
+		Long userId = Long.valueOf(UserContextHolder.getUserId());
+		hub.delete(userId);
 	}
 
 	public Hub getHubOrThrow(UUID hubId) {
 		return hubRepository.findById(hubId)
-			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
+			.orElseThrow(() -> new NotFoundException(HubErrorCode.NOT_FOUND, "hubId=" + hubId));
 	}
 
 	/**
@@ -225,12 +231,13 @@ public class HubService {
 	@CacheEvict(value = "hubRoutes", allEntries = true)
 	public void deleteHubRoute(UUID hubId, UUID hubRouteId) {
 		Hub hub = getHubWithRoutesOrThrow(hubId);
-		hub.deleteHubRoute(hubRouteId, 1L); // TODO 유저 서비스 개발 완료 시 변경
+		Long userId = Long.valueOf(UserContextHolder.getUserId());
+		hub.deleteHubRoute(hubRouteId, userId);
 	}
 
 	private Hub getHubWithRoutesOrThrow(UUID hubId) {
 		return hubRepository.findByIdWithRoutes(hubId)
-			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
+			.orElseThrow(() -> new NotFoundException(HubErrorCode.NOT_FOUND, "hubId=" + hubId));
 	}
 
 	/**
@@ -252,7 +259,7 @@ public class HubService {
 		List<HubRoute> routes = hubRouteReadRepository.getRoutes(routeIds);
 
 		if (routeIds.size() != routes.size()) {
-			throw new IllegalArgumentException("일부 허브 이동정보를 찾을 수 없습니다.");
+			throw new NotFoundException(HubErrorCode.NOT_FOUND, "일부 허브 이동정보를 찾을 수 없습니다.");
 		}
 
 		Map<UUID, HubRoute> routeMap = routes.stream()
@@ -270,11 +277,6 @@ public class HubService {
 	 */
 	@PreAuthorize({Authority.MASTER, Authority.HUB_MANAGER})
 	public UUID createStock(CreateStockCommand command) {
-		// TODO 상품 서비스로부터 상품 존재 유무 확인하는 로직
-		// if (!productClient.exists(command.productId())) {
-		// 	throw new IllegalArgumentException("존재하지 않는 상품입니다. productId=" + command.productId());
-		// }
-
 		Hub hub = getHubOrThrow(command.hubId());
 		ProductId productId = ProductId.of(command.productId());
 
@@ -341,7 +343,8 @@ public class HubService {
 	@PreAuthorize({Authority.MASTER, Authority.HUB_MANAGER})
 	public void deleteStock(DeleteStockCommand command) {
 		Hub hub = getHubWithStocksOrThrow(command.hubId());
-		hub.deleteStock(command.stockId(), 1L); // TODO 유저 서비스 개발 완료 시 변경
+		Long userId = Long.valueOf(UserContextHolder.getUserId());
+		hub.deleteStock(command.stockId(), userId);
 	}
 
 	/**
@@ -378,7 +381,7 @@ public class HubService {
 			log.info("재고 차감 완료 - productId={}, stockId={}, quantity={}", productId, stockId, quantity);
 		} catch (IllegalArgumentException ex) {
 			log.error("재고 부족 - productId={}, 요청수량={}", productId, quantity);
-			throw new IllegalStateException("재고가 부족합니다. productId=" + productId);
+			throw new OutOfStockException(HubErrorCode.OUT_OF_STOCK);
 		}
 	}
 
@@ -387,13 +390,14 @@ public class HubService {
 			hub.restoreStocks(stockId, quantity);
 			log.info("재고 복구 완료 - productId={}, stockId={}, quantity={}", productId, stockId, quantity);
 		} catch (IllegalArgumentException ex) {
-			throw new IllegalStateException("재고 복구 실패. productId=" + productId, ex);
+			log.error("재고 복구 실패 - productId={}, 요청수량={}", productId, quantity);
+			throw new RestoreFailedException(HubErrorCode.RESTORE_FAILED);
 		}
 	}
 
 	private Hub getHubWithStocksOrThrow(UUID hubId) {
 		return hubRepository.findByIdWithStocks(hubId)
-			.orElseThrow(() -> new IllegalArgumentException("허브를 찾을 수 없습니다. hubId=" + hubId));
+			.orElseThrow(() -> new NotFoundException(HubErrorCode.NOT_FOUND, "hubId=" + hubId));
 	}
 
 	@Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -401,7 +405,7 @@ public class HubService {
 		List<Stock> stocks = stockReadRepository.getStocks(productIds);
 
 		if (productIds.size() != stocks.size()) {
-			throw new IllegalArgumentException("일부 재고를 찾을 수 없습니다.");
+			throw new NotFoundException(HubErrorCode.NOT_FOUND, "일부 재고를 찾을 수 없습니다.");
 		}
 
 		return stocks;
