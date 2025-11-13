@@ -3,7 +3,6 @@ package com.delivery_signal.eureka.client.company.application.validator;
 import com.delivery_signal.eureka.client.company.application.dto.UserAuthDto;
 import com.delivery_signal.eureka.client.company.application.port.out.HubQueryPort;
 import com.delivery_signal.eureka.client.company.application.port.out.UserQueryPort;
-import com.delivery_signal.eureka.client.company.infrastructure.client.UserClient;
 import jakarta.ws.rs.ForbiddenException;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +27,7 @@ public class CompanyPermissionValidator {
     private final UserQueryPort userQueryPort;
     private final HubQueryPort hubQueryPort;
 
-    public CompanyPermissionValidator(UserQueryPort userQueryPort, HubQueryPort hubQueryPort, UserClient userClient) {
+    public CompanyPermissionValidator(UserQueryPort userQueryPort, HubQueryPort hubQueryPort) {
         this.userQueryPort = userQueryPort;
         this.hubQueryPort = hubQueryPort;
     }
