@@ -5,8 +5,8 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/delivery_signal
     driver-class-name: org.postgresql.Driver
-    username: {DB_USERNAME}
-    password: {DB_PASSWORD}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     hikari:
       maximum-pool-size: 30
       minimum-idle: 10
