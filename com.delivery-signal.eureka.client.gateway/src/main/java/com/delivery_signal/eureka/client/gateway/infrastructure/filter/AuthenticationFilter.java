@@ -1,5 +1,7 @@
 package com.delivery_signal.eureka.client.gateway.infrastructure.filter;
 
+import java.util.List;
+
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -35,7 +37,7 @@ import reactor.core.publisher.Mono;
 @Component
 public class AuthenticationFilter implements GlobalFilter, Ordered {
 
-	private static final String PUBLIC_API_PREFIX = "/open-api";
+	private static final List<String> PUBLIC_API_PREFIXES = List.of("/open-api/", "/v3/api-docs");
 	private static final String BEARER_PREFIX = "Bearer ";
 	private static final int AUTH_HEADER_BEGIN_INDEX = BEARER_PREFIX.length();
 
@@ -46,7 +48,10 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 		String path = exchange.getRequest().getURI().getPath();
 
-		if (path.contains(PUBLIC_API_PREFIX)) {
+		boolean isPublic = PUBLIC_API_PREFIXES.stream()
+			.anyMatch(path::contains);
+		
+		if (isPublic) {
 			return chain.filter(exchange);
 		}
 

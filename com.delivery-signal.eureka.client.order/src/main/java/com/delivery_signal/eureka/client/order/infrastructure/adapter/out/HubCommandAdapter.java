@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * HubCommandPort 구현체
@@ -17,10 +18,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HubCommandAdapter implements HubCommandPort {
 
-    private final HubClient hubFeignClient;
+    private final HubClient hubClient;
 
     @Override
-    public void decreaseStock(List<OrderProductCommand> products) {
+    public void deductStocks(UUID hubId, List<OrderProductCommand> products) {
         List<StockUpdateRequestDto> requests = products.stream()
                 .map(p -> StockUpdateRequestDto.builder()
                         .productId(p.getProductId())
@@ -28,11 +29,11 @@ public class HubCommandAdapter implements HubCommandPort {
                         .build())
                 .toList();
 
-        hubFeignClient.decreaseStock(requests);
+        hubClient.deductStocks(hubId, requests);
     }
 
     @Override
-    public void restoreStock(List<OrderProductCommand> products) {
+    public void restoreStocks(UUID hubId, List<OrderProductCommand> products) {
         List<StockUpdateRequestDto> requests = products.stream()
                 .map(p -> StockUpdateRequestDto.builder()
                         .productId(p.getProductId())
@@ -40,6 +41,6 @@ public class HubCommandAdapter implements HubCommandPort {
                         .build())
                 .toList();
 
-        hubFeignClient.restoreStock(requests);
+        hubClient.restoreStocks(hubId, requests);
     }
 }

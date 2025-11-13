@@ -12,7 +12,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateOrderCommand {
+    private UUID orderId;
     private UUID productId;
+    private Long userId;
     private Integer transferQuantity;
     private String requestNote;
 }

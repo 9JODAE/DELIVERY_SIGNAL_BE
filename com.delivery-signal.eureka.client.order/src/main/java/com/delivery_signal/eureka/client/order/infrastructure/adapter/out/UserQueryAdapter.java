@@ -15,16 +15,8 @@ public class UserQueryAdapter implements UserQueryPort {
 
     private final UserClient userClient;
 
-    // VO 반환
     @Override
     public UserAuthorizationInfo getUserAuthorizationInfo(Long userId) {
-        return userClient.getUserAuthorizationInfo(userId);
-    }
-
-    // 단순 활성 여부 반환
-    @Override
-    public boolean isUserApproved(Long userId) {
-        UserAuthorizationInfo info = getUserAuthorizationInfo(userId);
-        return info.isActive();
+        return userClient.getUserAuthorizationInfo(userId).getData();
     }
 }

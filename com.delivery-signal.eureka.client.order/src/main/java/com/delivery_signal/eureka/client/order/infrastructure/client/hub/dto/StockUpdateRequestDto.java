@@ -9,5 +9,5 @@ import java.util.UUID;
 @Builder
 public class StockUpdateRequestDto {
     private UUID productId;
-    private int quantity;
+    private Integer quantity;
 }

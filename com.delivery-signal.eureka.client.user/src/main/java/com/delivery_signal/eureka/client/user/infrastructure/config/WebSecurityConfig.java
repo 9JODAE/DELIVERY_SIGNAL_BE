@@ -1,9 +1,9 @@
 package com.delivery_signal.eureka.client.user.infrastructure.config;
 
-import com.delivery_signal.eureka.client.user.application.service.JwtUtil;
-import com.delivery_signal.eureka.client.user.application.service.UserDetailsServiceImpl;
-import com.delivery_signal.eureka.client.user.infrastructure.filter.JwtAuthenticationFilter;
-//import com.delivery_signal.eureka.client.user.infrastructure.filter.JwtAuthorizationFilter;
+import com.delivery_signal.eureka.client.user.common.auth.util.JwtUtil;
+import com.delivery_signal.eureka.client.user.common.auth.security.UserDetailsServiceImpl;
+import com.delivery_signal.eureka.client.user.common.auth.jwt.JwtAuthenticationFilter;
+//import com.delivery_signal.eureka.client.user.infrastructure.jwt.JwtAuthorizationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

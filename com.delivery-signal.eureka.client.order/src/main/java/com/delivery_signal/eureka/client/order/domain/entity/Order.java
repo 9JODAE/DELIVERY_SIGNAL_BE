@@ -1,6 +1,7 @@
 package com.delivery_signal.eureka.client.order.domain.entity;
 
 import com.delivery_signal.eureka.client.order.domain.exception.InvalidOrderStateException;
+import com.delivery_signal.eureka.client.order.domain.vo.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -54,6 +55,10 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderProduct> orderProducts = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderStatus status;
+
     // 감사 필드
     @CreatedDate
     private LocalDateTime createdAt;
@@ -77,18 +82,22 @@ public class Order {
     @Builder
     public Order(UUID supplierCompanyId,
                  UUID receiverCompanyId,
+                 UUID departureHubId,
+                 UUID arrivalHubId,
                  String requestNote,
-                 BigDecimal totalPrice,
+                 BigDecimal totalPriceAtOrder,
                  List<OrderProduct> orderProducts,
                  UUID deliveryId) {
         this.supplierCompanyId = supplierCompanyId;
         this.receiverCompanyId = receiverCompanyId;
+        this.departureHubId = departureHubId;
+        this.arrivalHubId = arrivalHubId;
         this.requestNote = requestNote;
-        this.totalPriceAtOrder = totalPrice;
+        this.totalPriceAtOrder = totalPriceAtOrder;
         this.orderProducts = orderProducts;
         this.deliveryId = deliveryId;
+        this.status = OrderStatus.VALID;
     }
-
 
     /**
      * 주문 요청사항 수정
@@ -103,5 +112,23 @@ public class Order {
 
     public void markAsDeleted(LocalDateTime deletedAt) {
         this.deletedAt = deletedAt;
+    }
+
+    public void cancel() {
+        if (this.status == OrderStatus.CANCELED) {
+            throw new InvalidOrderStateException("이미 취소된 주문입니다.");
+        }
+        if (this.status == OrderStatus.DELIVERED) {
+            throw new InvalidOrderStateException("배송 완료된 주문은 취소할 수 없습니다.");
+        }
+        this.status = OrderStatus.CANCELED;
+    }
+
+    /**
+     * 취소 여부 확인
+     */
+    public boolean isCanceled() {
+        return this.status == OrderStatus.CANCELED
+                || this.status == OrderStatus.INVALID;
     }
 }

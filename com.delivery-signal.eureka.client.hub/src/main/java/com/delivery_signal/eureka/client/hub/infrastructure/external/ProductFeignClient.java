@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.delivery_signal.eureka.client.hub.common.api.ApiResponse;
 import com.delivery_signal.eureka.client.hub.infrastructure.external.dto.ProductDTO;
 
 @FeignClient(name = "product-service", path = "/open-api/v1/products")
@@ -22,7 +23,7 @@ public interface ProductFeignClient {
 	 * @return 상품 존재여부
 	 */
 	@GetMapping("/{productId}/exists")
-	boolean exists(@PathVariable UUID productId);
+	ApiResponse<Boolean> exists(@PathVariable UUID productId);
 
 	/**
 	 * 상품명으로 상품 조회
@@ -35,5 +36,5 @@ public interface ProductFeignClient {
 	 * @return 상품 정보 Map (key: 상품 ID, value: ProductDTO)
 	 */
 	@GetMapping("/search")
-	Map<UUID, ProductDTO> searchProducts(@RequestParam UUID hubId, @RequestParam String productName);
+	ApiResponse<Map<UUID, ProductDTO>> searchProducts(@RequestParam UUID hubId, @RequestParam String productName);
 }

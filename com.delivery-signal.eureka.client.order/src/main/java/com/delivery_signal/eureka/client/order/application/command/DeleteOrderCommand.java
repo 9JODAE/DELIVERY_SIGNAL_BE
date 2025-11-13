@@ -12,4 +12,5 @@ import java.util.UUID;
 @AllArgsConstructor
 public class DeleteOrderCommand {
     private UUID orderId;
+    private Long userId;
 }

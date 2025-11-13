@@ -1,7 +1,10 @@
 package com.delivery_signal.eureka.client.order.infrastructure.client.hub;
 
+import com.delivery_signal.eureka.client.order.infrastructure.client.ApiResponseDto;
 import com.delivery_signal.eureka.client.order.infrastructure.client.hub.dto.StockUpdateRequestDto;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -14,16 +17,34 @@ import java.util.UUID;
 public interface HubClient {
 
     /**
-     * 상품별 재고를 확인하는 api
-     * @param productIds 상품의 id리스트
-     * @return 상품과 재고의 List
+     * 상품별 재고를 확인하는 API
+     * @param productIds 상품의 id 리스트
+     * @return 상품 ID별 재고 수량
      */
-    @PostMapping("/open-api/v1/hubs/stocks")
-    Map<UUID, Integer> getStockQuantities(@RequestBody List<UUID> productIds);
+    @PostMapping("/open-api/v1/stocks")
+    ApiResponseDto<Map<UUID, Integer>> getStockQuantities(@RequestBody List<UUID> productIds);
 
-    @PostMapping("/open-api/v1/hubs/stocks/decrease")
-    void decreaseStock(@RequestBody List<StockUpdateRequestDto> requests);
+    /**
+     * 허브의 상품 재고를 차감하는 API
+     * @param hubId 허브 ID
+     * @param requests 상품과 수량 리스트
+     */
+    @PostMapping("/open-api/v1/hubs/{hubId}/stocks/deduct")
+    ApiResponseDto<Void> deductStocks(@PathVariable UUID hubId, @RequestBody List<StockUpdateRequestDto> requests);
 
-    @PostMapping("/open-api/v1/hubs/stocks/restore")
-    void restoreStock(@RequestBody List<StockUpdateRequestDto> requests);
+    /**
+     * 허브의 상품 재고를 복원하는 API
+     * @param hubId 허브 ID
+     * @param requests 상품과 수량 리스트
+     */
+    @PostMapping("/open-api/v1/hubs/{hubId}/stocks/restore")
+    ApiResponseDto<Void> restoreStocks(@PathVariable UUID hubId, @RequestBody List<StockUpdateRequestDto> requests);
+
+    /**
+     * 허브의 존재 여부 확인 API
+     * @param hubId 허브 ID
+     * @return 허브가 존재하면 true, 존재하지 않으면 false
+     */
+    @GetMapping("/open-api/v1/hubs/{hubId}")
+    ApiResponseDto<Boolean> existsById(@PathVariable UUID hubId);
 }

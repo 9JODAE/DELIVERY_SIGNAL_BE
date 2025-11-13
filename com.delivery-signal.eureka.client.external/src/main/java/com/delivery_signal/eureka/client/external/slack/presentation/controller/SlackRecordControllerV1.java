@@ -1,7 +1,7 @@
 package com.delivery_signal.eureka.client.external.slack.presentation.controller;
 
-import com.delivery_signal.eureka.client.external.global.response.CommonApiResponse;
-import com.delivery_signal.eureka.client.external.global.response.PageResponse;
+import com.delivery_signal.eureka.client.external.slack.application.dto.ApiResponse;
+import com.delivery_signal.eureka.client.external.slack.application.dto.PageResponse;
 import com.delivery_signal.eureka.client.external.slack.application.service.SlackMessageServiceV1;
 import com.delivery_signal.eureka.client.external.slack.application.dto.SlackRecordDto;
 import com.delivery_signal.eureka.client.external.slack.application.service.SlackRecordServiceV1;
@@ -28,29 +28,28 @@ public class SlackRecordControllerV1 {
     private final SlackMessageServiceV1 messageServiceV1;
 
     @PostMapping
-    public ResponseEntity<CommonApiResponse<CreateSlackRecordResponse>> createSlackRecord(
+    public ResponseEntity<ApiResponse<CreateSlackRecordResponse>> createSlackRecord(
             @RequestBody CreateSlackRecordRequest request
             ) {
 
         CreateSlackRecordResponse response = CreateSlackRecordResponse.from(
                 serviceV1.createSlackRecord(request.getRecipientId(),request.getMessage())
         );
-        return CommonApiResponse.created(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CommonApiResponse<SlackRecordResponse>> getSlackRecord(
-            @PathVariable UUID id,
-            @RequestHeader("x-user-id") Long userId
+    public ResponseEntity<ApiResponse<SlackRecordResponse>> getSlackRecord(
+            @PathVariable UUID id
             ){
         SlackRecordResponse response = SlackRecordResponse.from(
                 serviceV1.getSlackRecord(id,userId)
         );
-        return CommonApiResponse.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping
-    public ResponseEntity<CommonApiResponse<PageResponse<SlackRecordResponse>>> getSlackRecordList(
+    public ResponseEntity<ApiResponse<PageResponse<SlackRecordResponse>>> getSlackRecordList(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @RequestParam(value = "sortBy", defaultValue = "createdAt") String sortBy,
@@ -58,44 +57,44 @@ public class SlackRecordControllerV1 {
             ) {
         Page<SlackRecordDto> slackRecordDtoPage = serviceV1.getSlackRecordList(page, size, sortBy, isAsc);
         Page<SlackRecordResponse> slackRecordResponsePage = slackRecordDtoPage.map(SlackRecordResponse::from);
-        return CommonApiResponse.ok(PageResponse.fromPage(slackRecordResponsePage));
+        return ResponseEntity.ok(ApiResponse.success(PageResponse.fromPage(slackRecordResponsePage)));
     }
 
 
 
     @PatchMapping("/{id}")
-    public ResponseEntity<CommonApiResponse<UpdateSlackRecordResponse>> updateSlackRecord(
+    public ResponseEntity<ApiResponse<UpdateSlackRecordResponse>> updateSlackRecord(
             @PathVariable UUID id,
             @RequestBody UpdateSlackRecordRequest request
             ){
         UpdateSlackRecordResponse response = UpdateSlackRecordResponse.from(
                 serviceV1.updateSlackRecord(id,request.toDto())
         );
-        return CommonApiResponse.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<CommonApiResponse<DeleteSlackRecordResponse>> softDeleteSlackRecord(
+    public ResponseEntity<ApiResponse<DeleteSlackRecordResponse>> softDeleteSlackRecord(
             @PathVariable UUID id
             ){
         DeleteSlackRecordResponse response = DeleteSlackRecordResponse.from(
                 serviceV1.softDeleteSlackRecord(id)
         );
-        return CommonApiResponse.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @PostMapping("/message/test")
-    public ResponseEntity<CommonApiResponse<String>> sendSlackMessageTest(
+    public ResponseEntity<ApiResponse<String>> sendSlackMessageTest(
             @RequestParam String slackUserId,
             @RequestParam String message){
-        return CommonApiResponse.ok(messageServiceV1.slackMessageSend(slackUserId,message));
+        return ResponseEntity.ok(ApiResponse.success(messageServiceV1.slackMessageSend(slackUserId,message)));
     }
 
     @PostMapping("/message")
-    public ResponseEntity<CommonApiResponse<String>> sendSlackMessage(
+    public ResponseEntity<ApiResponse<String>> sendSlackMessage(
             @RequestBody CreateSlackMessageRequest request
             ){
-        return CommonApiResponse.ok(messageServiceV1.notificationMessageSend(request.toDto()));
+        return ResponseEntity.ok(ApiResponse.success(messageServiceV1.notificationMessageSend(request.toDto())));
     }
 
 
