@@ -40,7 +40,8 @@ public class SlackRecordControllerV1 {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SlackRecordResponse>> getSlackRecord(
-            @PathVariable UUID id
+            @PathVariable UUID id,
+            @RequestHeader("x-user-id") Long userId
             ){
         SlackRecordResponse response = SlackRecordResponse.from(
                 serviceV1.getSlackRecord(id,userId)
