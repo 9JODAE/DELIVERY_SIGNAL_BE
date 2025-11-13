@@ -21,7 +21,7 @@ public interface HubServiceClient {
      * @param role 현재 요청 사용자 역할 (인가 목적)
      */
     @GetMapping("/hubs/{hubId}")
-    boolean existsById(
+    ApiResponse<Boolean> existsById(
         @PathVariable("hubId") UUID hubId,
         @RequestHeader(USER_ID_HEADER) Long currUserId,
         @RequestHeader(USER_ROLE_HEADER) String role);

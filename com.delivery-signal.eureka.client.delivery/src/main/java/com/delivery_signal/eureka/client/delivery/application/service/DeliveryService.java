@@ -304,6 +304,9 @@ public class DeliveryService {
         }
 
         permissionValidator.hasDeletePermission(delivery, currUserId);
+        List<DeliveryRouteRecords> routeRecords = deliveryRouteRecordsRepository.findAllByDeliveryIdOrderBySequence(
+            delivery.getDeliveryId());
+        routeRecords.forEach(record -> record.softDelete(currUserId));
         delivery.softDelete(currUserId);
     }
 

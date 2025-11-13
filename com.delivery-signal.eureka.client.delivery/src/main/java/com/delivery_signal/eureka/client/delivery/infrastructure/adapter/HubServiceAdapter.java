@@ -22,7 +22,14 @@ public class HubServiceAdapter implements HubPort {
     @Override
     public boolean existsById(HubIdentifier hubIdentifier, Long userId, String role) {
         // Domain VO를 인프라 구현체(UUID)에 맞게 변환하여 FeignClient 호출
-        return hubServiceClient.existsById(hubIdentifier.hubId(), userId, role);
+        ApiResponse<Boolean> response = hubServiceClient.existsById(hubIdentifier.hubId(), userId,
+            role);
+        if (response != null && response.success() && response.data() != null) {
+            return response.data();
+        }
+
+        // 통신은 성공했지만 API 로직 실패 시 false 처리
+        return false;
     }
 
     @Override
