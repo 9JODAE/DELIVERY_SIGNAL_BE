@@ -40,13 +40,14 @@ public class OrderPermissionValidator {
     // ================================================================
 
     /** 주문 생성 권한 검증 - SUPPLIER_MANAGER, MASTER */
-    public void validateCreate(Long userId) {
+    public String validateCreate(Long userId) {
         UserAuthorizationInfo userInfo = getUserInfo(userId);
         UserRole role = userInfo.getRole();
 
         if (role != UserRole.SUPPLIER_MANAGER && role != UserRole.MASTER) {
             throw new ForbiddenException("주문 생성 권한이 없습니다. (업체 담당자 또는 마스터만 가능합니다)");
         }
+        return role.toString(); //유저의 role정보를 배송에게 넘겨주기 위해 String으로 변환하여 리턴
     }
 
     /** 주문 수정 권한 검증 - MASTER 전체 / HUB_MANAGER 자기 허브만 가능 */
