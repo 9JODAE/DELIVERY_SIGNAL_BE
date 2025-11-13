@@ -12,7 +12,6 @@ public record CreateDeliveryCommand(
     UUID destinationHubId,
     String address,
     String recipient,
-    String recipientSlackId,
-    Long deliveryManagerId // 할당된 업체 배송 담당자 ID
+    String recipientSlackId
 ) {
 }

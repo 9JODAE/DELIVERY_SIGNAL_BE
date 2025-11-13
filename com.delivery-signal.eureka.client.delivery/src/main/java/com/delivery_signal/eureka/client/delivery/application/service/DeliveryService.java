@@ -83,22 +83,9 @@ public class DeliveryService {
             throw new IllegalArgumentException("유효하지 않거나 활성화되지 않은 허브 ID입니다: " + command.departureHubId());
         }
 
-        Delivery delivery = Delivery.create(command.orderId(),
-            command.companyId(),
-            command.status(),
-            command.departureHubId(),
-            command.destinationHubId(),
-            command.address(),
-            command.recipient(),
-            command.recipientSlackId(),
-            command.deliveryManagerId(),
-            creatorId
-        );
-        Delivery savedDelivery = deliveryRepository.save(delivery);
-
         // 배송 담당자 할당 로직 수정 필요
-        DeliveryManager initialHubManager = assignInitialHubManager();
-        Long initialHubManagerId = initialHubManager.getManagerId();
+        DeliveryManager initialHubDeliveryManager = assignInitialHubDeliveryManager();
+        Long initialHubDeliveryManagerId = initialHubDeliveryManager.getManagerId();
 
         // 배송(허브 이동) 경로 요청 생성 및 저장
         List<HubRouteInfo> hubRouteInfos = hubPort.searchRoutes(
@@ -108,18 +95,31 @@ public class DeliveryService {
             throw new IllegalStateException("출발지(" + command.departureHubId() + ")에서 목적지(" + command.destinationHubId() + ")까지의 배송 경로를 찾을 수 없습니다.");
         }
 
+        Delivery delivery = Delivery.create(command.orderId(),
+            command.companyId(),
+            command.status(),
+            command.departureHubId(),
+            command.destinationHubId(),
+            command.address(),
+            command.recipient(),
+            command.recipientSlackId(),
+            initialHubDeliveryManagerId,
+            creatorId
+        );
+        Delivery savedDelivery = deliveryRepository.save(delivery);
+
         List<DeliveryRouteRecords> routeRecords = hubRouteInfos.stream()
             .map(segment ->
                 DeliveryRouteRecords.initialCreate(
                     delivery,
-                    initialHubManager.getDeliverySequence(),
+                    initialHubDeliveryManager.getDeliverySequence(),
                     segment.departureHubId(),
                     segment.departureHubName(),
                     segment.arrivalHubId(),
                     segment.arrivalHubName(),
                     segment.distance(),
                     segment.transitTime(),
-                    initialHubManagerId,
+                    initialHubDeliveryManagerId,
                     creatorId
                 ))
             .toList();
@@ -340,7 +340,7 @@ public class DeliveryService {
     /**
      * Hub 배송 담당자 할당
      */
-    private DeliveryManager assignInitialHubManager() {
+    private DeliveryManager assignInitialHubDeliveryManager() {
         // 활성 담당자 수 확인 (순환 로직 기반)
         Long activeCount = deliveryManagerRepository.countActiveManagers();
         if (activeCount == 0) {
