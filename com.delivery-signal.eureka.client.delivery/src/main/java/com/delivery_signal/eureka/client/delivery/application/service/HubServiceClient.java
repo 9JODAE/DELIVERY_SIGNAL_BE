@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "hub-service", path = "/open-api/v1/hubs")
+@FeignClient(name = "hub-service", path = "/open-api/v1")
 public interface HubServiceClient {
     String USER_ID_HEADER = "X-User-Id";
     String USER_ROLE_HEADER = "X-User-Role";
@@ -20,8 +20,8 @@ public interface HubServiceClient {
      * @param currUserId 현재 요청 사용자 ID (인가/감사 목적)
      * @param role 현재 요청 사용자 역할 (인가 목적)
      */
-    @GetMapping("/{hubId}")
-    boolean existsById(
+    @GetMapping("/hubs/{hubId}")
+    ApiResponse<Boolean> existsById(
         @PathVariable("hubId") UUID hubId,
         @RequestHeader(USER_ID_HEADER) Long currUserId,
         @RequestHeader(USER_ROLE_HEADER) String role);
@@ -31,7 +31,7 @@ public interface HubServiceClient {
      * 요구사항: 주문 요청 들어올 시, 배송과 배송 경로 기록이 생성되어야 함
      * (배송 경로 기록 : 배송 경로는 최초에 모든 경로가 생성되어야 함)
      */
-    @GetMapping("/open-api/v1/routes")
+    @GetMapping("/routes")
     ApiResponse<List<PathResponse>> searchHubRoutes(
         @RequestParam("departure") UUID departureHubId,
         @RequestParam("arrival") UUID arrivalHubId

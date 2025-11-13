@@ -25,7 +25,6 @@ public class DeliveryPresentationMapper {
             .address(request.address())
             .recipient(request.recipient())
             .recipientSlackId(request.recipientSlackId())
-            .deliveryManagerId(request.deliveryManagerId())
             .build();
 
     }

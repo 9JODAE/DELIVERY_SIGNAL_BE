@@ -38,8 +38,7 @@ public class DeliveryNotificationService {
 
         // TODO: DUMMY 수정 필요
         return new SlackMessageDetails(
-//            delivery.getRecipientSlackId(), // 수신 ID
-            "U09F0MQF3CL",
+            delivery.getRecipientSlackId(), // 수신 ID
             delivery.getOrderId().toString(), // 주문 번호
             "홍길동 / msk@seafood.world", // orderUserInfo (Order Service 조회 필요)
             delivery.getCreatedAt().toString(),

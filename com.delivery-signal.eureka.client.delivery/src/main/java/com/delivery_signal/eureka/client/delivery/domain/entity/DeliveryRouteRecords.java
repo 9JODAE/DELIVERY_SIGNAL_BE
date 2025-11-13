@@ -124,4 +124,11 @@ public class DeliveryRouteRecords extends BaseEntity {
         this.actualTime = actualTime;
         super.update(updatorId);
     }
+
+    /**
+     * 논리적 삭제
+     */
+    public void softDelete(Long deleterId) {
+        super.markDeleted(deleterId);
+    }
 }
