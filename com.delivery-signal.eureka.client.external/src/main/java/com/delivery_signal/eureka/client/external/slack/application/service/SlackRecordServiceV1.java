@@ -37,8 +37,9 @@ public class SlackRecordServiceV1 {
      * @param message 메세지 내용
      * @return {@link SlackRecordCreationDto}
      */
-    public SlackRecordCreationDto createSlackRecord(String recipientId, String message) {
+    public SlackRecordCreationDto createSlackRecord(String recipientId, String message, Long userId) {
         SlackRecord slackRecord = SlackRecord.create(recipientId, message);
+        slackRecord.createdBy(userId);
         repository.save(slackRecord);
         return SlackRecordCreationDto.from(slackRecord);
     }
@@ -56,7 +57,7 @@ public class SlackRecordServiceV1 {
     }
 
 
-    public Page<SlackRecordDto> getSlackRecordList(int page, int size, String sortBy, boolean isAsc){
+    public Page<SlackRecordDto> getSlackRecordList(int page, int size, String sortBy, boolean isAsc, Long userId){
         Pageable pageable = createPageable(page, size, sortBy, isAsc);
         Page<SlackRecord> slackRecordPage = repository.findAll(pageable);
         return slackRecordPage.map(SlackRecordDto::from);
@@ -69,9 +70,9 @@ public class SlackRecordServiceV1 {
      * @return {@link SlackRecordUpdateDto}
      */
     @Transactional
-    public SlackRecordUpdateDto updateSlackRecord(UUID slackRecordId, UpdateSlackRecordRequestDto recordRequestDto) {
+    public SlackRecordUpdateDto updateSlackRecord(UUID slackRecordId, UpdateSlackRecordRequestDto recordRequestDto, Long userId) {
         SlackRecord slackRecord = getRecord(slackRecordId);
-        slackRecord.update(recordRequestDto.getRecipientId(), recordRequestDto.getMessage());
+        slackRecord.update(recordRequestDto.getRecipientId(), recordRequestDto.getMessage(), userId);
         em.flush();
         em.refresh(slackRecord);
         return SlackRecordUpdateDto.from(slackRecord);
@@ -83,9 +84,9 @@ public class SlackRecordServiceV1 {
      * @return {@link SlackRecordDeleteDto}
      */
     @Transactional
-    public SlackRecordDeleteDto softDeleteSlackRecord(UUID slackRecordId) {
+    public SlackRecordDeleteDto softDeleteSlackRecord(UUID slackRecordId, Long userId) {
         SlackRecord slackRecord = getRecord(slackRecordId);
-        slackRecord.softDelete();
+        slackRecord.softDelete(userId);
         return SlackRecordDeleteDto.from(slackRecord);
     }
 
