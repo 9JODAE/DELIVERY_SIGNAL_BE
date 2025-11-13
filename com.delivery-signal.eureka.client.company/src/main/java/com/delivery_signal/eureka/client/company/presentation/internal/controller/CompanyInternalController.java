@@ -1,5 +1,6 @@
 package com.delivery_signal.eureka.client.company.presentation.internal.controller;
 
+import com.delivery_signal.eureka.client.company.application.dto.ApiResponse;
 import com.delivery_signal.eureka.client.company.application.result.OrderCompanyResult;
 import com.delivery_signal.eureka.client.company.application.service.InternalOrderCompanyService;
 import com.delivery_signal.eureka.client.company.presentation.internal.dto.response.OrderCompanyResponseDto;
@@ -42,11 +43,11 @@ public class CompanyInternalController {
                 **GET /open-api/v1/companies/{company-id}**
                 """)
     @GetMapping("/{company-id}")
-    public ResponseEntity<OrderCompanyResponseDto> getCompanyById(@PathVariable("company-id") UUID companyId) {
+    public ResponseEntity<ApiResponse<OrderCompanyResponseDto>> getCompanyById(@PathVariable("company-id") UUID companyId) {
         log.info("내부 서비스에서 업체 조회 요청: {}", companyId);
 
         OrderCompanyResult result = internalCompanyService.getCompanyInfo(companyId);
         OrderCompanyResponseDto responseDto = OrderCompanyResponseMapper.toResponse(result);
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(responseDto));
     }
 }
