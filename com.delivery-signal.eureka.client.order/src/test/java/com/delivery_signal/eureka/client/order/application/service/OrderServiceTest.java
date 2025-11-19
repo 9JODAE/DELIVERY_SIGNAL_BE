@@ -11,16 +11,14 @@ import com.delivery_signal.eureka.client.order.domain.service.OrderDomainService
 import com.delivery_signal.eureka.client.order.domain.vo.company.CompanyInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.delivery.DeliveryCreatedInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.product.ProductInfo;
+import com.delivery_signal.eureka.client.order.domain.vo.user.UserAuthorizationInfo;
+import com.delivery_signal.eureka.client.order.domain.vo.user.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -36,7 +34,6 @@ class OrderServiceTest {
     private OrderService orderService; // 실제 테스트 대상 서비스
 
     // ==================== Mock Port/Service ====================
-
     @Mock private CompanyQueryPort companyQueryPort;
     @Mock private HubQueryPort hubQueryPort;
     @Mock private DeliveryCommandPort deliveryCommandPort;
@@ -44,7 +41,7 @@ class OrderServiceTest {
     @Mock private OrderDomainService orderDomainService;
     @Mock private UserQueryPort userQueryPort;
     @Mock private OrderPermissionValidator orderPermissionValidator;
-    @Mock private OrderCommandPort orderCommandPort; // 실제 저장 역할 Port (리포지토리 대신 Mock)
+    @Mock private OrderCommandPort orderCommandPort;
 
     // ==================== 테스트용 데이터 ====================
     private Long userId;
@@ -60,7 +57,6 @@ class OrderServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        // 테스트용 유저/업체/허브/상품 ID 생성
         userId = 123L;
         supplierCompanyId = UUID.randomUUID();
         receiverCompanyId = UUID.randomUUID();
@@ -68,22 +64,26 @@ class OrderServiceTest {
         receiverHubId = UUID.randomUUID();
         productId = UUID.randomUUID();
 
-        // 테스트용 CreateOrderCommand 생성
         command = CreateOrderCommand.builder()
                 .supplierCompanyId(supplierCompanyId)
                 .receiverCompanyId(receiverCompanyId)
                 .userId(userId)
                 .requestNote("테스트 주문")
                 .products(List.of(new OrderProductCommand(productId, 3)))
+                .recipient("홍길동")
+                .recipientSlackId("slack124")
                 .build();
 
-        // ==================== Mock 설정 ====================
+        // 사용자 권한 mock (Validator 내부에서 사용)
+        when(userQueryPort.getUserAuthorizationInfo(userId))
+                .thenReturn(UserAuthorizationInfo.builder()
+                        .userId(userId)
+                        .role(UserRole.SUPPLIER_MANAGER)
+                        .organization("COMPANY")
+                        .organizationId(UUID.randomUUID())
+                        .build());
 
-        // 사용자 권한 및 승인 체크
-        doNothing().when(orderPermissionValidator).validateCreate(userId);
-        when(userQueryPort.isUserApproved(userId)).thenReturn(true);
-
-        // 업체 정보 조회 mock
+        // 업체 조회 mock
         when(companyQueryPort.getCompanyById(supplierCompanyId))
                 .thenReturn(new CompanyInfo(supplierCompanyId, supplierHubId, "서울시 강남구"));
         when(companyQueryPort.getCompanyById(receiverCompanyId))
@@ -102,28 +102,41 @@ class OrderServiceTest {
         when(hubQueryPort.getStockQuantities(anyList()))
                 .thenReturn(Map.of(productId, 100));
 
-        // 도메인 주문 생성 mock
+        // 도메인 주문 생성 mock (최신 구조 반영)
         when(orderDomainService.createOrder(
-                any(UUID.class),    // supplierCompanyId
-                any(UUID.class),    // receiverCompanyId
-                any(UUID.class),    // departureHubId
-                any(UUID.class),    // arrivalHubId
-                anyString(),        // requestNote
-                anyList(),          // orderProducts
-                any(UUID.class)     // deliveryId
-        )).thenReturn(Order.builder()
-                .supplierCompanyId(supplierCompanyId)
-                .receiverCompanyId(receiverCompanyId)
-                .departureHubId(supplierHubId)
-                .arrivalHubId(receiverHubId)
-                .orderProducts(List.of(
-                        OrderProduct.builder()
-                                .productId(productId)
-                                .productName("테스트상품")
-                                .transferQuantity(3)
-                                .build()
-                ))
-                .build());
+                any(UUID.class),
+                any(UUID.class),
+                any(UUID.class),
+                any(UUID.class),
+                anyString(),
+                anyList(),   // productInfos
+                anyMap(),    // productQuantities
+                any(UUID.class)
+        )).thenAnswer(invocation -> {
+
+            UUID deliveryId = invocation.getArgument(7);
+
+            Order order = Order.of(
+                    supplierCompanyId,
+                    receiverCompanyId,
+                    supplierHubId,
+                    receiverHubId,
+                    "테스트 주문",
+                    BigDecimal.valueOf(3000),
+                    deliveryId
+            );
+
+            OrderProduct op = OrderProduct.create(
+                    order,
+                    productId,
+                    "테스트상품",
+                    BigDecimal.valueOf(1000),
+                    3
+            );
+
+            order.getOrderProducts().add(op);
+            return order;
+        });
 
         // 배송 생성 mock
         when(deliveryCommandPort.createDelivery(any()))
@@ -139,11 +152,7 @@ class OrderServiceTest {
     void validateUserPermissionAndApproval() {
         orderService.createOrderAndSendDelivery(command);
 
-        // 권한 검증 호출 확인
         verify(orderPermissionValidator).validateCreate(userId);
-
-        // 사용자 승인 여부 확인
-        verify(userQueryPort).isUserApproved(userId);
     }
 
     // 상품 조회 및 재고 확인
@@ -151,10 +160,7 @@ class OrderServiceTest {
     void getProductsAndStockQuantities() {
         orderService.createOrderAndSendDelivery(command);
 
-        // 상품 조회 확인
         verify(companyQueryPort).getProducts(anyList());
-
-        // 허브 재고 조회 확인
         verify(hubQueryPort).getStockQuantities(anyList());
     }
 
@@ -173,16 +179,16 @@ class OrderServiceTest {
         orderService.createOrderAndSendDelivery(command);
 
         verify(orderDomainService).createOrder(
-                any(UUID.class),
-                any(UUID.class),
-                any(UUID.class),
-                any(UUID.class),
-                anyString(),
+                eq(supplierCompanyId),
+                eq(receiverCompanyId),
+                eq(supplierHubId),
+                eq(receiverHubId),
+                eq("테스트 주문"),
                 anyList(),
+                anyMap(),
                 any(UUID.class)
         );
 
-        // Port 기반 저장 검증
         verify(orderCommandPort).save(any(Order.class));
     }
 
@@ -192,45 +198,21 @@ class OrderServiceTest {
         OrderCreateResult result = orderService.createOrderAndSendDelivery(command);
 
         verify(deliveryCommandPort).createDelivery(any());
-
-        // 결과 메시지 확인
         assertThat(result.getMessage()).isEqualTo("주문이 완료되었습니다.");
     }
 
     // 허브 재고 차감 확인
     @Test
     void deductHubStock() {
-        // given: 업체 정보 재설정
+
         when(companyQueryPort.getCompanyById(command.getSupplierCompanyId()))
                 .thenReturn(new CompanyInfo(command.getSupplierCompanyId(), supplierHubId, "서울시 강남구"));
+
         when(companyQueryPort.getCompanyById(command.getReceiverCompanyId()))
                 .thenReturn(new CompanyInfo(command.getReceiverCompanyId(), receiverHubId, "서울시 송파구"));
 
-        // when: 도메인 주문 생성 mock
-        when(orderDomainService.createOrder(
-                any(UUID.class),
-                any(UUID.class),
-                any(UUID.class),
-                any(UUID.class),
-                anyString(),
-                anyList(),
-                any(UUID.class)
-        )).thenAnswer(invocation -> {
-            UUID deliveryId = invocation.getArgument(6); // 6번째 인자가 deliveryId
-            return Order.builder()
-                    .supplierCompanyId(command.getSupplierCompanyId())
-                    .receiverCompanyId(command.getReceiverCompanyId())
-                    .departureHubId(supplierHubId)
-                    .arrivalHubId(receiverHubId)
-                    .deliveryId(deliveryId)
-                    .orderProducts(List.of())
-                    .build();
-        });
-
-        // 실행
         orderService.createOrderAndSendDelivery(command);
 
-        // then: 허브 재고 차감 호출 확인
         verify(hubCommandPort).deductStocks(eq(supplierHubId), eq(command.getProducts()));
     }
 }

@@ -94,7 +94,7 @@ public class OrderService {
         // 허브 재고 조회
         Map<UUID, Integer> productStocks = hubQueryPort.getStockQuantities(productIds);
 
-        // 재고 부족 시 빠른 실패
+        // 재고 부족 시 실패
         command.getProducts().stream()
                 .filter(p -> productStocks.getOrDefault(p.getProductId(), 0) < p.getQuantity())
                 .findFirst()
@@ -102,32 +102,25 @@ public class OrderService {
                     throw new IllegalStateException("재고 부족: 상품 " + p.getProductId() + "의 재고가 부족합니다.");
                 });
 
-        // 주문 상품 도메인 생성
-        UUID deliveryId = UUID.randomUUID();
-        List<OrderProduct> orderProducts = productInfos.stream()
-                .map(info -> {
-                    Integer quantity = command.getProducts().stream()
-                            .filter(p -> p.getProductId().equals(info.getProductId()))
-                            .findFirst()
-                            .map(OrderProductCommand::getQuantity)
-                            .orElse(0);
-                    return OrderProduct.builder()
-                            .productId(info.getProductId())
-                            .productName(info.getProductName())
-                            .productPriceAtOrder(info.getPrice())
-                            .transferQuantity(quantity)
-                            .build();
-                })
-                .toList();
+        // 수량 맵 생성 (productId -> quantity)
+        Map<UUID, Integer> productQuantityMap = command.getProducts().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        OrderProductCommand::getProductId,
+                        OrderProductCommand::getQuantity
+                ));
 
-        // 주문 생성 (도메인 로직)
+        //배송 id 미리 생성
+        UUID deliveryId = UUID.randomUUID();
+
+        // 주문 생성 (도메인 로직: Order + OrderProduct 모두 조립)
         Order order = orderDomainService.createOrder(
                 supplier.getCompanyId(),    // 공급업체 ID
                 receiver.getCompanyId(),    // 수령업체 ID
                 supplier.getHubId(),        // 출발 허브 ID
                 receiver.getHubId(),        // 도착 허브 ID
                 command.getRequestNote(),
-                orderProducts,
+                productInfos,
+                productQuantityMap,
                 deliveryId
         );
 

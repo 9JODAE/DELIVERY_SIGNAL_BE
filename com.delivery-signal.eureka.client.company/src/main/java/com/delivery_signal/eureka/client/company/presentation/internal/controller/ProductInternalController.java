@@ -1,6 +1,5 @@
 package com.delivery_signal.eureka.client.company.presentation.internal.controller;
 
-import com.delivery_signal.eureka.client.company.application.dto.ApiResponse;
 import com.delivery_signal.eureka.client.company.application.result.OrderProductResult;
 import com.delivery_signal.eureka.client.company.application.service.InternalOrderProductService;
 import com.delivery_signal.eureka.client.company.presentation.internal.dto.response.OrderProductResponseDto;
@@ -44,11 +43,10 @@ public class ProductInternalController {
                 **GET /open-api/v1/products?productIds=uuid1,uuid2,uuid3**
                 """)
     @GetMapping(params = "productIds")
-    public ResponseEntity<ApiResponse<List<OrderProductResponseDto>>> getProducts(@RequestParam List<UUID> productIds) {
+    public List<OrderProductResponseDto> getProducts(@RequestParam List<UUID> productIds) {
         log.info("내부 서비스에서 상품 조회 요청: {}", productIds);
 
         List<OrderProductResult> results = internalProductService.getProducts(productIds);
-        List<OrderProductResponseDto> responseDtos = OrderProductResponseMapper.toResponseList(results);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(responseDtos));
+        return OrderProductResponseMapper.toResponseList(results);
     }
 }

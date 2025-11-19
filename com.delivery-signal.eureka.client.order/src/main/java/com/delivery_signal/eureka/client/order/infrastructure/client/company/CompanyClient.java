@@ -2,7 +2,6 @@ package com.delivery_signal.eureka.client.order.infrastructure.client.company;
 
 import com.delivery_signal.eureka.client.order.domain.vo.company.CompanyInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.product.ProductInfo;
-import com.delivery_signal.eureka.client.order.infrastructure.client.ApiResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +25,7 @@ public interface CompanyClient {
      * @return CompanyInfo
      */
     @GetMapping("/open-api/v1/companies/{companyId}")
-    ApiResponseDto<CompanyInfo> getCompanyById(@PathVariable("companyId") UUID companyId);
+    CompanyInfo getCompanyById(@PathVariable("companyId") UUID companyId);
 
 
     /**
@@ -42,6 +41,6 @@ public interface CompanyClient {
      * @return 상품리스트
      */
     @GetMapping("/open-api/v1/products")
-    ApiResponseDto<List<ProductInfo>> getProducts(@RequestParam List<UUID> productIds);
+    List<ProductInfo> getProducts(@RequestParam List<UUID> productIds);
 
 }

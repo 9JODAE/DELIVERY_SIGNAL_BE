@@ -2,11 +2,9 @@ package com.delivery_signal.eureka.client.company.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.extern.java.Log;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -32,7 +30,7 @@ public class Product extends BaseEntity{
     @Column(name = "hub_id")
     private UUID hubId;
 
-    @Column(name = "상품가격")
+    @Column(name = "price")
     private BigDecimal price;
 
     @Column(name = "deleted_by")
