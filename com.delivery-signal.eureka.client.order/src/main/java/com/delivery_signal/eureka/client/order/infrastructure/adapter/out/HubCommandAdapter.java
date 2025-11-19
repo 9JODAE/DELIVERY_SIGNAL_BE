@@ -34,6 +34,6 @@ public class HubCommandAdapter implements HubCommandPort {
                 .products(products)
                 .build();
 
-        hubClient.deductStocks(hubId, request);
+        hubClient.restoreStocks(hubId, request);
     }
 }
