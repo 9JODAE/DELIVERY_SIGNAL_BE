@@ -162,7 +162,7 @@ public class OrderService {
         // 허브 재고 차감 요청
         log.info("[ORDER] 재고 차감 요청 시작: departureHubId={}, items={}",
                 order.getDepartureHubId(), command.getProducts());
-        hubCommandPort.deductStocks(order.getDepartureHubId(), command.getProducts());
+        hubCommandPort.deductStocks(order.getDepartureHubId(), productQuantityMap);
         log.info("[ORDER] 재고 차감 요청 완료");
 
 
@@ -320,8 +320,15 @@ public class OrderService {
         // 5. 주문 취소 처리 (도메인 로직)
         order.cancel();
 
-        // 6. 허브 재고 복구
-        hubCommandPort.restoreStocks(order.getDepartureHubId(), command.getProducts());
+        // 6. 허브 재고 복구 (취소 요청의 상품 리스트를 Map 으로 변환)
+        Map<UUID, Integer> restoreQuantityMap = command.getProducts().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        OrderProductCommand::getProductId,
+                        OrderProductCommand::getQuantity
+                ));
+        log.info("[ORDER] 재고 복구 요청 시작: departureHubId={}, items={}",
+                order.getDepartureHubId(), restoreQuantityMap);
+        hubCommandPort.restoreStocks(order.getDepartureHubId(), restoreQuantityMap);
 
         // 7. 주문 저장
         orderCommandPort.save(order);
@@ -333,8 +340,6 @@ public class OrderService {
                 .message("주문 및 배송이 정상적으로 취소되었습니다.")
                 .build();
     }
-
-
 
 
     /**

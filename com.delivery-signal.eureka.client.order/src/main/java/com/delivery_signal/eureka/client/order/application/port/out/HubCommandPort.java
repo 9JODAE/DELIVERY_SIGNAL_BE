@@ -1,7 +1,7 @@
 package com.delivery_signal.eureka.client.order.application.port.out;
 
-import com.delivery_signal.eureka.client.order.application.command.OrderProductCommand;
-import java.util.List;
+
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -10,6 +10,6 @@ import java.util.UUID;
  */
 public interface HubCommandPort {
 
-    void deductStocks(UUID hubId, List<OrderProductCommand> products);
-    void restoreStocks(UUID hubId, List<OrderProductCommand> products);
+    void deductStocks(UUID hubId, Map<UUID, Integer> products);
+    void restoreStocks(UUID hubId, Map<UUID, Integer>  products);
 }

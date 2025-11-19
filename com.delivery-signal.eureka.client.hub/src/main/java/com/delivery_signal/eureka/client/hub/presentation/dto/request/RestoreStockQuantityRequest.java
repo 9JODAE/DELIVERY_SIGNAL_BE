@@ -7,5 +7,5 @@ import jakarta.validation.constraints.NotEmpty;
 
 public record RestoreStockQuantityRequest(
 	@NotEmpty(message = "상품 목록은 비어 있을 수 없습니다.")
-	Map<UUID, Integer> items
+	Map<UUID, Integer> products
 ) {}

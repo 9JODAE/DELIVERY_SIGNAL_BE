@@ -53,7 +53,7 @@ public class HubOpenApiController {
 		@PathVariable UUID hubId,
 		@Valid @RequestBody DeductStockQuantityRequest request
 	) {
-		DeductStockQuantityCommand command = DeductStockQuantityCommand.of(hubId, request.items());
+		DeductStockQuantityCommand command = DeductStockQuantityCommand.of(hubId, request.products());
 		stockFacade.deductStocks(command);
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("재고 차감이 완료되었습니다."));
 	}
@@ -63,7 +63,7 @@ public class HubOpenApiController {
 		@PathVariable UUID hubId,
 		@Valid @RequestBody RestoreStockQuantityRequest request
 	) {
-		RestoreStockQuantityCommand command = RestoreStockQuantityCommand.of(hubId, request.items());
+		RestoreStockQuantityCommand command = RestoreStockQuantityCommand.of(hubId, request.products());
 		stockFacade.restoreStocks(command);
 		return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("재고 복구가 완료되었습니다."));
 	}

@@ -19,6 +19,7 @@ import org.mockito.*;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -213,6 +214,12 @@ class OrderServiceTest {
 
         orderService.createOrderAndSendDelivery(command);
 
-        verify(hubCommandPort).deductStocks(eq(supplierHubId), eq(command.getProducts()));
+        Map<UUID, Integer> expectedMap = command.getProducts().stream()
+                .collect(Collectors.toMap(
+                        OrderProductCommand::getProductId,
+                        OrderProductCommand::getQuantity
+                ));
+
+        verify(hubCommandPort).deductStocks(eq(supplierHubId), eq(expectedMap));
     }
 }
