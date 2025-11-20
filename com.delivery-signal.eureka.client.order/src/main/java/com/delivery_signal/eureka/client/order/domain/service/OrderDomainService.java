@@ -29,8 +29,7 @@ public class OrderDomainService {
             UUID arrivalHubId,
             String requestNote,
             List<ProductInfo> productInfos,
-            Map<UUID, Integer> productQuantities,
-            UUID deliveryId
+            Map<UUID, Integer> productQuantities
     ) {
         // 1. 총 금액 계산
         BigDecimal totalPrice = productInfos.stream()
@@ -52,7 +51,7 @@ public class OrderDomainService {
                 arrivalHubId,
                 requestNote,
                 totalPrice,
-                deliveryId
+                null //주문 생성 시 배송id는 null처리
         );
 
         // 3. OrderProduct 생성 + 연관관계 설정

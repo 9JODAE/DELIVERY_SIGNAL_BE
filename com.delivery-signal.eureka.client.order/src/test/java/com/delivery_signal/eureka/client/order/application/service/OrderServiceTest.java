@@ -111,8 +111,7 @@ class OrderServiceTest {
                 any(UUID.class),
                 anyString(),
                 anyList(),   // productInfos
-                anyMap(),    // productQuantities
-                any(UUID.class)
+                anyMap()    // productQuantities
         )).thenAnswer(invocation -> {
 
             UUID deliveryId = invocation.getArgument(7);
@@ -186,8 +185,7 @@ class OrderServiceTest {
                 eq(receiverHubId),
                 eq("테스트 주문"),
                 anyList(),
-                anyMap(),
-                any(UUID.class)
+                anyMap()
         );
 
         verify(orderCommandPort).save(any(Order.class));

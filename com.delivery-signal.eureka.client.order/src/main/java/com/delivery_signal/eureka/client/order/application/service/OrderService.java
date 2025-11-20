@@ -133,11 +133,6 @@ public class OrderService {
         log.info("[ORDER] 상품 수량 맵 생성 완료: {}", productQuantityMap);
 
 
-        // 배송 ID 미리 생성
-        UUID deliveryId = UUID.randomUUID();
-        log.info("[ORDER] 배송ID 생성됨 = {}", deliveryId);
-
-
         // [LOG] 도메인 주문 생성
         log.info("[ORDER] 도메인 createOrder 시작");
         Order order = orderDomainService.createOrder(
@@ -147,8 +142,7 @@ public class OrderService {
                 receiver.getHubId(),
                 command.getRequestNote(),
                 productInfos,
-                productQuantityMap,
-                deliveryId
+                productQuantityMap
         );
         log.info("[ORDER] 도메인 createOrder 성공 -> orderId={}", order.getId());
 
@@ -167,14 +161,12 @@ public class OrderService {
 
 
         // [LOG] 배송 생성 요청
-        log.info("[ORDER] 배송 생성 요청 시작: deliveryId={}, orderId={}",
-                deliveryId, order.getId());
+        log.info("[ORDER] 배송 생성 요청 시작:orderId={}", order.getId());
 
         DeliveryCreatedInfo deliveryInfo = deliveryCommandPort.createDelivery(
                 CreateDeliveryCommand.builder()
                         .userId(command.getUserId())
                         .userRole(userRole)
-                        .deliveryId(deliveryId)
                         .orderId(order.getId())
                         .supplierCompanyId(command.getSupplierCompanyId())
                         .receiverCompanyId(command.getReceiverCompanyId())
@@ -289,6 +281,11 @@ public class OrderService {
                 .build();
     }
 
+    /**
+     * 주문 취소
+     * @param command
+     * @return
+     */
     @Transactional
     public OrderCancelResult cancelOrder(OrderCancelCommand command) {
 
