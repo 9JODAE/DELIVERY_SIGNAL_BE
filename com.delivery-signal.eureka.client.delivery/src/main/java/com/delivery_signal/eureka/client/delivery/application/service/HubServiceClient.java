@@ -9,7 +9,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
+/**
+ * 추후 허브 서비스에서 서킷 브레이커를 구현하면 delivery-service => hub-service 호출 시에도
+ * CircuitBreaker 어노테이션 적용 필수!y
+ */
+
 @FeignClient(name = "hub-service", path = "/open-api/v1")
+//@CircuitBreaker(name = "hubCircuitBreaker", fallbackFactory = HubFallbackFactory.class)
 public interface HubServiceClient {
     String USER_ID_HEADER = "X-User-Id";
     String USER_ROLE_HEADER = "X-User-Role";

@@ -35,6 +35,10 @@ dependencies {
     // Gateway
 	implementation 'org.springframework.cloud:spring-cloud-starter-gateway-server-webflux'
 
+	// Resilience4j Circuit Breaker
+	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
+	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j'
+
     // Eureka Client
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
