@@ -24,12 +24,12 @@ public class hubQueryAdapter implements HubQueryPort {
                         .productIds(productIds)
                         .build();
 
-        return hubClient.getStockQuantities(infraDto).getData();
+        return hubClient.getStockQuantities(infraDto);
     }
 
     @Override
     public boolean existsByHubId(UUID hubId) {
-        return hubClient.existsById(hubId).getData();
+        return hubClient.existsById(hubId);
     }
 }
 

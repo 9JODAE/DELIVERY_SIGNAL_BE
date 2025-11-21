@@ -1,0 +1,20 @@
+package com.delivery_signal.eureka.client.order.domain.vo.delivery;
+
+import lombok.Getter;
+
+@Getter
+public enum DeliveryStatus {
+    HUB_WAITING("허브 대기중"),
+    HUB_MOVING("허브 이동중"),
+    HUB_ARRIVED("목적지 허브 도착"),
+
+    DELIVERING("업체 이동중"),
+    DELIVERY_COMPLETED("배송 완료"),
+    ISSUE_REPORTED("이슈/문제 발생");
+
+    private final String description;
+
+    DeliveryStatus(String description) {
+        this.description = description;
+    }
+}
