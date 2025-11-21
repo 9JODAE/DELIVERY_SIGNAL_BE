@@ -1,6 +1,5 @@
 package com.delivery_signal.eureka.client.order.infrastructure.client.hub;
 
-import com.delivery_signal.eureka.client.order.infrastructure.client.ApiResponseDto;
 import com.delivery_signal.eureka.client.order.infrastructure.client.hub.dto.GetStockQuantitiesRequestDto;
 import com.delivery_signal.eureka.client.order.infrastructure.client.hub.dto.StockUpdateRequestDto;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -22,7 +21,7 @@ public interface HubClient {
      * @return 상품 ID별 재고 수량
      */
     @PostMapping("/open-api/v1/stocks")
-    ApiResponseDto<Map<UUID, Integer>> getStockQuantities(@RequestBody GetStockQuantitiesRequestDto request);
+    Map<UUID, Integer> getStockQuantities(@RequestBody GetStockQuantitiesRequestDto request);
 
     /**
      * 허브의 상품 재고를 차감하는 API
@@ -30,7 +29,7 @@ public interface HubClient {
      * @param requests 상품과 수량 리스트
      */
     @PostMapping("/open-api/v1/hubs/{hubId}/stocks/deduct")
-    ApiResponseDto<Void> deductStocks(@PathVariable UUID hubId, @RequestBody StockUpdateRequestDto requests);
+    Void deductStocks(@PathVariable UUID hubId, @RequestBody StockUpdateRequestDto requests);
 
     /**
      * 허브의 상품 재고를 복원하는 API
@@ -38,7 +37,7 @@ public interface HubClient {
      * @param requests 상품과 수량 리스트
      */
     @PostMapping("/open-api/v1/hubs/{hubId}/stocks/restore")
-    ApiResponseDto<Void> restoreStocks(@PathVariable UUID hubId, @RequestBody StockUpdateRequestDto requests);
+    Void restoreStocks(@PathVariable UUID hubId, @RequestBody StockUpdateRequestDto requests);
 
     /**
      * 허브의 존재 여부 확인 API
@@ -46,5 +45,5 @@ public interface HubClient {
      * @return 허브가 존재하면 true, 존재하지 않으면 false
      */
     @GetMapping("/open-api/v1/hubs/{hubId}")
-    ApiResponseDto<Boolean> existsById(@PathVariable UUID hubId);
+    Boolean existsById(@PathVariable UUID hubId);
 }
