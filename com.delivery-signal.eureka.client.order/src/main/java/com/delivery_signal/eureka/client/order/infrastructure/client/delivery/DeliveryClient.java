@@ -14,7 +14,7 @@ public interface DeliveryClient {
     /**
      * 배송 생성 요청
      */
-    @PostMapping
+    @PostMapping("/open-api/v1/deliveries")
     ApiResponseDto<DeliveryCreatedInfo>  createDelivery(
             @RequestBody DeliveryCreateRequestDto request,
             @RequestHeader("X-USER-ID") Long currUserId,
