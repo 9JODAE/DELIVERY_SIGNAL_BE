@@ -75,28 +75,39 @@ public class Order {
     private LocalDateTime deletedAt;
     private Long deletedBy;
 
-    public Order(String requestNote) {
-        this.requestNote = requestNote;
-    }
-
-    @Builder
-    public Order(UUID supplierCompanyId,
-                 UUID receiverCompanyId,
-                 UUID departureHubId,
-                 UUID arrivalHubId,
-                 String requestNote,
-                 BigDecimal totalPriceAtOrder,
-                 List<OrderProduct> orderProducts,
-                 UUID deliveryId) {
+    private Order(
+            UUID supplierCompanyId,
+            UUID receiverCompanyId,
+            UUID departureHubId,
+            UUID arrivalHubId,
+            String requestNote,
+            BigDecimal totalPriceAtOrder,
+            UUID deliveryId
+    ) {
         this.supplierCompanyId = supplierCompanyId;
         this.receiverCompanyId = receiverCompanyId;
         this.departureHubId = departureHubId;
         this.arrivalHubId = arrivalHubId;
         this.requestNote = requestNote;
         this.totalPriceAtOrder = totalPriceAtOrder;
-        this.orderProducts = orderProducts;
         this.deliveryId = deliveryId;
         this.status = OrderStatus.VALID;
+    }
+
+    public static Order of(
+            UUID supplierCompanyId,
+            UUID receiverCompanyId,
+            UUID departureHubId,
+            UUID arrivalHubId,
+            String requestNote,
+            BigDecimal totalPriceAtOrder,
+            UUID deliveryId
+    ) {
+        return new Order(
+                supplierCompanyId, receiverCompanyId,
+                departureHubId, arrivalHubId,
+                requestNote, totalPriceAtOrder, deliveryId
+        );
     }
 
     /**

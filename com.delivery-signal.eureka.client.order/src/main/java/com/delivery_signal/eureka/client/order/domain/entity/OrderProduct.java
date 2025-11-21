@@ -58,20 +58,30 @@ public class OrderProduct{
     private LocalDateTime deletedAt;
     private Long deletedBy;
 
-    public static OrderProduct create(Order order, UUID productId, String name, BigDecimal price, Integer qty) {
-        /**
-         * 외부호출에서 들어오는 값에 대한 예외처리, 아직 연결 전 이므로 주석처리
-         */
-//        if (productId == null) throw new IllegalArgumentException("productId required");
-//        if (name == null || name.isBlank()) throw new IllegalArgumentException("productName required");
-//        if (price == null || price.signum() < 0) throw new IllegalArgumentException("invalid price");
+    // ===========================
+    // 정적 팩토리 메서드
+    // ===========================
+    public static OrderProduct create(
+            Order order,
+            UUID productId,
+            String productName,
+            BigDecimal price,
+            Integer quantity
+    ) {
+
+        if (order == null) throw new IllegalArgumentException("Order cannot be null");
+        if (productId == null) throw new IllegalArgumentException("productId required");
+        if (productName == null || productName.isBlank()) throw new IllegalArgumentException("productName required");
+        if (price == null || price.signum() < 0) throw new IllegalArgumentException("Invalid product price");
+        if (quantity == null || quantity <= 0) throw new IllegalArgumentException("Quantity must be > 0");
 
         OrderProduct p = new OrderProduct();
         p.order = order;
         p.productId = productId;
-        p.productName = name;
+        p.productName = productName;
         p.productPriceAtOrder = price;
-        p.transferQuantity = qty;
+        p.transferQuantity = quantity;
+
         return p;
     }
 

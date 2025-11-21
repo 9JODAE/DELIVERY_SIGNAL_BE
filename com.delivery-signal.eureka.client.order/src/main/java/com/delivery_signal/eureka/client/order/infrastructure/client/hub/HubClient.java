@@ -1,6 +1,7 @@
 package com.delivery_signal.eureka.client.order.infrastructure.client.hub;
 
 import com.delivery_signal.eureka.client.order.infrastructure.client.ApiResponseDto;
+import com.delivery_signal.eureka.client.order.infrastructure.client.hub.dto.GetStockQuantitiesRequestDto;
 import com.delivery_signal.eureka.client.order.infrastructure.client.hub.dto.StockUpdateRequestDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,7 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,11 +18,11 @@ public interface HubClient {
 
     /**
      * 상품별 재고를 확인하는 API
-     * @param productIds 상품의 id 리스트
+     * @param request 상품의 id 리스트
      * @return 상품 ID별 재고 수량
      */
     @PostMapping("/open-api/v1/stocks")
-    ApiResponseDto<Map<UUID, Integer>> getStockQuantities(@RequestBody List<UUID> productIds);
+    ApiResponseDto<Map<UUID, Integer>> getStockQuantities(@RequestBody GetStockQuantitiesRequestDto request);
 
     /**
      * 허브의 상품 재고를 차감하는 API
@@ -30,7 +30,7 @@ public interface HubClient {
      * @param requests 상품과 수량 리스트
      */
     @PostMapping("/open-api/v1/hubs/{hubId}/stocks/deduct")
-    ApiResponseDto<Void> deductStocks(@PathVariable UUID hubId, @RequestBody List<StockUpdateRequestDto> requests);
+    ApiResponseDto<Void> deductStocks(@PathVariable UUID hubId, @RequestBody StockUpdateRequestDto requests);
 
     /**
      * 허브의 상품 재고를 복원하는 API
@@ -38,7 +38,7 @@ public interface HubClient {
      * @param requests 상품과 수량 리스트
      */
     @PostMapping("/open-api/v1/hubs/{hubId}/stocks/restore")
-    ApiResponseDto<Void> restoreStocks(@PathVariable UUID hubId, @RequestBody List<StockUpdateRequestDto> requests);
+    ApiResponseDto<Void> restoreStocks(@PathVariable UUID hubId, @RequestBody StockUpdateRequestDto requests);
 
     /**
      * 허브의 존재 여부 확인 API

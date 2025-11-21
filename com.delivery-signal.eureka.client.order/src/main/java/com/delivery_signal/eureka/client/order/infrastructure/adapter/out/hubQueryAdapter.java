@@ -2,6 +2,7 @@ package com.delivery_signal.eureka.client.order.infrastructure.adapter.out;
 
 import com.delivery_signal.eureka.client.order.application.port.out.HubQueryPort;
 import com.delivery_signal.eureka.client.order.infrastructure.client.hub.HubClient;
+import com.delivery_signal.eureka.client.order.infrastructure.client.hub.dto.GetStockQuantitiesRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,13 @@ public class hubQueryAdapter implements HubQueryPort {
 
     @Override
     public Map<UUID, Integer> getStockQuantities(List<UUID> productIds) {
-        return hubClient.getStockQuantities(productIds).getData();
+
+        GetStockQuantitiesRequestDto infraDto =
+                GetStockQuantitiesRequestDto.builder()
+                        .productIds(productIds)
+                        .build();
+
+        return hubClient.getStockQuantities(infraDto).getData();
     }
 
     @Override

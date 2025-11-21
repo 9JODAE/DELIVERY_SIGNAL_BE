@@ -68,93 +68,118 @@ public class OrderService {
      */
     public OrderCreateResult createOrderAndSendDelivery(CreateOrderCommand command) {
 
-        // 로그인 및 최소 권한 체크 및 권한 정보 반환
+        // [LOG] 사용자 권한조회 시작
+        log.info("[ORDER] validateCreate(userId={}) 요청 시작", command.getUserId());
         String userRole =  orderPermissionValidator.validateCreate(command.getUserId());
+        log.info("[ORDER] validateCreate 성공 -> userRole={}", userRole);
+
 
         // 상품 ID 리스트
         List<UUID> productIds = command.getProducts().stream()
                 .map(OrderProductCommand::getProductId)
                 .toList();
+        log.info("[ORDER] 상품 ID 목록 = {}", productIds);
 
-        // 상품 정보 조회
+        // [LOG] 상품 조회 시작
+        log.info("[ORDER] 회사 서비스(productInfos) 조회 시작: productIds={}", productIds);
         List<ProductInfo> productInfos = companyQueryPort.getProducts(productIds);
+        log.info("[ORDER] productInfos 조회 성공: count={}", productInfos.size());
 
-        // 상품 검증: 각 상품이 공급업체에 속하는지 확인
+
+        // 공급업체 검증
         productInfos.stream()
                 .filter(p -> !p.getCompanyId().equals(command.getSupplierCompanyId()))
                 .findFirst()
                 .ifPresent(p -> {
+                    log.error("[ORDER] 상품 소속 불일치 -> productId={}, supplierCompanyId={}",
+                            p.getProductId(), command.getSupplierCompanyId());
                     throw new NotFoundException("상품", p.getProductId());
                 });
 
-        // 업체 존재 여부 검증
+
+        // [LOG] 업체 조회
+        log.info("[ORDER] 공급업체 조회 시작: {}", command.getSupplierCompanyId());
         CompanyInfo supplier = companyQueryPort.getCompanyById(command.getSupplierCompanyId());
+        log.info("[ORDER] 공급업체 조회 성공 -> hub={}", supplier.getHubId());
+
+        log.info("[ORDER] 수령업체 조회 시작: {}", command.getReceiverCompanyId());
         CompanyInfo receiver = companyQueryPort.getCompanyById(command.getReceiverCompanyId());
+        log.info("[ORDER] 수령업체 조회 성공 -> hub={}", receiver.getHubId());
 
-        // 허브 재고 조회
+
+        // [LOG] 허브 재고 조회
+        log.info("[ORDER] 허브 재고 조회 시작: 출발허브={}, productIds={}", supplier.getHubId(), productIds);
         Map<UUID, Integer> productStocks = hubQueryPort.getStockQuantities(productIds);
+        log.info("[ORDER] 허브 재고 조회 성공: {}", productStocks);
 
-        // 재고 부족 시 빠른 실패
+
+        // 재고 검증
         command.getProducts().stream()
                 .filter(p -> productStocks.getOrDefault(p.getProductId(), 0) < p.getQuantity())
                 .findFirst()
                 .ifPresent(p -> {
-                    throw new IllegalStateException("재고 부족: 상품 " + p.getProductId() + "의 재고가 부족합니다.");
+                    log.error("[ORDER] 재고 부족 발생 -> productId={}, 요청수량={}, 보유수량={}",
+                            p.getProductId(), p.getQuantity(), productStocks.getOrDefault(p.getProductId(), 0));
+                    throw new IllegalStateException("재고 부족: 상품 " + p.getProductId());
                 });
 
-        // 주문 상품 도메인 생성
-        UUID deliveryId = UUID.randomUUID();
-        List<OrderProduct> orderProducts = productInfos.stream()
-                .map(info -> {
-                    Integer quantity = command.getProducts().stream()
-                            .filter(p -> p.getProductId().equals(info.getProductId()))
-                            .findFirst()
-                            .map(OrderProductCommand::getQuantity)
-                            .orElse(0);
-                    return OrderProduct.builder()
-                            .productId(info.getProductId())
-                            .productName(info.getProductName())
-                            .productPriceAtOrder(info.getPrice())
-                            .transferQuantity(quantity)
-                            .build();
-                })
-                .toList();
 
-        // 주문 생성 (도메인 로직)
+        // 수량 맵 생성
+        Map<UUID, Integer> productQuantityMap = command.getProducts().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        OrderProductCommand::getProductId,
+                        OrderProductCommand::getQuantity
+                ));
+        log.info("[ORDER] 상품 수량 맵 생성 완료: {}", productQuantityMap);
+
+
+        // [LOG] 도메인 주문 생성
+        log.info("[ORDER] 도메인 createOrder 시작");
         Order order = orderDomainService.createOrder(
-                supplier.getCompanyId(),    // 공급업체 ID
-                receiver.getCompanyId(),    // 수령업체 ID
-                supplier.getHubId(),        // 출발 허브 ID
-                receiver.getHubId(),        // 도착 허브 ID
+                supplier.getCompanyId(),
+                receiver.getCompanyId(),
+                supplier.getHubId(),
+                receiver.getHubId(),
                 command.getRequestNote(),
-                orderProducts,
-                deliveryId
+                productInfos,
+                productQuantityMap
         );
+        log.info("[ORDER] 도메인 createOrder 성공 -> orderId={}", order.getId());
+
 
         // 주문 저장
+        log.info("[ORDER] 주문 저장 시작: orderId={}", order.getId());
         orderCommandPort.save(order);
+        log.info("[ORDER] 주문 저장 완료");
+
 
         // 허브 재고 차감 요청
-        hubCommandPort.deductStocks(order.getDepartureHubId(), command.getProducts());
+        log.info("[ORDER] 재고 차감 요청 시작: departureHubId={}, items={}",
+                order.getDepartureHubId(), command.getProducts());
+        hubCommandPort.deductStocks(order.getDepartureHubId(), productQuantityMap);
+        log.info("[ORDER] 재고 차감 요청 완료");
 
-        // 배송 생성 요청
-        CreateDeliveryCommand deliveryRequest = CreateDeliveryCommand.builder()
-                .userId(command.getUserId())
-                .userRole(userRole)
-                .deliveryId(deliveryId)
-                .orderId(order.getId())
-                .supplierCompanyId(command.getSupplierCompanyId())
-                .receiverCompanyId(command.getReceiverCompanyId())
-                .departureHubId(supplier.getHubId())
-                .destinationHubId(receiver.getHubId())
-                .address(receiver.getAddress())
-                .recipient(command.getRecipient())
-                .recipientSlackId(command.getRecipientSlackId())
-                .build();
 
-        DeliveryCreatedInfo deliveryInfo = deliveryCommandPort.createDelivery(deliveryRequest);
+        // [LOG] 배송 생성 요청
+        log.info("[ORDER] 배송 생성 요청 시작:orderId={}", order.getId());
 
-        log.info("주문 id: {}, 배송 요청 완료: {}", deliveryRequest.getOrderId(), deliveryInfo.getMessage());
+        DeliveryCreatedInfo deliveryInfo = deliveryCommandPort.createDelivery(
+                CreateDeliveryCommand.builder()
+                        .userId(command.getUserId())
+                        .userRole(userRole)
+                        .orderId(order.getId())
+                        .supplierCompanyId(command.getSupplierCompanyId())
+                        .receiverCompanyId(command.getReceiverCompanyId())
+                        .departureHubId(supplier.getHubId())
+                        .destinationHubId(receiver.getHubId())
+                        .address(receiver.getAddress())
+                        .recipient(command.getRecipient())
+                        .recipientSlackId(command.getRecipientSlackId())
+                        .build()
+        );
+
+        log.info("[ORDER] 배송 생성 성공 -> deliveryMessage={}", deliveryInfo.getMessage());
+
 
         return new OrderCreateResult(
                 order.getId(),
@@ -163,6 +188,7 @@ public class OrderService {
                 "주문이 완료되었습니다."
         );
     }
+
 
     /**
      * 주문 단건 조회
@@ -255,6 +281,11 @@ public class OrderService {
                 .build();
     }
 
+    /**
+     * 주문 취소
+     * @param command
+     * @return
+     */
     @Transactional
     public OrderCancelResult cancelOrder(OrderCancelCommand command) {
 
@@ -286,8 +317,15 @@ public class OrderService {
         // 5. 주문 취소 처리 (도메인 로직)
         order.cancel();
 
-        // 6. 허브 재고 복구
-        hubCommandPort.restoreStocks(order.getDepartureHubId(), command.getProducts());
+        // 6. 허브 재고 복구 (취소 요청의 상품 리스트를 Map 으로 변환)
+        Map<UUID, Integer> restoreQuantityMap = command.getProducts().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        OrderProductCommand::getProductId,
+                        OrderProductCommand::getQuantity
+                ));
+        log.info("[ORDER] 재고 복구 요청 시작: departureHubId={}, items={}",
+                order.getDepartureHubId(), restoreQuantityMap);
+        hubCommandPort.restoreStocks(order.getDepartureHubId(), restoreQuantityMap);
 
         // 7. 주문 저장
         orderCommandPort.save(order);
@@ -299,8 +337,6 @@ public class OrderService {
                 .message("주문 및 배송이 정상적으로 취소되었습니다.")
                 .build();
     }
-
-
 
 
     /**

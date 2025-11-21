@@ -12,10 +12,11 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
+    properties:
       hibernate:
-        default_schema: order
-      format_sql: true
-      use_sql_comments: true
+        default_schema: p_order
+        format_sql: true
+        use_sql_comments: true
     show-sql: true
 
   data:
@@ -30,8 +31,7 @@ eureka:
     service-url:
       defaultZone: http://localhost:19090/eureka/
   instance:
-    appname: order-service  # 대문자화 방지: 이 이름 그대로 등록됨
-
+    appname: order-service  # 대문자화 방지
 
 server:
   port: 19099

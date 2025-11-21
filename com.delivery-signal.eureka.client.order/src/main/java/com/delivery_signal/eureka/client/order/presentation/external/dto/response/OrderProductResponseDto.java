@@ -12,8 +12,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class OrderProductResponseDto {
     private UUID productId;
-    private String productName;
     private Integer quantity;
-    private BigDecimal price;
 }
 

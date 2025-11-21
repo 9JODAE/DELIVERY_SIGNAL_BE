@@ -11,7 +11,7 @@ spring:
   jpa:
     properties:
       hibernate:
-        default_schema: company
+        default_schema: p_company
     hibernate:
       ddl-auto: update
     show-sql: true

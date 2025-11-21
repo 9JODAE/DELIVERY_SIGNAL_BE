@@ -21,12 +21,12 @@ public class CompanyQueryAdapter implements CompanyQueryPort {
 
     @Override
     public CompanyInfo getCompanyById(UUID companyId) {
-        return companyClient.getCompanyById(companyId).getData();
+        return companyClient.getCompanyById(companyId);
     }
 
     @Override
     public List<ProductInfo> getProducts(List<UUID> productIds) {
-        return companyClient.getProducts(productIds).getData();
+        return companyClient.getProducts(productIds);
     }
 }
 
