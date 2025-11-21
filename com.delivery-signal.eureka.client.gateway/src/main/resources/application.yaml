@@ -2,6 +2,9 @@ server:
   port: 80
 
 eureka:
+  instance:
+    # Health Check 엔드포인트를 사용 설정
+    health-check-url-path: /actuator/health
   client:
     register-with-eureka: true
     fetch-registry: true
@@ -76,6 +79,16 @@ spring:
               uri: lb://delivery-service
               predicates:
                 - Path=/open-api/v1/deliveries/**, /api/v1/deliveries/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: deliveryCircuitBreaker
+                    fallbackUri: forward:/delivery-fallback
+
+            - id: delivery-fallback-route # Fallback을 처리할 라우트
+              uri: forward:/delivery-fallback
+              predicates:
+                - Path=/delivery-fallback
 
             - id: delivery-docs
               uri: lb://delivery-service
@@ -153,3 +166,41 @@ springdoc:
         url: /hubs/v3/api-docs
       - name: external-service
         url: /externals/v3/api-docs
+
+# Resilience4j (서킷 브레이커) 상세 설정
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        failureRateThreshold: 50 # 실패율 50%를 초과 시 OPEN(차단)
+        waitDurationInOpenState: 10s # OPEN 상태를 10초 유지 후 HALF_OPEN으로 전환
+        permittedNumberOfCallsInHalfOpenState: 3 # Half-Open 상태에서 허용되는 요청 수
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 20 # 최근 20개 호출을 기준으로 실패율 계산
+        slowCallRateThreshold: 50 # Slow 콜 비율이 50% 초과 시 차단
+        slowCallDurationThreshold: 5000ms # 5초 이상 응답 시 Slow 콜로 간주 (물류 API 응답 시간 고려)
+
+    instances:
+      deliveryCircuitBreaker:  # delivery 회로 차단기 이름
+        baseConfig: default # default 설정을 상속받아 사용
+
+    timelimiter:
+      configs:
+        default:
+          # 타임아웃 발생 시 Circuit Breaker에 실패 신호 보냄
+          timeoutDuration: 5s # 5초 안에 응답이 없으면 타임아웃 발생 (슬로우 콜 시간 고려)
+
+# Actuator 및 모니터링 설정 (http://localhost:{서비스 포트 번호}/actuator/health로 확인)
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health, info, gateway # Gateway 운영에 필수적인 엔드포인트만 노출
+  metrics:
+    enable:
+      resilience4j:
+        circuitbreaker:
+          calls: true # 호출 통계 활성화
