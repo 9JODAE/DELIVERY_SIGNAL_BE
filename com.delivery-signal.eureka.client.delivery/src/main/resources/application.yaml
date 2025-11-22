@@ -9,6 +9,18 @@ spring:
       host: localhost # Docker 환경이라면 컨테이너 이름 또는 IP
       port: 6380
 
+  rabbitmq:
+    host: localhost
+    port: 5672 # 기본 포트 번호
+    username: guest # 기본 (추후 수정 필요)
+    password: guest # 기본 (추후 수정 필요)
+    exchange:
+      name: order-exchange # 교환기 이름
+      queue:
+        name: delivery-request-queue # 큐 이름
+      routing:
+        key: delivery.new # 라우팅 키
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
