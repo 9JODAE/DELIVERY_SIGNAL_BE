@@ -5,6 +5,7 @@ import java.util.UUID;
 import lombok.Builder;
 
 public record DeliveryCreateRequest(
+    Long requestUserId,
     UUID orderId,
     UUID companyId,
     String status,

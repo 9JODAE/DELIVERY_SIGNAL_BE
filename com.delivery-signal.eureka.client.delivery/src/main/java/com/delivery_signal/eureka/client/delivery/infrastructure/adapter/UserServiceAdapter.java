@@ -1,6 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.infrastructure.adapter;
 
-import com.delivery_signal.eureka.client.delivery.application.port.UserAuthPort;
+import com.delivery_signal.eureka.client.delivery.application.port.out.UserAuthPort;
 import com.delivery_signal.eureka.client.delivery.application.service.UserServiceClient;
 import com.delivery_signal.eureka.client.delivery.domain.vo.AuthorizedUser;
 import org.springframework.stereotype.Component;

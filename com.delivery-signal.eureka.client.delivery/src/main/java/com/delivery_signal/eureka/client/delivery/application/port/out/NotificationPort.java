@@ -1,4 +1,4 @@
-package com.delivery_signal.eureka.client.delivery.application.port;
+package com.delivery_signal.eureka.client.delivery.application.port.out;
 
 import com.delivery_signal.eureka.client.delivery.domain.vo.SlackMessageDetails;
 

@@ -2,7 +2,7 @@ package com.delivery_signal.eureka.client.delivery.presentation.controller.inter
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
-import com.delivery_signal.eureka.client.delivery.application.port.HubPort;
+import com.delivery_signal.eureka.client.delivery.application.port.out.HubPort;
 import com.delivery_signal.eureka.client.delivery.application.service.DeliveryService;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;

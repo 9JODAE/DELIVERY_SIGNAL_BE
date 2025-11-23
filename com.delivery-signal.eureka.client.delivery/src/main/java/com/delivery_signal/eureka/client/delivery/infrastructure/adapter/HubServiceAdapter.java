@@ -1,6 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.infrastructure.adapter;
 
-import com.delivery_signal.eureka.client.delivery.application.port.HubPort;
+import com.delivery_signal.eureka.client.delivery.application.port.out.HubPort;
 import com.delivery_signal.eureka.client.delivery.application.service.HubServiceClient;
 import com.delivery_signal.eureka.client.delivery.application.service.HubServiceClient.ApiResponse;
 import com.delivery_signal.eureka.client.delivery.application.service.HubServiceClient.PathResponse;

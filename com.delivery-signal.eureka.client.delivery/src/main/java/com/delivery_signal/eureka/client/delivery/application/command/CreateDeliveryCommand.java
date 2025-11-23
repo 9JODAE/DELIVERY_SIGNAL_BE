@@ -5,6 +5,7 @@ import lombok.Builder;
 
 @Builder
 public record CreateDeliveryCommand(
+    Long userId,
     UUID orderId,
     UUID companyId,
     String status,

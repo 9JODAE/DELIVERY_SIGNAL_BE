@@ -1,6 +1,6 @@
 package com.delivery_signal.eureka.client.delivery.infrastructure.adapter;
 
-import com.delivery_signal.eureka.client.delivery.application.port.NotificationPort;
+import com.delivery_signal.eureka.client.delivery.application.port.out.NotificationPort;
 import com.delivery_signal.eureka.client.delivery.application.service.ExternalServiceClient;
 import com.delivery_signal.eureka.client.delivery.domain.vo.SlackMessageDetails;
 import org.springframework.stereotype.Component;
