@@ -298,8 +298,9 @@ public class DeliveryService implements DeliveryPort {
     /**
      * 배송 논리적 삭제
      */
+    @Override
     @Transactional
-    public void softDeleteDelivery(UUID deliveryId, Long currUserId, String role) {
+    public void softDeleteDelivery(UUID deliveryId, Long currUserId) {
         Delivery delivery = getDelivery(deliveryId);
 
         if (delivery.isDeleted()) {

@@ -28,14 +28,23 @@ public class RabbitConfig {
     @Value("${spring.rabbitmq.port}")
     private int rabbitPort;
 
+    /**
+     * 모든 액션이 공유하는 TOPIC EXCHANGE 이름
+     */
     @Value("${spring.rabbitmq.exchange.name}")
     private String exchangeName;
 
-    @Value("${spring.rabbitmq.exchange.queue.name}")
-    private String queueName;
+    @Value("${spring.rabbitmq.create.queue.name}")
+    private String createQueueName;
 
-    @Value("${spring.rabbitmq.exchange.routing.key}")
-    private String routingKey; // Exchange 에서 Queue로 메시지를 전달할 때 사용되는 라우팅 패턴
+    @Value("${spring.rabbitmq.create.routing.key}")
+    private String createRoutingKey; // Exchange 에서 Queue로 메시지를 전달할 때 사용되는 라우팅 패턴
+
+    @Value("${spring.rabbitmq.delete.queue.name}")
+    private String deleteQueueName;
+
+    @Value("${spring.rabbitmq.delete.routing.key}")
+    private String deleteRoutingKey;
 
     // DLQ 관련 상수
     public static final String DELIVERY_DLQ_QUEUE = "delivery.dlq.queue";
@@ -47,28 +56,47 @@ public class RabbitConfig {
     }
 
     /**
-     * 메인 큐
+     * [CREATE] 배송 생성 큐
      * durable(true): 서버가 재시작되어도 큐가 유지되도록 설정
      * 메인 큐에 Dead Letter Exchange와 Routing Key 설정
      * @return
      */
     @Bean
-    public Queue queue() {
-        return QueueBuilder.durable(queueName)
+    public Queue deliveryCreateQueue() {
+        return QueueBuilder.durable(createQueueName)
             .withArgument("x-dead-letter-exchange", DELIVERY_DLX_EXCHANGE) // DLX 지정
             .withArgument("x-dead-letter-routing-key", DELIVERY_DLQ_QUEUE)  // DLQ의 라우팅 키 지정
             .build();
     }
 
     /**
-     * Binding: Exchange가 어떤 Routing Key를 가진 메시지를 특정 Queue로 보낼지 정의
+     * [CREATE] Binding: Exchange가 어떤 Routing Key를 가진 메시지를 특정 Queue로 보낼지 정의
      * 지정된 Routing Key를 가진 메시지만 해당 큐로 라우팅
      */
     @Bean
-    public Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue)
+    public Binding bindingCreateQueue(Queue deliveryCreateQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(deliveryCreateQueue)
             .to(exchange)
-            .with(routingKey);
+            .with(createRoutingKey);
+    }
+
+
+    /**
+     * [DELETE] 배송 삭제 큐
+     */
+    @Bean
+    public Queue deliveryDeleteQueue() {
+        return QueueBuilder.durable(deleteQueueName)
+            .withArgument("x-dead-letter-exchange", DELIVERY_DLX_EXCHANGE)
+            .withArgument("x-dead-letter-routing-key", DELIVERY_DLQ_QUEUE)
+            .build();
+    }
+
+    @Bean
+    public Binding bindingDeleteQueue(Queue deliveryDeleteQueue, TopicExchange exchange) { // ⭐ 새 바인딩 빈 추가 ⭐
+        return BindingBuilder.bind(deliveryDeleteQueue)
+            .to(exchange)
+            .with(deleteRoutingKey);
     }
 
     /**

@@ -20,6 +20,16 @@ spring:
         name: delivery-request-queue # 큐 이름
       routing:
         key: delivery.new # 라우팅 키
+    create:
+      queue:
+        name: delivery.create.queue
+      routing:
+        key: delivery.create.new
+    delete:
+      queue:
+        name: delivery.delete.queue
+      routing:
+        key: delivery.delete.by.order
     listener:
       simple:
         retry:

@@ -3,7 +3,9 @@ package com.delivery_signal.eureka.client.delivery.presentation.adapter.messagin
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
 import com.delivery_signal.eureka.client.delivery.application.port.in.DeliveryPort;
+import com.delivery_signal.eureka.client.delivery.common.exception.PermissionDeniedException;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
+import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryDeleteRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryPresentationMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
@@ -35,9 +37,9 @@ public class DeliveryMessageListener {
             CreateDeliveryCommand command = mapper.toCreateDeliveryCommand(request);
             DeliveryQueryResponse response = deliveryPort.createDelivery(command, request.requestUserId());
             log.info("[Delivery] 배송 생성 메시지 처리 성공 - 배송 ID: {}", response.deliveryId());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalStateException | PermissionDeniedException e) {
             // 비즈니스 검증 실패 -> 재처리 불필요
-            log.error("[Delivery] 배송 생성 실패 (유효성 검증) - 주문 ID: {}, {}",
+            log.error("[Delivery] 배송 생성 실패 (유효성/권한 검증) - 주문 ID: {}, {}",
                 request.orderId(), e.getMessage());
             // DLQ (Dead Letter Queue)로 전달: 무한 재처리를 방지하기 위해, 특정 재시도 횟수 초과 시
             // 별도의 큐(DLQ)로 메시지를 보내 관리자가 확인하도록 함
@@ -48,7 +50,23 @@ public class DeliveryMessageListener {
             log.error("[Delivery] 배송 생성 실패 (시스템 오류) - 주문 ID: {}, {}", request.orderId(), e.getMessage());
             // DB 낙관적 락 충돌 등: 잠시 후 해결될 수 있음 (일시적 오류)
             // -> 일반적인 RuntimeException은 위 yml의 retry 설정에 따라 재시도됨
-            throw new RuntimeException("[Delivery] 처리 실패: DLQ로 이동", e);
+            throw new RuntimeException("[Delivery] 처리 실패, 재시도 처리", e);
+        }
+    }
+
+    @RabbitListener(queues = "${spring.rabbitmq.delete.queue.name}")
+    public void handleDeleteDelivery(DeliveryDeleteRequest request) {
+        log.info("[Delivery] RabbitMQ로부터 배송 삭제 요청 수신 - 배송 ID: {}", request.deliveryId());
+        try {
+            deliveryPort.softDeleteDelivery(request.deliveryId(), request.currUserId());
+            log.info("[Delivery] 배송 삭제 처리 성공 - 배송 ID: {}", request.deliveryId());
+        } catch (IllegalStateException | PermissionDeniedException e) {
+            log.error("[Delivery] 배송 생성 실패 (유효성/권한 검증) - 배송 ID: {}, {}",
+                request.deliveryId(), e.getMessage());
+            throw new AmqpRejectAndDontRequeueException("[Delivery] 유효성 검증 실패: DLQ로 이동", e);
+        } catch (Exception e) {
+            log.error("[Delivery] 배송 삭제 실패 (시스템 오류) - 배송 ID: {}, {}", request.deliveryId(), e.getMessage());
+            throw new RuntimeException("[Delivery] 처리 실패, 재시도 처리", e);
         }
     }
 }
