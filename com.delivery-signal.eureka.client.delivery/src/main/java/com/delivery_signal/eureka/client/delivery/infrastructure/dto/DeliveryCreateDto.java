@@ -1,11 +1,11 @@
-package com.delivery_signal.eureka.client.delivery.application.command;
+package com.delivery_signal.eureka.client.delivery.infrastructure.dto;
 
 import java.util.UUID;
 import lombok.Builder;
 
 @Builder
-public record CreateDeliveryCommand(
-    Long userId,
+public record DeliveryCreateDto(
+    Long requestUserId,
     UUID orderId,
     UUID companyId,
     String status,

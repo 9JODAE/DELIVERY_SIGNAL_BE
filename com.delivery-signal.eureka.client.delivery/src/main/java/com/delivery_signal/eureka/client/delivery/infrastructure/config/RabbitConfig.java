@@ -52,6 +52,7 @@ public class RabbitConfig {
 
     /**
      * Binding: Exchange가 어떤 Routing Key를 가진 메시지를 특정 Queue로 보낼지 정의
+     * 지정된 Routing Key를 가진 메시지만 해당 큐로 라우팅
      */
     @Bean
     public Binding binding(Queue queue, TopicExchange exchange) {
