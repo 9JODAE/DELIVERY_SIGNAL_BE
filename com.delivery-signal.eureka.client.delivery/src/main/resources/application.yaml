@@ -11,7 +11,7 @@ spring:
 
   rabbitmq:
     host: localhost
-    port: 5672 # 기본 포트 번호
+    port: 5673 # 커스텀 포트 번호
     username: guest # 기본 (추후 수정 필요)
     password: guest # 기본 (추후 수정 필요)
     exchange:
@@ -20,6 +20,13 @@ spring:
         name: delivery-request-queue # 큐 이름
       routing:
         key: delivery.new # 라우팅 키
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 5000ms # 첫 재시도까지 5초 대기
+          max-attempts: 3 # 최대 3회 재시도
+          max-interval: 10000ms  # 최대 재시도 대기 시간 10초
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect

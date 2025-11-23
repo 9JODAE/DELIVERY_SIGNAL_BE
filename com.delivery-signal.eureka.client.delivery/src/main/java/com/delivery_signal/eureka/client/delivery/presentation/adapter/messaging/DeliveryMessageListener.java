@@ -39,13 +39,16 @@ public class DeliveryMessageListener {
             // 비즈니스 검증 실패 -> 재처리 불필요
             log.error("[Delivery] 배송 생성 실패 (유효성 검증) - 주문 ID: {}, {}",
                 request.orderId(), e.getMessage());
-            throw new AmqpRejectAndDontRequeueException("[Delivery] 유효성 검증 실패: DLQ로 이동", e);
-        } catch (Exception e) {
-            log.error("[Delivery] 배송 생성 실패 (시스템 오류) - 주문 ID: {}, {}", request.orderId(), e.getMessage());
             // DLQ (Dead Letter Queue)로 전달: 무한 재처리를 방지하기 위해, 특정 재시도 횟수 초과 시
             // 별도의 큐(DLQ)로 메시지를 보내 관리자가 확인하도록 함
             // DLQ 설정 위해 Spring AMQP 예외를 던짐
-            throw new AmqpRejectAndDontRequeueException("[Delivery] 처리 실패: DLQ로 이동", e);
+            // AmqpRejectAndDontRequeueException : 메시지 재시도 처리 및 Requeue 안 함 (즉시 DLQ로 보냄)
+            throw new AmqpRejectAndDontRequeueException("[Delivery] 유효성 검증 실패: DLQ로 이동", e);
+        } catch (Exception e) {
+            log.error("[Delivery] 배송 생성 실패 (시스템 오류) - 주문 ID: {}, {}", request.orderId(), e.getMessage());
+            // DB 낙관적 락 충돌 등: 잠시 후 해결될 수 있음 (일시적 오류)
+            // -> 일반적인 RuntimeException은 위 yml의 retry 설정에 따라 재시도됨
+            throw new RuntimeException("[Delivery] 처리 실패: DLQ로 이동", e);
         }
     }
 }
