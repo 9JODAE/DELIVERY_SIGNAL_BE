@@ -3,3 +3,6 @@ spring:
     active: local
   application:
     name: hub-service
+
+audit:
+  system-master-id: 9999

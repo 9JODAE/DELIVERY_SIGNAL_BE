@@ -13,7 +13,7 @@ public class OrderDeliveryResponseMapper {
                 .deliveryId(result.getDeliveryId())
                 .orderId(result.getOrderId())
                 .createdAt(result.getCreatedAt())
-                .status("허브 대기중")
+                .status(result.getStatus().name())
                 .build();
     }
 }

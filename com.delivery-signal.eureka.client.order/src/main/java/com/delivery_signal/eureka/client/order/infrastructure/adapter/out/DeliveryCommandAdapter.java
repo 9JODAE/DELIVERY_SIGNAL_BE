@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+import static com.delivery_signal.eureka.client.order.domain.vo.delivery.DeliveryStatus.HUB_WAITING;
+
 /**
  * 배송 관련 커맨드 어댑터
  * - 배송 생성/취소 호출 담당
@@ -34,7 +36,7 @@ public class DeliveryCommandAdapter implements DeliveryCommandPort {
                 .recipient(command.getRecipient())
                 .address(command.getAddress())
                 .recipientSlackId(command.getRecipientSlackId())
-                .status("허브 대기중")
+                .status(HUB_WAITING)
                 .build();
 
         return deliveryClient.createDelivery(requestDto,command.getUserId(),command.getUserRole()).getData();
