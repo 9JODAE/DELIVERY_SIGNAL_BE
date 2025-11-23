@@ -1,7 +1,7 @@
 package com.delivery_signal.eureka.client.delivery.application.validator;
 
-import com.delivery_signal.eureka.client.delivery.application.port.HubPort;
-import com.delivery_signal.eureka.client.delivery.application.port.UserAuthPort;
+import com.delivery_signal.eureka.client.delivery.application.port.out.HubPort;
+import com.delivery_signal.eureka.client.delivery.application.port.out.UserAuthPort;
 import com.delivery_signal.eureka.client.delivery.common.UserRole;
 import com.delivery_signal.eureka.client.delivery.common.exception.PermissionDeniedException;
 import com.delivery_signal.eureka.client.delivery.domain.entity.Delivery;

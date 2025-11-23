@@ -7,7 +7,8 @@ import com.delivery_signal.eureka.client.delivery.application.command.UpdateDeli
 import com.delivery_signal.eureka.client.delivery.application.command.UpdateRouteRecordCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryListQuery;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
-import com.delivery_signal.eureka.client.delivery.application.port.HubPort;
+import com.delivery_signal.eureka.client.delivery.application.port.out.HubPort;
+import com.delivery_signal.eureka.client.delivery.application.port.in.DeliveryPort;
 import com.delivery_signal.eureka.client.delivery.common.exception.PermissionDeniedException;
 import com.delivery_signal.eureka.client.delivery.domain.entity.DeliveryManager;
 import com.delivery_signal.eureka.client.delivery.domain.repository.DeliveryManagerRepository;
@@ -43,7 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
-public class DeliveryService {
+public class DeliveryService implements DeliveryPort {
 
     private final DeliveryRepository deliveryRepository;
     private final DeliveryRouteRecordsRepository deliveryRouteRecordsRepository;
@@ -77,6 +78,7 @@ public class DeliveryService {
      * Order Service에서 Delivery Service의 API를 호출하여 내부적으로 자동 생성
      * 새로운 주문에 대한 배송 및 전체 경로 기록 생성
      */
+    @Override
     @Transactional
     public DeliveryQueryResponse createDelivery(CreateDeliveryCommand command, Long creatorId) {
         // 출발지 허브 ID 기준 허브 유효성 검사
