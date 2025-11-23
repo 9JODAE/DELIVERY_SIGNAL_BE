@@ -10,7 +10,7 @@ spring:
   jpa:
     properties:
       hibernate:
-        default_schema: external_schema
+        default_schema: p_external
     hibernate:
       ddl-auto: update
     show-sql: true
