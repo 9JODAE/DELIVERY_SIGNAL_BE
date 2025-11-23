@@ -3,7 +3,6 @@ package com.delivery_signal.eureka.client.order.domain.entity;
 import com.delivery_signal.eureka.client.order.domain.exception.InvalidOrderStateException;
 import com.delivery_signal.eureka.client.order.domain.vo.OrderStatus;
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedBy;
@@ -108,6 +107,17 @@ public class Order {
                 departureHubId, arrivalHubId,
                 requestNote, totalPriceAtOrder, deliveryId
         );
+    }
+
+    /**
+     * 배송id 할당
+     * @param deliveryId
+     */
+    public void assignDeliveryId(UUID deliveryId) {
+        if (this.deliveryId != null) {
+            throw new IllegalStateException("배송 ID가 이미 할당된 주문입니다.");
+        }
+        this.deliveryId = deliveryId;
     }
 
     /**
