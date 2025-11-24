@@ -2,11 +2,14 @@ package com.delivery_signal.eureka.client.delivery.presentation.adapter.messagin
 
 import com.delivery_signal.eureka.client.delivery.application.command.CreateDeliveryCommand;
 import com.delivery_signal.eureka.client.delivery.application.dto.DeliveryQueryResponse;
+import com.delivery_signal.eureka.client.delivery.application.dto.event.DeliveryCreatedRequestEvent;
 import com.delivery_signal.eureka.client.delivery.application.port.in.DeliveryPort;
+import com.delivery_signal.eureka.client.delivery.application.port.out.OrderMessageResponsePort;
 import com.delivery_signal.eureka.client.delivery.common.exception.PermissionDeniedException;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryCreateRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.dto.request.DeliveryDeleteRequest;
 import com.delivery_signal.eureka.client.delivery.presentation.mapper.DeliveryPresentationMapper;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -23,10 +26,13 @@ public class DeliveryMessageListener {
 
     private final DeliveryPort deliveryPort;
     private final DeliveryPresentationMapper mapper;
+    private final OrderMessageResponsePort orderMessageResponsePort;
 
-    public DeliveryMessageListener(DeliveryPort deliveryPort, DeliveryPresentationMapper mapper) {
+    public DeliveryMessageListener(DeliveryPort deliveryPort, DeliveryPresentationMapper mapper,
+        OrderMessageResponsePort orderMessageResponsePort) {
         this.deliveryPort = deliveryPort;
         this.mapper = mapper;
+        this.orderMessageResponsePort = orderMessageResponsePort;
     }
 
     @RabbitListener(queues = "${spring.rabbitmq.exchange.queue.name}")
@@ -36,6 +42,14 @@ public class DeliveryMessageListener {
         try {
             CreateDeliveryCommand command = mapper.toCreateDeliveryCommand(request);
             DeliveryQueryResponse response = deliveryPort.createDelivery(command, request.requestUserId());
+
+            UUID orderId = request.orderId();
+            UUID deliveryId = response.deliveryId();
+
+            // 배송 생성 완료 후 Order-Service로 응답 메시지 발행
+            DeliveryCreatedRequestEvent responseEvent = new DeliveryCreatedRequestEvent(orderId,
+                deliveryId);
+            orderMessageResponsePort.sendDeliveryCreatedResponse(responseEvent);
             log.info("[Delivery] 배송 생성 메시지 처리 성공 - 배송 ID: {}", response.deliveryId());
         } catch (IllegalStateException | PermissionDeniedException e) {
             // 비즈니스 검증 실패 -> 재처리 불필요
