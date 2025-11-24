@@ -6,6 +6,8 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -45,6 +47,13 @@ public class RabbitConfig {
 
     @Value("${spring.rabbitmq.delete.routing.key}")
     private String deleteRoutingKey;
+
+    // 응답 큐 (메시지 발행 큐)
+    @Value("${spring.rabbitmq.response.queue.name}")
+    private String responseQueueName;
+
+    @Value("${spring.rabbitmq.response.routing.key}")
+    private String responseRoutingKey;
 
     // DLQ 관련 상수
     public static final String DELIVERY_DLQ_QUEUE = "delivery.dlq.queue";
@@ -128,6 +137,24 @@ public class RabbitConfig {
     }
 
     /**
+     * [RESPONSE] 배송 생성 완료 응답 큐 (Order-Service가 수신하는 큐)
+     */
+    @Bean
+    public Queue deliveryCreatedResponseQueue() {
+        return new Queue(responseQueueName, true);
+    }
+
+    /**
+     * [RESPONSE] Binding: 응답 메시지를 응답 큐로 라우팅
+     */
+    @Bean
+    public Binding bindingResponseQueue(Queue deliveryCreatedResponseQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(deliveryCreatedResponseQueue)
+            .to(exchange)
+            .with(responseRoutingKey);
+    }
+
+    /**
      * JSON 메시지 컨버터
      */
     @Bean
@@ -135,19 +162,11 @@ public class RabbitConfig {
         return new Jackson2JsonMessageConverter();
     }
 
-//    /**
-//     * Listener Container Factory
-//     */
-//    @Bean
-//    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
-//        ConnectionFactory connectionFactory,
-//        Jackson2JsonMessageConverter messageConverter
-//    ) {
-//        SimpleRabbitListenerContainerFactory factory =
-//            new SimpleRabbitListenerContainerFactory();
-//        factory.setConnectionFactory(connectionFactory);
-//        factory.setMessageConverter(messageConverter);
-//        factory.setDefaultRequeueRejected(false); // DLQ로 전송
-//        return factory;
-//    }
+    @Bean
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
+        Jackson2JsonMessageConverter messageConverter) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+        rabbitTemplate.setMessageConverter(messageConverter);
+        return rabbitTemplate;
+    }
 }
