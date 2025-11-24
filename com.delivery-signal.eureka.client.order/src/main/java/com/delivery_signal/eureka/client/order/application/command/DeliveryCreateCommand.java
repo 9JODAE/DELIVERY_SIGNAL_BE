@@ -1,7 +1,6 @@
 package com.delivery_signal.eureka.client.order.application.command;
 
 import java.util.UUID;
-import com.delivery_signal.eureka.client.order.domain.vo.user.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateDeliveryCommand {
+public class DeliveryCreateCommand {
     private Long userId;
     private String userRole;
     private UUID orderId;             // 주문 PK

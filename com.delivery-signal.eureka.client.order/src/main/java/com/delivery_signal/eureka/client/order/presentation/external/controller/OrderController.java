@@ -1,8 +1,8 @@
 package com.delivery_signal.eureka.client.order.presentation.external.controller;
 
-import com.delivery_signal.eureka.client.order.application.command.CreateOrderCommand;
 import com.delivery_signal.eureka.client.order.application.command.DeleteOrderCommand;
 import com.delivery_signal.eureka.client.order.application.command.OrderCancelCommand;
+import com.delivery_signal.eureka.client.order.application.command.OrderCreateCommand;
 import com.delivery_signal.eureka.client.order.application.command.UpdateOrderCommand;
 import com.delivery_signal.eureka.client.order.application.result.*;
 import com.delivery_signal.eureka.client.order.application.service.OrderService;
@@ -39,7 +39,7 @@ public class OrderController {
             @RequestBody CreateOrderRequestDto requestDto,
             @RequestHeader(value = "x-user-id", required = false) Long userId) {
 
-        CreateOrderCommand command = CreateOrderMapper.toCommand(requestDto, userId);
+        OrderCreateCommand command = CreateOrderMapper.toCommand(requestDto, userId);
         OrderCreateResult result = orderService.createOrderAndSendDelivery(command);
         OrderCreateResponseDto responseDto = OrderResponseMapper.toCreateResponse(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(responseDto));

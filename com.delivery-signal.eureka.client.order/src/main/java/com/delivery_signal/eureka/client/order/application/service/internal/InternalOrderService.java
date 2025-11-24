@@ -1,6 +1,5 @@
 package com.delivery_signal.eureka.client.order.application.service.internal;
 
-import com.delivery_signal.eureka.client.order.application.port.out.DeliveryCommandPort;
 import com.delivery_signal.eureka.client.order.application.port.out.DeliveryQueryPort;
 import com.delivery_signal.eureka.client.order.application.result.OrderForDeliveryResult;
 import lombok.RequiredArgsConstructor;

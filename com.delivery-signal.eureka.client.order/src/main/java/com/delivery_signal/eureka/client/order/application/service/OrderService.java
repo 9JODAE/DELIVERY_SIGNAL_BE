@@ -1,9 +1,29 @@
 package com.delivery_signal.eureka.client.order.application.service;
 
-import com.delivery_signal.eureka.client.order.application.command.*;
+import com.delivery_signal.eureka.client.order.application.command.CreateDeliveryCommand;
+import com.delivery_signal.eureka.client.order.application.command.DeleteOrderCommand;
+import com.delivery_signal.eureka.client.order.application.command.DeliveryCreateCommand;
+import com.delivery_signal.eureka.client.order.application.command.OrderCancelCommand;
+import com.delivery_signal.eureka.client.order.application.command.OrderCreateCommand;
+import com.delivery_signal.eureka.client.order.application.command.OrderProductCommand;
+import com.delivery_signal.eureka.client.order.application.command.UpdateOrderCommand;
+import com.delivery_signal.eureka.client.order.application.event.request.DeliveryCreateRequestEvent;
+import com.delivery_signal.eureka.client.order.application.event.request.DeliveryDeleteRequest;
 import com.delivery_signal.eureka.client.order.application.mapper.OrderQueryMapper;
-import com.delivery_signal.eureka.client.order.application.port.out.*;
-import com.delivery_signal.eureka.client.order.application.result.*;
+import com.delivery_signal.eureka.client.order.application.port.out.CompanyQueryPort;
+import com.delivery_signal.eureka.client.order.application.port.out.DeliveryCommandPort;
+import com.delivery_signal.eureka.client.order.application.port.out.DeliveryEventPublisherPort;
+import com.delivery_signal.eureka.client.order.application.port.out.HubCommandPort;
+import com.delivery_signal.eureka.client.order.application.port.out.HubQueryPort;
+import com.delivery_signal.eureka.client.order.application.port.out.OrderCommandPort;
+import com.delivery_signal.eureka.client.order.application.port.out.OrderQueryPort;
+import com.delivery_signal.eureka.client.order.application.port.out.UserQueryPort;
+import com.delivery_signal.eureka.client.order.application.result.OrderCancelResult;
+import com.delivery_signal.eureka.client.order.application.result.OrderCreateResult;
+import com.delivery_signal.eureka.client.order.application.result.OrderDeleteResult;
+import com.delivery_signal.eureka.client.order.application.result.OrderDetailResult;
+import com.delivery_signal.eureka.client.order.application.result.OrderListResult;
+import com.delivery_signal.eureka.client.order.application.result.OrderUpdateResult;
 import com.delivery_signal.eureka.client.order.application.validator.OrderPermissionValidator;
 import com.delivery_signal.eureka.client.order.common.NotFoundException;
 import com.delivery_signal.eureka.client.order.domain.entity.Order;
@@ -17,20 +37,20 @@ import com.delivery_signal.eureka.client.order.domain.vo.company.CompanyInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.delivery.DeliveryCreatedInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.product.ProductInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.user.UserAuthorizationInfo;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
 @Transactional
 public class OrderService {
 
+    private final DeliveryEventPublisherPort deliveryEventPublisherPort;
     private final DeliveryCommandPort deliveryCommandPort;
     private final HubCommandPort hubCommandPort;
     private final OrderCommandPort orderCommandPort;
@@ -45,7 +65,8 @@ public class OrderService {
     private final OrderProductRepository orderProductRepository;
     private final OrderPermissionValidator orderPermissionValidator;
 
-    public OrderService(DeliveryCommandPort deliveryCommandPort, HubCommandPort hubCommandPort, OrderCommandPort orderCommandPort, HubQueryPort hubQueryPort, CompanyQueryPort companyQueryPort, UserQueryPort userQueryPort, OrderQueryPort orderQueryPort, OrderDomainService orderDomainService, OrderQueryMapper orderQueryMapper, OrderProductRepository orderProductRepository, OrderPermissionValidator orderPermissionValidator) {
+    public OrderService(DeliveryEventPublisherPort deliveryEventPublisherPort, DeliveryCommandPort deliveryCommandPort, HubCommandPort hubCommandPort, OrderCommandPort orderCommandPort, HubQueryPort hubQueryPort, CompanyQueryPort companyQueryPort, UserQueryPort userQueryPort, OrderQueryPort orderQueryPort, OrderDomainService orderDomainService, OrderQueryMapper orderQueryMapper, OrderProductRepository orderProductRepository, OrderPermissionValidator orderPermissionValidator) {
+        this.deliveryEventPublisherPort = deliveryEventPublisherPort;
         this.deliveryCommandPort = deliveryCommandPort;
         this.hubCommandPort = hubCommandPort;
         this.orderCommandPort = orderCommandPort;
@@ -66,7 +87,7 @@ public class OrderService {
      * @param command 입력된 주문 정보
      * @return 주문 결과
      */
-    public OrderCreateResult createOrderAndSendDelivery(CreateOrderCommand command) {
+    public OrderCreateResult createOrderAndSendDelivery(OrderCreateCommand command) {
 
         // [LOG] 사용자 권한조회 시작
         log.info("[ORDER] validateCreate(userId={}) 요청 시작", command.getUserId());
@@ -161,26 +182,24 @@ public class OrderService {
 
 
         // [LOG] 배송 생성 요청
-        log.info("[ORDER] 배송 생성 요청 시작:orderId={}", order.getId());
+        log.info("[ORDER] 배송 생성 요청 이벤트 발행 시작: orderId={}", order.getId());
 
-        DeliveryCreatedInfo deliveryInfo = deliveryCommandPort.createDelivery(
-                CreateDeliveryCommand.builder()
-                        .userId(command.getUserId())
-                        .userRole(userRole)
-                        .orderId(order.getId())
-                        .supplierCompanyId(command.getSupplierCompanyId())
-                        .receiverCompanyId(command.getReceiverCompanyId())
-                        .departureHubId(supplier.getHubId())
-                        .destinationHubId(receiver.getHubId())
-                        .address(receiver.getAddress())
-                        .recipient(command.getRecipient())
-                        .recipientSlackId(command.getRecipientSlackId())
-                        .build()
+        deliveryEventPublisherPort.publishDeliveryCreateRequestedEvent(
+            new DeliveryCreateRequestEvent(
+                command.getUserId(),
+                userRole,
+                order.getId(),
+                command.getSupplierCompanyId(),
+                command.getReceiverCompanyId(),
+                supplier.getHubId(),
+                receiver.getHubId(),
+                receiver.getAddress(),
+                command.getRecipient(),
+                command.getRecipientSlackId()
+            )
         );
 
-        log.info("[ORDER] 배송 생성 성공 -> deliveryMessage={}", deliveryInfo.getMessage());
-
-
+        log.info("[ORDER] 배송 생성 요청 이벤트 발행 완료 (RabbitMQ): orderId={}", order.getId());
         return new OrderCreateResult(
                 order.getId(),
                 order.getCreatedBy(),
@@ -309,10 +328,20 @@ public class OrderService {
             throw new InvalidOrderStateException("이미 취소된 주문입니다.");
         }
 
-        // 4. 배송 취소 요청
+        // 4. 배송 취소 요청 (RabbitMQ)
         if (order.getDeliveryId() != null) {
-            deliveryCommandPort.cancelDelivery(order.getDeliveryId());
+            log.info("[ORDER] 배송 취소 요청 이벤트 발행 시작: deliveryId={}", order.getDeliveryId());
+
+            deliveryEventPublisherPort.publishDeliveryCancelRequestedEvent(
+                new DeliveryDeleteRequest(
+                    order.getDeliveryId(),
+                    command.getUserId()
+                )
+            );
+
+            log.info("[ORDER] 배송 취소 요청 이벤트 발행 완료 (RabbitMQ): deliveryId={}", order.getDeliveryId());
         }
+
 
         // 5. 주문 취소 처리 (도메인 로직)
         order.cancel();

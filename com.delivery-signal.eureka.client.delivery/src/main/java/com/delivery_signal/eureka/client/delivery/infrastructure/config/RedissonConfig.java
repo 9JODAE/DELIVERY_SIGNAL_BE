@@ -27,7 +27,7 @@ public class RedissonConfig {
         // 로컬 개발 환경에서는 localhost 기준.
         // Docker Compose 등에서 서비스명 redis-service를 쓸 때는 이 부분만 수정하면 됨.
         config.useSingleServer()
-            .setAddress("redis://localhost:6380");
+            .setAddress("redis://localhost:6379");
 
         return Redisson.create(config);
     }
