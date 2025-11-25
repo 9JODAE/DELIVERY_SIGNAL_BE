@@ -25,6 +25,11 @@ spring:
         name: delivery.create.queue
       routing:
         key: delivery.create.new
+    response:
+      queue:
+        name: delivery.created.response.queue # Order-Service가 응답을 받을 큐 이름
+      routing:
+        key: delivery.created.response
     delete:
       queue:
         name: delivery.delete.queue
