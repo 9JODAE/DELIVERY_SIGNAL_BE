@@ -1,12 +1,6 @@
 package com.delivery_signal.eureka.client.order.application.service;
 
-import com.delivery_signal.eureka.client.order.application.command.CreateDeliveryCommand;
-import com.delivery_signal.eureka.client.order.application.command.DeleteOrderCommand;
-import com.delivery_signal.eureka.client.order.application.command.DeliveryCreateCommand;
-import com.delivery_signal.eureka.client.order.application.command.OrderCancelCommand;
-import com.delivery_signal.eureka.client.order.application.command.OrderCreateCommand;
-import com.delivery_signal.eureka.client.order.application.command.OrderProductCommand;
-import com.delivery_signal.eureka.client.order.application.command.UpdateOrderCommand;
+import com.delivery_signal.eureka.client.order.application.command.*;
 import com.delivery_signal.eureka.client.order.application.event.request.DeliveryCreateRequestEvent;
 import com.delivery_signal.eureka.client.order.application.event.request.DeliveryDeleteRequest;
 import com.delivery_signal.eureka.client.order.application.mapper.OrderQueryMapper;
@@ -34,7 +28,6 @@ import com.delivery_signal.eureka.client.order.domain.repository.OrderProductRep
 import com.delivery_signal.eureka.client.order.domain.service.OrderDomainService;
 import com.delivery_signal.eureka.client.order.domain.vo.OrderStatus;
 import com.delivery_signal.eureka.client.order.domain.vo.company.CompanyInfo;
-import com.delivery_signal.eureka.client.order.domain.vo.delivery.DeliveryCreatedInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.product.ProductInfo;
 import com.delivery_signal.eureka.client.order.domain.vo.user.UserAuthorizationInfo;
 import java.time.LocalDateTime;
@@ -374,7 +367,7 @@ public class OrderService {
      * @param command
      * @return
      */
-    public OrderDeleteResult deleteOrder(DeleteOrderCommand command) {
+    public OrderDeleteResult deleteOrder(OrderDeleteCommand command) {
         Order order = orderQueryPort.findByOrderId(command.getOrderId())
                 .orElseThrow(() -> new OrderNotFoundException(command.getOrderId()));
 

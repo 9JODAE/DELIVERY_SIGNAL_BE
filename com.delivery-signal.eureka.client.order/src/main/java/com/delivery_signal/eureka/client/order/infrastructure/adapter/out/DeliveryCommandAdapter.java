@@ -1,6 +1,6 @@
 package com.delivery_signal.eureka.client.order.infrastructure.adapter.out;
 
-import com.delivery_signal.eureka.client.order.application.command.CreateDeliveryCommand;
+import com.delivery_signal.eureka.client.order.application.command.DeliveryCreateCommand;
 import com.delivery_signal.eureka.client.order.application.port.out.DeliveryCommandPort;
 import com.delivery_signal.eureka.client.order.domain.vo.delivery.DeliveryCreatedInfo;
 import com.delivery_signal.eureka.client.order.infrastructure.client.delivery.DeliveryClient;
@@ -26,7 +26,7 @@ public class DeliveryCommandAdapter implements DeliveryCommandPort {
     private final DeliveryClient deliveryClient;
 
     @Override
-    public DeliveryCreatedInfo createDelivery(CreateDeliveryCommand command) {
+    public DeliveryCreatedInfo createDelivery(DeliveryCreateCommand command) {
 
         DeliveryCreateRequestDto requestDto = DeliveryCreateRequestDto.builder()
                 .orderId(command.getOrderId())

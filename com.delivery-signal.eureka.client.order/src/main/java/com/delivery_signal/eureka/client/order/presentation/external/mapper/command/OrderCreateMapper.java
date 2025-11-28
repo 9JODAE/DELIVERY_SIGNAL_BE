@@ -2,12 +2,12 @@ package com.delivery_signal.eureka.client.order.presentation.external.mapper.com
 
 import com.delivery_signal.eureka.client.order.application.command.OrderCreateCommand;
 import com.delivery_signal.eureka.client.order.application.command.OrderProductCommand;
-import com.delivery_signal.eureka.client.order.presentation.external.dto.request.CreateOrderRequestDto;
+import com.delivery_signal.eureka.client.order.presentation.external.dto.request.OrderCreateRequestDto;
 import java.util.List;
 
-public class CreateOrderMapper {
+public class OrderCreateMapper {
 
-    public static OrderCreateCommand toCommand(CreateOrderRequestDto dto, Long userId) {
+    public static OrderCreateCommand toCommand(OrderCreateRequestDto dto, Long userId) {
         List<OrderProductCommand> products = dto.getOrderProducts().stream()
                 .map(p -> OrderProductCommand.builder()
                         .productId(p.getProductId())

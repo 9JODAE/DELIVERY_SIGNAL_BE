@@ -44,7 +44,7 @@ public class OrderInternalController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 
-    // TEST 엔드포인트
+
     @Operation(summary = "test", description = "배송용 test")
     @GetMapping
     public ResponseEntity<ApiResponse<String>> test() {

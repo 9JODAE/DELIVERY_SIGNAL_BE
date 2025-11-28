@@ -14,7 +14,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateOrderRequestDto {
+public class OrderCreateRequestDto {
 
     @Schema(description = "공급업체", example = "5eaa1d9a-bb51-4e12-93de-4a24aeb1b001")
     private UUID supplierCompanyId;
