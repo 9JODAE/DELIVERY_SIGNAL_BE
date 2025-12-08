@@ -1,19 +1,19 @@
 package com.delivery_signal.eureka.client.order.presentation.external.controller;
 
-import com.delivery_signal.eureka.client.order.application.command.DeleteOrderCommand;
 import com.delivery_signal.eureka.client.order.application.command.OrderCancelCommand;
 import com.delivery_signal.eureka.client.order.application.command.OrderCreateCommand;
+import com.delivery_signal.eureka.client.order.application.command.OrderDeleteCommand;
 import com.delivery_signal.eureka.client.order.application.command.UpdateOrderCommand;
 import com.delivery_signal.eureka.client.order.application.result.*;
 import com.delivery_signal.eureka.client.order.application.service.OrderService;
-import com.delivery_signal.eureka.client.order.presentation.external.dto.request.CreateOrderRequestDto;
-import com.delivery_signal.eureka.client.order.presentation.external.dto.request.UpdateOrderRequestDto;
+import com.delivery_signal.eureka.client.order.presentation.external.dto.request.OrderCreateRequestDto;
+import com.delivery_signal.eureka.client.order.presentation.external.dto.request.OrderUpdateRequestDto;
 import com.delivery_signal.eureka.client.order.presentation.external.dto.response.*;
-import com.delivery_signal.eureka.client.order.presentation.external.mapper.command.CreateOrderMapper;
+import com.delivery_signal.eureka.client.order.presentation.external.mapper.command.OrderCreateMapper;
 import com.delivery_signal.eureka.client.order.presentation.external.mapper.command.OrderCancelMapper;
 import com.delivery_signal.eureka.client.order.presentation.external.mapper.command.OrderDeleteMapper;
 import com.delivery_signal.eureka.client.order.presentation.external.mapper.response.OrderResponseMapper;
-import com.delivery_signal.eureka.client.order.presentation.external.mapper.command.UpdateOrderMapper;
+import com.delivery_signal.eureka.client.order.presentation.external.mapper.command.OrderUpdateMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -36,10 +36,10 @@ public class OrderController {
     @Operation(summary = "주문 생성", description = "새로운 주문을 등록합니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<OrderCreateResponseDto>> createOrder(
-            @RequestBody CreateOrderRequestDto requestDto,
+            @RequestBody OrderCreateRequestDto requestDto,
             @RequestHeader(value = "x-user-id", required = false) Long userId) {
 
-        OrderCreateCommand command = CreateOrderMapper.toCommand(requestDto, userId);
+        OrderCreateCommand command = OrderCreateMapper.toCommand(requestDto, userId);
         OrderCreateResult result = orderService.createOrderAndSendDelivery(command);
         OrderCreateResponseDto responseDto = OrderResponseMapper.toCreateResponse(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(responseDto));
@@ -90,10 +90,10 @@ public class OrderController {
     @PutMapping("/{orderId}")
     public ResponseEntity<ApiResponse<OrderUpdateResponseDto>> updateOrder(
             @PathVariable UUID orderId,
-            @RequestBody UpdateOrderRequestDto requestDto,
+            @RequestBody OrderUpdateRequestDto requestDto,
             @RequestHeader(value = "x-user-id", required = false) Long userId
     ) {
-        UpdateOrderCommand command = UpdateOrderMapper.toCommand(orderId, requestDto, userId);
+        UpdateOrderCommand command = OrderUpdateMapper.toCommand(orderId, requestDto, userId);
         OrderUpdateResult result = orderService.updateOrder(command);
         OrderUpdateResponseDto response =OrderResponseMapper.toUpdateResponse(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
@@ -105,7 +105,7 @@ public class OrderController {
     public ResponseEntity<ApiResponse<OrderDeleteResponseDto>> deleteOrder(
             @PathVariable UUID orderId,
             @RequestHeader(value = "x-user-id", required = false) Long userId) {
-        DeleteOrderCommand command = OrderDeleteMapper.toCommand(orderId, userId);
+        OrderDeleteCommand command = OrderDeleteMapper.toCommand(orderId, userId);
         OrderDeleteResult result = orderService.deleteOrder(command);
         OrderDeleteResponseDto responseDto = OrderResponseMapper.toDeleteResponse(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(responseDto));

@@ -11,7 +11,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateOrderRequestDto {
+public class OrderUpdateRequestDto {
     private UUID productId;
     private Integer transferQuantity;
     private String requestNote;
